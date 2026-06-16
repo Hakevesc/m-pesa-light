@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA App Hub</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Switzer:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', 'Switzer', sans-serif;
+    background: linear-gradient(135deg, #A41016 0%, #ED1C24 100%);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 270px;
+    min-width: 270px;
+    background: #FFF;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    border-right: 1px solid #E8E8EC;
+  }
+
+  .sidebar-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid #E8E8EC;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .sidebar-header .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: #FE353D;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff; font-weight: 700;
+  }
+  .sidebar-header .title { color: #1C1C21; font-size: 15px; font-weight: 600; font-family: 'Switzer', sans-serif; }
+  .sidebar-header .subtitle { color: #7C7C87; font-size: 11px; font-weight: 400; }
+
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 20px;
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: #D0D0D5; border-radius: 2px; }
+
+  /* ===== CATEGORY GROUP ===== */
+  .category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 6px 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 0.15s;
+    border-radius: 0;
+    margin: 0;
+  }
+  .category-header:hover { background: #F5F5F5; }
+
+  .category-label {
+    color: #7C7C87;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Switzer', sans-serif;
+  }
+
+  .category-chevron {
+    width: 16px; height: 16px;
+    stroke: #7C7C87;
+    stroke-width: 2;
+    fill: none;
+    transition: transform 0.2s;
+  }
+  .category-chevron.collapsed { transform: rotate(-90deg); }
+
+  .category-items {
+    overflow: hidden;
+    max-height: 1000px;
+    transition: max-height 0.25s ease;
+  }
+  .category-items.closed {
+    max-height: 0;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    margin: 1px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    color: #1C1C21;
+    font-size: 13px;
+    font-weight: 400;
+    font-family: 'Switzer', sans-serif;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    width: calc(100% - 16px);
+    text-align: left;
+  }
+  .nav-item:hover { background: #F5F5F5; color: #1C1C21; }
+  .nav-item.active {
+    background: #FFF1F2;
+    color: #FE353D;
+    font-weight: 600;
+  }
+  .nav-item .icon {
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-item .icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .nav-item .count {
+    margin-left: auto;
+    background: #F0F0F0;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+    color: #7C7C87;
+  }
+
+  /* ===== MAIN ===== */
+  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .main-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #A41016 0%, #ED1C24 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+  .main-toolbar .page-title { color: #fff; font-size: 14px; font-weight: 600; font-family: 'Switzer', sans-serif; }
+  .main-toolbar .page-path { color: rgba(255,255,255,0.35); font-size: 11px; font-family: monospace; }
+  .content-frame { flex: 1; overflow: hidden; }
+  .content-frame iframe { width: 100%; height: 100%; border: none; background: transparent; }
+
+  /* Mobile */
+  .mobile-toggle {
+    display: none; position: fixed; top: 10px; left: 10px; z-index: 1000;
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(254,53,61,0.9); border: none; cursor: pointer;
+    align-items: center; justify-content: center;
+  }
+  .mobile-toggle svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2; }
+  .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+  /* ===== TEST FAB ON INDEX.HTML ===== */
+  .test-fab-global {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #6C5CE7;
+    border: 3px solid #FFF;
+    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    transition: all 0.3s;
+  }
+  .test-fab-global:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(108, 92, 231, 0.6); }
+  .test-fab-global:active { transform: scale(0.92); }
+
+  .test-panel-overlay {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0,0,0,0.35);
+    display: none;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 20px;
+  }
+  .test-panel-overlay.open { display: flex; }
+
+  .test-panel {
+    background: #FFF; border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 420px; max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+    animation: slideUpPanel 0.3s ease-out;
+    padding: 20px 16px 30px;
+  }
+  @keyframes slideUpPanel {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .test-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; padding-bottom: 12px;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .test-panel-header h3 { font-family:'Switzer',sans-serif; font-size:16px; font-weight:600; color:#1C1C21; }
+  .test-panel-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: #F5F5F5; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #666;
+  }
+  .test-panel-close:hover { background: #EBEBEB; }
+
+  .test-scenario {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 12px;
+    cursor: pointer; transition: background 0.15s;
+    margin-bottom: 2px;
+  }
+  .test-scenario:hover { background: #FAFAFA; }
+  .test-scenario:active { background: #F0F0F0; }
+
+  .test-scenario-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #F0EEFF; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 16px;
+  }
+  .test-scenario-info { flex: 1; }
+  .test-scenario-info .name { font-family:'Switzer',sans-serif; font-size:13px; font-weight:600; color:#1C1C21; }
+  .test-scenario-info .desc { font-family:'Switzer',sans-serif; font-size:11px; color:#7C7C87; margin-top:1px; }
+  .test-scenario-arrow { color:#C0C0C0; font-size:14px; flex-shrink:0; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUpModal { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+  @media (max-width: 768px) {
+    .sidebar { position: fixed; left: -290px; top: 0; z-index: 100; transition: left 0.3s; box-shadow: 4px 0 24px rgba(0,0,0,0.3); }
+    .sidebar.open { left: 0; }
+    .sidebar-overlay.open { display: block; }
+    .mobile-toggle { display: flex; }
+    .main-toolbar { padding-left: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" onclick="toggleSidebar()">
+  <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">M</div>
+    <div>
+      <div class="title">M-PESA App</div>
+      <div class="subtitle">All Pages • 30+ Screens</div>
+    </div>
+  </div>
+  <div class="sidebar-scroll" id="sidebarNav"></div>
+</div>
+
+<!-- Test FAB -->
+<div class="test-fab-global" onclick="toggleTestPanel()" title="Test Scenarios">🧪</div>
+
+<div class="main-area">
+  <div class="main-toolbar">
+    <span class="page-title" id="pageTitle">Lehulum Home</span>
+    <span class="page-path" id="pagePath">Lehulum Home.html</span>
+  </div>
+  <div class="content-frame">
+    <iframe id="pageIframe" src="Lehulum Home.html"></iframe>
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  // PAGE REGISTRY — all pages with category, icon, label
+  // ============================================================
+  const pages = [
+    { group: 'Home', label: 'First Visit',           file: 'first-visit-1.html',              icon: 'star' },
+    { group: 'Home', label: 'Lehulum Home',         file: 'Lehulum Home.html',               icon: 'home' },
+    { group: 'Home', label: 'App Walkthrough',       file: 'App Walkthrough.html',             icon: 'help' },
+    { group: 'Home', label: 'My QR Code',            file: 'My QR Code.html',                  icon: 'qr' },
+    { group: 'Home', label: 'Scan QR',               file: 'Scan QR.html',                     icon: 'scan' },
+    { group: 'Home', label: 'Verify Receipt',        file: 'Verify Receipt.html',              icon: 'shield' },
+
+    { group: 'Bill Payment',     label: 'Pay Bill (Menu)',      file: 'Pay Bill.html',                      icon: 'receipt' },
+    { group: 'Bill Payment',     label: 'Select Biller',      file: 'Bill Payment_Select Biller.html',    icon: 'statement' },
+    { group: 'Bill Payment',     label: 'Enter Account',      file: 'Bill Payment_Enter Account.html',    icon: 'statement' },
+    { group: 'Bill Payment',     label: 'Enter Amount',       file: 'Bill Payment_Enter Amount.html',     icon: 'money' },
+    { group: 'Bill Payment',     label: 'Enter PIN',          file: 'Bill Payment_Enter PIN.html',        icon: 'lock' },
+    { group: 'Bill Payment',     label: 'Confirmation',       file: 'Bill Payment Confirmation.html',     icon: 'check' },
+
+    { group: 'Merchant Payment', label: 'Pay Merchant (Menu)',file: 'Pay Merchant.html',                  icon: 'scan' },
+    { group: 'Merchant Payment', label: 'Enter Amount',       file: 'Merchant Payment_Enter Amount.html', icon: 'money' },
+    { group: 'Merchant Payment', label: 'Enter PIN',          file: 'Merchant Payment_Enter PIN.html',    icon: 'lock' },
+    { group: 'Merchant Payment', label: 'Confirmation',       file: 'Merchant Payment Confirmation.html', icon: 'check' },
+
+    { group: 'Transactions', label: 'Send Money Menu',       file: 'Send Money Menu.html',          icon: 'send' },
+    { group: 'Transactions', label: 'Select Bank',           file: 'Transfer_Select Bank.html',     icon: 'bank' },
+    { group: 'Transactions', label: 'Enter Amount',          file: 'Transfer_Enter Amount.html',    icon: 'money' },
+    { group: 'Transactions', label: 'Enter PIN',             file: 'Transfer_Enter PIN.html',       icon: 'lock' },
+    { group: 'Transactions', label: 'Confirmation',          file: 'Transaction Confirmation.html', icon: 'check' },
+                { group: 'Transactions', label: 'Transaction Receipt', file: 'Send Money Recipet PDF.html', icon: 'receipt' },
+        { group: 'Transactions', label: 'Transaction Statment', file: 'Transaction Statment PDF.html', icon: 'receipt' },
+    { group: 'Transactions', label: 'Transaction History',   file: 'Transaction History.html',      icon: 'history' },
+    { group: 'Transactions', label: 'Manage Statement',      file: 'Manage Statement.html',         icon: 'statement' },
+    { group: 'Transactions', label: 'Manage Statement (Empty)', file: 'Manage Statement Empty.html', icon: 'statement' },
+    { group: 'Transactions', label: 'Statement PDF',         file: 'Statement PDF.html',            icon: 'pdf' },
+
+    { group: 'Auth', label: 'Signup',              file: 'Signup.html',                    icon: 'userPlus' },
+    { group: 'Auth', label: 'Signup Home',         file: 'Signup-Home.html',               icon: 'home' },
+    { group: 'Auth', label: 'Sign Up (Legacy)',   file: 'M-PESA No. SignUp.html',         icon: 'userPlus' },
+    { group: 'Auth', label: 'Login',              file: 'M-PESA No. Login.html',          icon: 'login' },
+    { group: 'Auth', label: 'Confirm Profile',    file: 'Confirm Profile.html',           icon: 'userCheck' },
+    { group: 'Auth', label: 'OTP Verification',   file: 'OTP Verification.html',          icon: 'smartphone' },
+    { group: 'Auth', label: 'Create PIN',         file: 'Create PIN.html',                icon: 'lock' },
+    { group: 'Auth', label: 'Re-enter PIN',       file: 'Re-enter PIN.html',              icon: 'lock' },
+    { group: 'Auth', label: 'PIN Locked',         file: 'PIN-Locked.html',                icon: 'lock' },
+    { group: 'Auth', label: 'Verify Birth Year',  file: 'PIN-Verify-BirthYear.html',      icon: 'calendar' },
+    { group: 'Auth', label: 'Forgot PIN',         file: 'Forgot-PIN.html',                icon: 'helpCircle' },
+    { group: 'Auth', label: 'Forgot PIN (SQ)',    file: 'Forgot-PIN-SQ.html',             icon: 'helpCircle' },
+    { group: 'Auth', label: 'SignUp Confirmation',file: 'SignUp Confirmation.html',       icon: 'checkCircle' },
+    { group: 'Auth', label: 'FingerPrint Setup',  file: 'FingerPrint Login Setup.html',   icon: 'fingerprint' },
+
+    { group: 'Account', label: 'Account',              file: 'Account.html',               icon: 'user' },
+    { group: 'Account', label: 'Account Detail',       file: 'Account Detail.html',        icon: 'user' },
+    { group: 'Account', label: 'Add Favourites',       file: 'Add Favourites.html',        icon: 'star' },
+    { group: 'Account', label: 'Manage Favourites',    file: 'Manage Favourites.html',     icon: 'star' },
+    { group: 'Account', label: 'Favourites (Empty)',   file: 'Manage Favorite Empty.html', icon: 'star' },
+    { group: 'Account', label: 'Notification Center',  file: 'Notification Center.html',   icon: 'bell' },
+    { group: 'Account', label: 'Notifications (Empty)',file: 'Notification Center Empty.html', icon: 'bell' },
+    { group: 'Account', label: 'Link Fayda SignUp',    file: 'Link Fayda_SignUp.html',      icon: 'link' },
+    { group: 'Account', label: 'Fayda Steps',          file: 'Fayda Steps.html',            icon: 'gift' },
+
+    { group: 'Popup & Other', label: 'Fayda Activation',       file: 'Fayda-Activation-PopUp.html',             icon: 'gift' },
+    { group: 'Popup & Other', label: 'Fayda Activation (Forced)',file: 'Fayda-Activation-PopUp_forced.html',     icon: 'gift' },
+    { group: 'Popup & Other', label: 'Enable FingerPrint',     file: 'Enable Finger Print PopUp.html',          icon: 'fingerprint' },
+    { group: 'Popup & Other', label: 'SignUp SetUp PIN Popup', file: 'SignUp SetUp PIN popup.html',             icon: 'lock' },
+    { group: 'Popup & Other', label: 'Toast Message',          file: 'Toast Message.html',                      icon: 'message' },
+    { group: 'Popup & Other', label: 'Update Notice PopUp',    file: 'Update Notice PopUp.html',                icon: 'bell' },
+    { group: 'Popup & Other', label: 'Update Notice ToolTip',  file: 'Update Notice ToolTip.html',              icon: 'info' },
+    { group: 'Popup & Other', label: 'Update Request (Optional)',file: 'Update Request_Optional.html',            icon: 'download' },
+  ];
+
+  // ============================================================
+  // SVG icons map
+  // ============================================================
+  const icons = {
+    home: '<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    help: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    qr: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="20" y1="14" x2="20" y2="14.01"/><line x1="14" y1="20" x2="14" y2="20.01"/><line x1="20" y1="20" x2="20" y2="20.01"/></svg>',
+    scan: '<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>',
+    shield: '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+    send: '<svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>',
+    bank: '<svg viewBox="0 0 24 24"><polyline points="3 21 21 21 21 10"/><polyline points="3 10 3 21"/><line x1="9" y1="10" x2="9" y2="16"/><line x1="13" y1="10" x2="13" y2="16"/><line x1="17" y1="10" x2="17" y2="16"/><polygon points="3 6 21 6 12 1 3 6"/></svg>',
+    money: '<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    lock: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+    receipt: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    history: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    statement: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    pdf: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    userPlus: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',
+    login: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    userCheck: '<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 16 19 18 23 14"/></svg>',
+    smartphone: '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    checkCircle: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    fingerprint: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-7.07 2.93"/><path d="M17.07 4.93A10 10 0 0 1 22 12"/><path d="M12 7a5 5 0 0 0-3.54 1.46"/><path d="M15.54 8.46A5 5 0 0 1 17 12"/><path d="M12 12a2 2 0 0 0-1.41.59"/><path d="M13.41 13.41A2 2 0 0 1 14 15"/><path d="M5 12a7 7 0 0 1 7-7"/><path d="M19 12a7 7 0 0 0-7-7"/><path d="M5 12c0 1.93.78 3.68 2.05 4.95"/><path d="M16.95 16.95A7 7 0 0 1 12 19"/><path d="M12 19v-4"/></svg>',
+    user: '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    bell: '<svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    gift: '<svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+    link: '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    message: '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    download: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  };
+
+  // ============================================================
+  // Build sidebar DOM
+  // ============================================================
+  const groups = [...new Set(pages.map(p => p.group))];
+  const nav = document.getElementById('sidebarNav');
+
+  // Track collapse state
+  let collapsedGroups = JSON.parse(localStorage.getItem('sidebarCollapsed') || '[]');
+
+  groups.forEach(group => {
+    const items = pages.filter(p => p.group === group);
+    const isCollapsed = collapsedGroups.includes(group);
+
+    // Category header
+    const header = document.createElement('div');
+    header.className = 'category-header';
+    header.innerHTML = `
+      <span class="category-label">${group}</span>
+      <svg class="category-chevron ${isCollapsed ? 'collapsed' : ''}" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    `;
+    header.onclick = () => toggleGroup(group);
+
+    // Items container
+    const container = document.createElement('div');
+    container.className = `category-items ${isCollapsed ? 'closed' : ''}`;
+
+    items.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-item';
+      btn.innerHTML = `<span class="icon">${icons[p.icon] || icons.home}</span>${p.label}`;
+      btn.dataset.page = p.file;
+      btn.onclick = () => loadPage(btn, p.file, p.label);
+      container.appendChild(btn);
+    });
+
+    nav.appendChild(header);
+    nav.appendChild(container);
+  });
+
+  // ============================================================
+  // Functions
+  // ============================================================
+  function toggleGroup(name) {
+    const idx = collapsedGroups.indexOf(name);
+    if (idx > -1) collapsedGroups.splice(idx, 1);
+    else collapsedGroups.push(name);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(collapsedGroups));
+
+    // Update DOM
+    const headers = document.querySelectorAll('.category-header');
+    headers.forEach(h => {
+      if (h.querySelector('.category-label').textContent === name) {
+        const chevron = h.querySelector('.category-chevron');
+        chevron.classList.toggle('collapsed');
+        h.nextElementSibling.classList.toggle('closed');
+      }
+    });
+  }
+
+  function loadPage(btn, file, label) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pageIframe').src = file;
+    document.getElementById('pageTitle').textContent = label || file;
+    document.getElementById('pagePath').textContent = file;
+    closeSidebar();
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
+
+  // Auto-highlight first item
+  document.querySelector('.nav-item')?.classList.add('active');
+
+  // Ensure transparent body background for pages loaded in the iframe
+  const pageIframe = document.getElementById('pageIframe');
+  function injectBodyBg() {
+    try {
+      const doc = pageIframe.contentDocument;
+      if (!doc || !doc.head) return;
+      let tag = doc.getElementById('__idx_bg__');
+      if (!tag) { tag = doc.createElement('style'); tag.id = '__idx_bg__'; doc.head.appendChild(tag); }
+      tag.textContent = 'body { background: transparent !important; }';
+    } catch(e) {}
+  }
+  pageIframe.addEventListener('load', injectBodyBg);
+  injectBodyBg();
+
+  // ============================================================
+  // Test Scenarios - HTML/CSS templates to inject into Lehulum Home
+  // ============================================================
+  const testScenarios = [
+    {
+      id: 'updateNotice', name: 'Update Notice PopUp', desc: 'Automatic update notification modal', icon: '🚀',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="padding:40px 30px 30px;width:340px;">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div class="popup-icon" style="width:72px;height:72px;border-radius:16px;background:#E8F9EC;border:2px solid #1FC83B;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1FC83B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
+            <h2 class="test-popup-title" style="font-size:22px;">Automatic Update Notice!</h2>
+            <p class="test-popup-sub" style="margin-bottom:24px;">We just pushed automatic improvements to make your app experience better.</p>
+            <div class="popup-features" style="margin-bottom:28px;">
+              <div class="popup-feature"><span class="pf-check"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1FC83B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Custom Favorites Categories</div>
+              <div class="popup-feature"><span class="pf-check"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1FC83B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Faster Account Lookup</div>
+              <div class="popup-feature"><span class="pf-check"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1FC83B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> PDF Receipt Stamping</div>
+            </div>
+            <button class="test-popup-btn primary" style="height:48px;border-radius:14px;font-size:15px;" onclick="this.closest('.test-popup-overlay').remove()">Dismiss</button>
+          </div>
+        </div>
+      `,
+      css: `
+        .test-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:2000;animation:fadeInPopup 0.2s}
+        @keyframes fadeInPopup{from{opacity:0}to{opacity:1}}
+        .test-popup-card{background:#FFF;border-radius:24px;position:relative;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUpPopup 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);overflow:hidden}
+        @keyframes slideUpPopup{from{opacity:0;transform:translateY(20px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .test-popup-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;font-size:20px;color:#999;display:flex;align-items:center;justify-content:center;z-index:10}
+        .test-popup-close:hover{background:#F0F0F0}
+        .popup-icon{flex-shrink:0}
+        .test-popup-title{font-family:'Switzer',sans-serif;font-weight:700;color:#1C1C21;margin-bottom:12px;letter-spacing:.3px;line-height:1.3}
+        .test-popup-sub{font-family:'Switzer',sans-serif;font-size:14px;color:#7C7C87;line-height:1.6;letter-spacing:.2px}
+        .popup-features{display:flex;flex-direction:column;gap:6px;width:100%}
+        .popup-feature{display:flex;align-items:center;gap:12px;font-family:'Switzer',sans-serif;font-size:13px;font-weight:500;color:#1C1C21;padding:6px 0}
+        .pf-check{width:28px;height:28px;border-radius:8px;background:#E8F9EC;border:2px solid #1FC83B;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .test-popup-btn{width:100%;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:500;letter-spacing:.3px;transition:all 0.2s;position:relative;z-index:1}
+        .test-popup-btn.primary{background:#FE353D;color:#FFF;box-shadow:0 4px 16px rgba(254,53,61,0.25)}
+        .test-popup-btn.primary:hover{background:#E5303A;box-shadow:0 6px 20px rgba(254,53,61,0.35);transform:translateY(-1px)}
+        .test-popup-btn.primary:active{transform:scale(0.98) translateY(0)}
+        .test-popup-btn.secondary{background:#F5F5F5;color:#7C7C87}
+        .test-popup-btn.secondary:hover{background:#EBEBEB}
+      `
+    },
+    {
+      id: 'updateTooltip', name: 'Update Notice ToolTip', desc: 'Dark tooltip with update info', icon: '💡',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="tooltip-card">
+            <div class="tooltip-arrow"></div>
+            <div class="tooltip-body">
+              <div class="tooltip-text">
+                <span class="tooltip-title">Update Available! <span style="color:#A0A0A8;font-weight:400">(v4.2.1)</span></span>
+                <span class="tooltip-sub">Tap to install new features & fixes.</span>
+              </div>
+              <div class="tooltip-icon">ℹ️</div>
+            </div>
+            <button class="test-popup-btn primary" style="margin-top:12px" onclick="this.closest('.test-popup-overlay').remove()">Got it</button>
+          </div>
+        </div>
+      `,
+      css: `
+        .tooltip-card{background:#1A1A1F;border-radius:16px;padding:20px;width:290px;position:relative;animation:slideUpPopup 0.25s}
+        .tooltip-arrow{position:absolute;top:-8px;left:50%;margin-left:-9px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:9px solid #1A1A1F}
+        .tooltip-body{display:flex;gap:14px;align-items:flex-start}
+        .tooltip-text{flex:1;display:flex;flex-direction:column;gap:4px}
+        .tooltip-title{font-family:'Switzer',sans-serif;font-size:14px;font-weight:600;color:#FFF}
+        .tooltip-sub{font-family:'Switzer',sans-serif;font-size:12px;color:#A0A0A8;line-height:1.4}
+        .tooltip-icon{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+      `
+    },
+    {
+      id: 'faydaActivation', name: 'Fayda Activation', desc: 'Link your Fayda ID modal', icon: '🆔',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:72px;height:72px;margin:0 auto 18px;border-radius:50%;background:#FFF1F2;display:flex;align-items:center;justify-content:center;font-size:36px">🆔</div>
+            <h2 class="test-popup-title" style="font-size:20px">Link Your Fayda ID</h2>
+            <p class="test-popup-sub">Connect your Fayda ID to M-PESA for enhanced security and faster transactions.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px">
+              <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Link Now</button>
+              <button class="test-popup-btn secondary" onclick="this.closest('.test-popup-overlay').remove()">Skip for Now</button>
+            </div>
+          </div>
+        </div>
+      `,
+      css: ''
+    },
+    {
+      id: 'faydaForced', name: 'Fayda Activation (Forced)', desc: 'Forced Fayda ID activation', icon: '⚠️',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:72px;height:72px;margin:0 auto 18px;border-radius:50%;background:#FFF1F2;display:flex;align-items:center;justify-content:center;font-size:36px">🔗</div>
+            <h2 class="test-popup-title" style="font-size:20px">Fayda ID Required</h2>
+            <p class="test-popup-sub">You must link your Fayda ID to continue using M-PESA services.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px">
+              <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Link Now</button>
+              <button class="test-popup-btn secondary" onclick="this.closest('.test-popup-overlay').remove()">Later</button>
+            </div>
+          </div>
+        </div>
+      `,
+      css: ''
+    },
+    {
+      id: 'signupPin', name: 'SignUp PIN Popup', desc: 'PIN creation popup', icon: '🔐',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:72px;height:72px;margin:0 auto 18px;background:#FFF1F2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px">🔐</div>
+            <h2 class="test-popup-title">Set Up Your PIN</h2>
+            <p class="test-popup-sub">Create a 4-digit PIN to secure your account.</p>
+            <div style="display:flex;gap:8px;justify-content:center;margin:14px 0 18px"><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div></div>
+            <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Enter PIN</button>
+          </div>
+        </div>
+      `,
+      css: `.pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid #FE353D}`
+    },
+    {
+      id: 'enableFingerprint', name: 'Enable Fingerprint', desc: 'Fingerprint enable popup', icon: '🖐️',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:72px;height:72px;margin:0 auto 18px;background:#E8F9EC;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px">🖐️</div>
+            <h2 class="test-popup-title">Enable Fingerprint</h2>
+            <p class="test-popup-sub">Use your fingerprint to quickly and securely access your account.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px">
+              <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Enable</button>
+              <button class="test-popup-btn secondary" onclick="this.closest('.test-popup-overlay').remove()">Not Now</button>
+            </div>
+          </div>
+        </div>
+      `,
+      css: ''
+    },
+    {
+      id: 'fingerprintLogin', name: 'FingerPrint Login Setup', desc: 'Fingerprint login setup', icon: '👆',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:72px;height:72px;margin:0 auto 18px;background:#FFF1F2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px">👆</div>
+            <h2 class="test-popup-title">Quick Login with Fingerprint</h2>
+            <p class="test-popup-sub">Set up fingerprint login for faster, more secure access.</p>
+            <button class="test-popup-btn primary" style="margin-top:8px" onclick="this.closest('.test-popup-overlay').remove()">Set Up Now</button>
+          </div>
+        </div>
+      `,
+      css: ''
+    },
+    {
+      id: 'transactionConfirm', name: 'Transaction Confirmation', desc: 'Transaction success result', icon: '✅',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:64px;height:64px;margin:0 auto 16px;background:#E8F9EC;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#1FC83B">✓</div>
+            <h2 class="test-popup-title" style="font-size:20px">Transaction Successful</h2>
+            <p class="test-popup-sub">You've sent <strong style="color:#1C1C21">1,000.00 Birr</strong> to Mom M-PESA</p>
+            <div style="background:#FAFAFA;border-radius:10px;padding:12px;width:100%;margin:10px 0 18px;text-align:left">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:#7C7C87;font-size:11px">Reference</span><span style="color:#1C1C21;font-size:11px;font-weight:600">MP220813ABC</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:#7C7C87;font-size:11px">Date</span><span style="color:#1C1C21;font-size:11px;font-weight:600">13 Aug 2026</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+              <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Done</button>
+              <button class="test-popup-btn secondary" onclick="this.closest('.test-popup-overlay').remove()">Share Receipt</button>
+            </div>
+          </div>
+        </div>
+      `,
+      css: ''
+    },
+    {
+      id: 'toast', name: 'Toast Message', desc: 'Success & error toasts', icon: '💬',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div style="display:flex;flex-direction:column;gap:10px;animation:slideUpPopup 0.3s">
+            <div class="toast-item success">
+              <div class="toast-icon-box">✓</div>
+              <div><div class="toast-item-title">Added to Favorites</div><div class="toast-item-sub">Mom M-PESA has been saved</div></div>
+            </div>
+            <div class="toast-item error">
+              <div class="toast-icon-box">!</div>
+              <div><div class="toast-item-title">Removed from Favorites</div><div class="toast-item-sub">Mom M-PESA has been removed</div></div>
+            </div>
+            <button class="test-popup-btn primary" style="width:auto;padding:0 24px;align-self:center" onclick="this.closest('.test-popup-overlay').remove()">Close</button>
+          </div>
+        </div>
+      `,
+      css: `
+        .toast-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;width:290px;box-shadow:0 6px 24px rgba(0,0,0,0.1);animation:slideUpPopup 0.35s}
+        .toast-item.success{background:#E8F9EC}
+        .toast-item.error{background:#FFF1F2}
+        .toast-icon-box{width:34px;height:34px;border-radius:10px;border:2px solid;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700}
+        .toast-item.success .toast-icon-box{border-color:#1FC83B;color:#1FC83B}
+        .toast-item.error .toast-icon-box{border-color:#FE353D;color:#FE353D}
+        .toast-item-title{font-family:'Switzer',sans-serif;font-size:13px;font-weight:600;color:#1C1C21}
+        .toast-item-sub{font-family:'Switzer',sans-serif;font-size:11px;color:#7C7C87;margin-top:1px}
+      `
+    },
+    {
+      id: 'updateRequest', name: 'Update Request (Optional)', desc: 'Optional update prompt', icon: '📲',
+      html: `
+        <div class="test-popup-overlay" onclick="if(event.target===this)this.remove()">
+          <div class="test-popup-card" style="text-align:center">
+            <button class="test-popup-close" onclick="this.closest('.test-popup-overlay').remove()">&times;</button>
+            <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:16px;background:#FFF1F2;display:flex;align-items:center;justify-content:center;font-size:30px">📲</div>
+            <h2 class="test-popup-title" style="font-size:19px">New Update Available</h2>
+            <p class="test-popup-sub">Version 4.2.1 brings new features and bug fixes.</p>
+            <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px">
+              <button class="test-popup-btn primary" onclick="this.closest('.test-popup-overlay').remove()">Update Now</button>
+              <button class="test-popup-btn secondary" onclick="this.closest('.test-popup-overlay').remove()">Remind Me Later</button>
+            </div>
+          </div>
+        </div>
+      `,
+      css: ''
+    }
+  ];
+
+  function toggleTestPanel() {
+    const existing = document.getElementById('testPanelContainer');
+    if (existing) { existing.remove(); return; }
+    renderTestPanel();
+  }
+
+  function renderTestPanel() {
+    const container = document.createElement('div');
+    container.id = 'testPanelContainer';
+    container.innerHTML = `
+      <div class="test-panel-overlay open" id="testPanelOverlay" onclick="if(event.target===this)closeTestPanel()">
+        <div class="test-panel">
+          <div class="test-panel-header">
+            <h3>🧪 Test Scenarios</h3>
+            <button class="test-panel-close" onclick="closeTestPanel()">&times;</button>
+          </div>
+          ${testScenarios.map(s => `
+            <div class="test-scenario" onclick="runTestScenario('${s.id}')">
+              <div class="test-scenario-icon">${s.icon}</div>
+              <div class="test-scenario-info">
+                <div class="name">${s.name}</div>
+                <div class="desc">${s.desc}</div>
+              </div>
+              <div class="test-scenario-arrow">›</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(container);
+  }
+
+  function closeTestPanel() {
+    const container = document.getElementById('testPanelContainer');
+    if (container) container.remove();
+  }
+
+  function runTestScenario(scenarioId) {
+    closeTestPanel();
+    const scenario = testScenarios.find(s => s.id === scenarioId);
+    if (!scenario) return;
+
+    // Send the popup HTML/CSS into the iframe via postMessage
+    const iframe = document.getElementById('pageIframe');
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.postMessage({
+        type: 'showTestPopup',
+        html: scenario.html,
+        css: scenario.css || ''
+      }, '*');
+    }
+
+    document.getElementById('pageTitle').textContent = '🧪 ' + scenario.name;
+    document.getElementById('pagePath').textContent = 'Lehulum Home.html + Popup';
+  }
+</script>
+
+</body>
+</html>
