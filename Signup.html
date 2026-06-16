@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Sign Up</title>
+<style>
+  @import url("styles/component-keypad.css");
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* ===== HEADER ===== */
+  .header-section {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+    border-radius: 0 0 30px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pattern-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.20;
+    z-index: 0;
+    background-image: url('assets/M-PESA-pattern.svg');
+    background-size: 490px;
+    background-position: right -270px top -270px;
+    background-repeat: no-repeat;
+    border-radius: 0 0 30px 30px;
+    mix-blend-mode: overlay;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; font-family: 'Switzer', sans-serif; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Language Selector */
+  .language-wrapper {
+    position: relative;
+    z-index: 20;
+    align-self: flex-start;
+    margin-left: 20px;
+    margin-top: 4px;
+  }
+
+  .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .language-selector:hover { background: rgba(255,255,255,0.1); }
+
+  .language-selector .lang-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+  }
+  .language-selector .lang-icon img { width: 20px; height: 20px; object-fit: contain; }
+
+  .language-selector .language {
+    color: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.24px;
+    text-transform: uppercase;
+  }
+
+  .language-selector .chevron {
+    width: 14px; height: 14px;
+    color: #FFF;
+    transition: transform 0.25s;
+  }
+  .language-selector.open .chevron { transform: rotate(180deg); }
+
+  /* Language Dropdown */
+  .lang-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 160px;
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+  }
+  .lang-dropdown.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+
+  .lang-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    font-size: 13px; font-weight: 500;
+    color: var(--On-Surface);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .lang-option:hover { background: #F5F5F5; }
+  .lang-option.active { background: #FFF1F2; color: var(--Primary); font-weight: 600; }
+  .lang-option .check { margin-left: auto; width: 16px; height: 16px; color: var(--Primary); opacity: 0; }
+  .lang-option.active .check { opacity: 1; }
+
+  /* M-PESA Logo */
+  .mpesa-logo {
+    position: absolute;
+    top: 70%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+  .mpesa-logo img { height: 40px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15)); }
+
+  /* User Info */
+  .user-info {
+    position: absolute;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-avatar {
+    display: flex; justify-content: center; align-items: center;
+    width: 60px; height: 60px;
+    border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    border: 2.5px solid rgba(255,255,255,0.9);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.15);
+  }
+  .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .user-avatar .avatar-fallback {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 22px; font-weight: 700; color: #FFF;
+  }
+
+  .user-details { display: flex; flex-direction: column; gap: 1px; }
+  .user-details .welcome {
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 14px; font-weight: 400;
+    letter-spacing: 0.5px; text-transform: capitalize;
+  }
+  .user-details .name {
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 20px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: capitalize;
+    white-space: nowrap;
+  }
+  .user-details .phone {
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 14px; font-weight: 400;
+    letter-spacing: 0.28px; text-transform: uppercase;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 16px 20px 0;
+    display: flex; flex-direction: column;
+    align-items: center;
+    flex: 1; width: 100%;
+  }
+
+  .phone-input-section {
+    width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    margin-top: 32px;
+  }
+
+  .bottom-area {
+    width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 20px;
+    margin-top: auto;
+  }
+
+  .phone-input-section .input-label {
+    color: var(--On-Surface);
+    font-size: 14px; font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .phone-input-wrapper {
+    width: max-content;
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 2px solid #E0E0E0;
+    padding-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+  .phone-input-wrapper.focused,
+  .phone-input-wrapper.has-value { border-bottom-color: var(--Primary); }
+  .phone-input-wrapper.error { border-bottom-color: var(--Primary); }
+
+  .phone-prefix {
+    color: var(--Primary);
+    font-size: 30px; font-weight: 400;
+    letter-spacing: 1px; white-space: nowrap;
+    user-select: none;
+    font-family: 'Inter', sans-serif;
+    margin-right: 6px;
+  }
+
+  .phone-input {
+    width: 200px;
+    font-size: 30px; font-weight: 400;
+    color: var(--Primary);
+    background: transparent; border: none; outline: none;
+    letter-spacing: 2px;
+    font-family: 'Inter', sans-serif;
+    caret-color: var(--Primary);
+  }
+  .phone-input::placeholder { color: #D0D0D0; }
+
+  .error-text {
+    color: var(--Primary);
+    font-size: 13px; font-weight: 500;
+    margin-top: 8px;
+    display: none; text-align: center;
+  }
+
+  .sim-badge {
+    display: flex; align-items: center; gap: 5px;
+    margin-top: 10px;
+    color: var(--On-Surface-Low);
+    font-size: 11px; font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+  .sim-badge svg { stroke: var(--On-Surface-Low); }
+  .sim-badge svg rect { stroke: var(--On-Surface-Low); fill: var(--On-Surface-Low); }
+  .sim-badge svg rect[fill] { fill: var(--On-Surface-Low); }
+  .phone-input[readonly] { cursor: default; user-select: none; }
+
+  /* Continue Button */
+  .continue-btn {
+    display: flex;
+    width: 328px; max-width: 100%;
+    height: 48px;
+    justify-content: center; align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    background: var(--Primary);
+    color: #FFF1F2;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px; margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25);
+  }
+  .continue-btn:hover { background: #E5303A; box-shadow: 0 6px 20px rgba(254,53,61,0.35); transform: translateY(-1px); }
+  .continue-btn:active { transform: scale(0.98) translateY(0); }
+  .continue-btn:disabled {
+    background: #E0E0E0; color: #7C7C87;
+    box-shadow: none; cursor: default; pointer-events: none;
+  }
+
+  /* Footer Links */
+  .footer-links {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding-bottom: 10px; width: 100%;
+  }
+  .footer-links .forgot-pin {
+    color: var(--Primary); font-size: 11px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    white-space: nowrap; transition: opacity 0.2s;
+  }
+  .footer-links .forgot-pin:hover { opacity: 0.7; }
+  .footer-links .divider { width: 1px; height: 12px; background: #D0D0D0; }
+  .footer-links .link {
+    display: flex; align-items: center; gap: 3px;
+    color: var(--On-Surface-Low); font-size: 11px; font-weight: 400;
+    text-decoration: none; cursor: pointer; white-space: nowrap;
+    transition: color 0.2s;
+  }
+  .footer-links .link:hover { color: var(--On-Surface); }
+  .footer-links .link i { width: 11px !important; height: 11px !important; stroke-width: 2px; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Header -->
+    <div class="header-section">
+      <div class="pattern-overlay"></div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+        </div>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="language-wrapper">
+        <div class="language-selector" id="langSelector" onclick="toggleLangDropdown()">
+          <div class="lang-icon">
+            <img src="assets/change_language_icon.svg" alt="Language">
+          </div>
+          <span id="currentLang" class="language">English</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="lang-dropdown" id="langDropdown">
+          <div class="lang-option active" data-lang="English" onclick="selectLang(this)">
+            English <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="አማርኛ" onclick="selectLang(this)">
+            አማርኛ <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="Afaan Oromoo" onclick="selectLang(this)">
+            Afaan Oromoo <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="ትግርኛ" onclick="selectLang(this)">
+            ትግርኛ <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="Soomaali" onclick="selectLang(this)">
+            Soomaali <i data-lucide="check" class="check"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- M-PESA Logo -->
+      <div class="mpesa-logo">
+        <img src="assets/m-pesa-white-logo.svg" alt="M-PESA">
+      </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Phone Input -->
+      <div class="phone-input-section">
+        <span class="input-label">Your M-PESA Number</span>
+        <div class="phone-input-wrapper has-value" id="phoneWrapper">
+          <span class="phone-prefix">+251</span>
+          <input
+            type="tel"
+            class="phone-input"
+            id="phoneInput"
+            placeholder=""
+            maxlength="10"
+            inputmode="none"
+            readonly
+          >
+        </div>
+      </div>
+
+      <!-- Bottom: Button + Footer pinned to bottom -->
+      <div class="bottom-area">
+        <button class="continue-btn" id="continueBtn" onclick="goNext()">Continue</button>
+
+        <div class="footer-links">
+          <a class="forgot-pin" href="#">Forgot PIN?</a>
+          <div class="divider"></div>
+          <a class="link" href="#">
+            <i data-lucide="headphones"></i>
+            Contact Us
+          </a>
+          <div class="divider"></div>
+          <a class="link" href="#">
+            <i data-lucide="file-text"></i>
+            Terms and Conditions
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+
+  // ===== Language =====
+  function toggleLangDropdown() {
+    document.getElementById('langDropdown').classList.toggle('show');
+    document.getElementById('langSelector').classList.toggle('open');
+  }
+  function selectLang(el) {
+    document.getElementById('currentLang').textContent = el.dataset.lang;
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    toggleLangDropdown();
+  }
+  document.addEventListener('click', function(e) {
+    if (!document.querySelector('.language-wrapper').contains(e.target)) {
+      document.getElementById('langDropdown').classList.remove('show');
+      document.getElementById('langSelector').classList.remove('open');
+    }
+  });
+
+  // ===== Phone (header enrichment — pre-filled, read-only) =====
+  const phoneInput   = document.getElementById('phoneInput');
+  const phoneWrapper = document.getElementById('phoneWrapper');
+  const continueBtn  = document.getElementById('continueBtn');
+
+  const stored = sessionStorage.getItem('signupPhone');
+  phoneInput.value = stored ? stored.replace('+251', '') : '977002423';
+  continueBtn.disabled = false;
+
+  // ===== Continue =====
+  function goNext() {
+    sessionStorage.setItem('signupPhone', '+251' + phoneInput.value);
+    window.location.href = 'Fayda Steps.html';
+  }
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

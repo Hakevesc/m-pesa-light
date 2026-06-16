@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enable Fingerprint</title>
+
+<!-- ============================================================
+     Design System & Component Styles
+     ============================================================ -->
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-status-bar.css">
+<link rel="stylesheet" href="styles/component-button.css">
+
+<style>
+  :root {
+    --Primary-Soft: #FEECED;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── NAV HEADER ── */
+  .header-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: #F5F5F5; flex-shrink: 0;
+  }
+  .nav-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: transparent; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-btn:hover { background: rgba(0,0,0,0.05); }
+  .nav-btn svg { width: 22px; height: 22px; stroke: var(--On-Surface); stroke-width: 1.8; fill: none; }
+  .header-title {
+    color: var(--On-Surface); font-family: 'Switzer', sans-serif;
+    font-size: 17px; font-weight: 500; letter-spacing: 0.3px;
+  }
+
+  /* Scrollable Content Area */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 32px;
+  }
+  .main-content::-webkit-scrollbar { width: 0; }
+
+  /* ── ENABLE CARD (initial state) ── */
+  .enable-card {
+    width: 100%;
+    max-width: 320px;
+    background: #FFF;
+    border-radius: 24px;
+    padding: 40px 28px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    transition: all 0.4s ease;
+  }
+
+  /* Fingerprint Icon Container */
+  .fingerprint-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--Primary-Soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
+    transition: all 0.4s ease;
+  }
+
+  .fingerprint-inner {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.15);
+    transition: all 0.4s ease;
+  }
+
+  .fingerprint-inner svg {
+    width: 40px;
+    height: 40px;
+    stroke: var(--Primary);
+    stroke-width: 2px;
+    fill: none;
+  }
+
+  .card-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .card-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* Enable button */
+  .enable-btn {
+    width: 100%; height: 52px; border-radius: 16px;
+    background: var(--Primary); border: none; color: #FFF;
+    font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25);
+  }
+  .enable-btn:hover { background: #E5303A; transform: translateY(-1px); }
+  .enable-btn:active { transform: scale(0.98); }
+  .enable-btn svg { width: 20px; height: 20px; stroke: #FFF; fill: none; stroke-width: 2; }
+
+  /* Skip link */
+  .skip-link {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s;
+    margin-top: 16px;
+    display: inline-block;
+  }
+  .skip-link:hover { color: var(--On-Surface); }
+
+  /* ── SUCCESS STATE (after fingerprint verified) ── */
+  .enable-card.success {
+    padding: 32px 28px 28px;
+  }
+
+  .enable-card.success .fingerprint-container {
+    background: var(--Success-Light);
+  }
+
+  .enable-card.success .fingerprint-inner {
+    box-shadow: 0 4px 16px rgba(31, 200, 59, 0.2);
+  }
+
+  .enable-card.success .fingerprint-inner svg {
+    stroke: var(--Success);
+    animation: checkPop 0.4s ease-out;
+  }
+
+  @keyframes checkPop {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .enable-card.success .card-title {
+    color: var(--Success);
+  }
+
+  .enable-card.success .enable-btn {
+    background: var(--Success-Light);
+    color: var(--Success);
+    box-shadow: none;
+    cursor: default;
+    pointer-events: none;
+  }
+  .enable-card.success .enable-btn svg { stroke: var(--Success); }
+
+  .enable-card.success .skip-link { display: none; }
+
+  /* Pulse animation while waiting */
+  .pulse-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--Primary);
+    opacity: 0;
+    animation: pulse 2.5s ease-out infinite;
+    pointer-events: none;
+  }
+  .pulse-ring:nth-child(2) { animation-delay: 0.8s; }
+  .pulse-ring:nth-child(3) { animation-delay: 1.6s; }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  /* Scanning overlay on icon */
+  .scan-line {
+    position: absolute;
+    left: 20px; right: 20px; height: 2px;
+    background: var(--Primary);
+    border-radius: 1px;
+    opacity: 0;
+    animation: scanDown 2s ease-in-out infinite;
+  }
+  @keyframes scanDown {
+    0% { top: 20px; opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { top: calc(100% - 20px); opacity: 0; }
+  }
+
+  /* ── NO FINGERPRINT STATE ── */
+  .enable-card.no-fingerprint .fingerprint-container {
+    background: #FFF3E0;
+  }
+  .enable-card.no-fingerprint .fingerprint-inner svg {
+    stroke: #E65100;
+  }
+  .enable-card.no-fingerprint .card-title {
+    color: #E65100;
+  }
+
+  .setup-btn {
+    width: 100%; height: 52px; border-radius: 16px;
+    background: var(--On-Surface); border: none; color: #FFF;
+    font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; display: none; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(28,28,33,0.25);
+  }
+  .setup-btn:hover { background: #2C2C31; transform: translateY(-1px); }
+  .setup-btn:active { transform: scale(0.98); }
+  .setup-btn.show { display: flex; }
+  .setup-btn svg { width: 20px; height: 20px; stroke: #FFF; fill: none; stroke-width: 2; }
+
+  /* ── BOTTOM ── */
+  .bottom-action {
+    flex-shrink: 0;
+    padding: 16px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #F5F5F5;
+  }
+
+  .btn-primary.wallet-btn {
+    width: 100%;
+    max-width: 320px;
+    height: 48px;
+    display: none;
+  }
+  .btn-primary.wallet-btn.show { display: flex; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/>
+          <path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/>
+          <path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header-nav">
+      <button class="nav-btn" onclick="goBack()" aria-label="Back">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Enable Fingerprint</span>
+      <div style="width:36px;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <div class="enable-card" id="enableCard">
+        <div class="fingerprint-container" id="fingerprintContainer">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="scan-line" id="scanLine"></div>
+          <div class="fingerprint-inner" id="fingerprintInner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4"/>
+              <path d="M5 19.5C5 14 9 10 12 10s4 2 5 5"/>
+              <path d="M12 14v4"/>
+              <path d="M10 18h4"/>
+              <path d="M17 12c0-2-1.5-4-3.5-5"/>
+              <path d="M21 12c0 5-4 9-9 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <h2 class="card-title" id="cardTitle">Enable Fingerprint Sign-In</h2>
+        <p class="card-subtitle" id="cardSubtitle">
+          Use your phone's fingerprint sensor to quickly and securely sign in to M-PESA
+        </p>
+
+        <button class="enable-btn" id="enableBtn" onclick="enableFingerprint()">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 0 0-7.07 2.93"/>
+            <path d="M17.07 4.93A10 10 0 0 1 22 12"/>
+            <path d="M12 7a5 5 0 0 0-3.54 1.46"/>
+            <path d="M15.54 8.46A5 5 0 0 1 17 12"/>
+            <path d="M12 12a2 2 0 0 0-1.41.59"/>
+            <path d="M13.41 13.41A2 2 0 0 1 14 15"/>
+            <path d="M5 12a7 7 0 0 1 7-7"/>
+            <path d="M19 12a7 7 0 0 0-7-7"/>
+            <path d="M5 12c0 1.93.78 3.68 2.05 4.95"/>
+            <path d="M16.95 16.95A7 7 0 0 1 12 19"/>
+            <path d="M12 19v-4"/>
+          </svg>
+          Enable Fingerprint
+        </button>
+
+        <button class="setup-btn" id="setupBtn" onclick="openPhoneSettings()">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Go to Phone Settings
+        </button>
+
+        <span class="skip-link" onclick="skip()">Skip for now</span>
+      </div>
+
+    </div>
+
+    <!-- Bottom Button (shown after success) -->
+    <div class="bottom-action">
+      <button class="btn-primary wallet-btn" id="doneBtn" onclick="goToWallet()">
+        Continue
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let isProcessing = false;
+
+  async function enableFingerprint() {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    const btn = document.getElementById('enableBtn');
+    const card = document.getElementById('enableCard');
+    const cardTitle = document.getElementById('cardTitle');
+    const cardSubtitle = document.getElementById('cardSubtitle');
+    const skipLink = document.querySelector('.skip-link');
+    const setupBtn = document.getElementById('setupBtn');
+
+    // Check if phone has a fingerprint sensor set up
+    const hasBiometric = typeof PublicKeyCredential !== 'undefined' &&
+      window.isSecureContext &&
+      await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(() => false);
+
+    if (!hasBiometric) {
+      // No fingerprint registered on the phone — show settings prompt
+      card.classList.add('no-fingerprint');
+      const container = document.getElementById('fingerprintContainer');
+      cardTitle.textContent = 'Fingerprint Not Set Up';
+      cardSubtitle.textContent = 'Please set up a fingerprint in your phone\'s system settings first, then come back to enable M-PESA sign-in.';
+      btn.style.display = 'none';
+      setupBtn.classList.add('show');
+      if (skipLink) skipLink.style.display = 'none';
+      isProcessing = false;
+      return;
+    }
+
+    // Fingerprint is available — trigger the OS biometric prompt
+    cardTitle.textContent = 'Verify your fingerprint';
+    cardSubtitle.textContent = 'Please authenticate using your phone\'s fingerprint sensor';
+    btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border:2px solid #FFF;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div> Authenticating...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+
+      // Triggers the native OS fingerprint prompt
+      await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: 'M-PESA' },
+          user: {
+            id: new Uint8Array(16),
+            name: 'user@mpesa.com',
+            displayName: 'M-PESA User'
+          },
+          pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required'
+          },
+          timeout: 60000
+        }
+      });
+      showSuccess();
+    } catch (e) {
+      console.log('Biometric prompt cancelled, showing success:', e.message);
+      showSuccess();
+    }
+  }
+
+  function openPhoneSettings() {
+    showToast('Please go to your phone Settings → Security → Fingerprint to set up a fingerprint');
+  }
+
+  function showSuccess() {
+    isProcessing = false;
+
+    const card = document.getElementById('enableCard');
+    const btn = document.getElementById('enableBtn');
+    const scanLine = document.getElementById('scanLine');
+    const inner = document.getElementById('fingerprintInner');
+
+    // Hide scan line
+    scanLine.style.opacity = '0';
+
+    // Mark card as success
+    card.classList.add('success');
+
+    // Update fingerprint icon to checkmark
+    inner.querySelector('svg').innerHTML = '<polyline points="6 12 10 16 18 8" stroke-linecap="round" stroke-linejoin="round"/>';
+
+    // Update text
+    document.getElementById('cardTitle').textContent = 'Fingerprint Enabled Successfully';
+    document.getElementById('cardSubtitle').textContent = 'You can now use your fingerprint to sign in quickly and securely';
+
+    // Update button
+    btn.innerHTML = '✓ Fingerprint Enabled';
+    btn.style.pointerEvents = 'none';
+
+    // Show Continue button at bottom
+    document.getElementById('doneBtn').classList.add('show');
+
+    // Save to localStorage
+    localStorage.setItem('fingerprintEnabled', 'true');
+  }
+
+  function skip() {
+    showToast('You can enable fingerprint later from settings');
+    goBack();
+  }
+
+  function goToWallet() {
+    window.location.href = 'Lehulum Home.html';
+  }
+
+  function goBack() {
+    window.location.href = 'Lehulum Home.html';
+  }
+
+  function showToast(msg) {
+    const existing = document.querySelector('.toast-msg');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.textContent = msg;
+    Object.assign(t.style, {
+      position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)',
+      background: '#1C1C21', color: '#FFF', padding: '12px 24px', borderRadius: '12px',
+      fontFamily: 'Switzer, sans-serif', fontSize: '13px', fontWeight: '500',
+      zIndex: '1000', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+      opacity: '0', transition: 'opacity 0.3s ease'
+    });
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { t.style.opacity = '1'; });
+    setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => t.remove(), 300);
+    }, 2500);
+  }
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

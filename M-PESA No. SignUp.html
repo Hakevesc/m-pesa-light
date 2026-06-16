@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Login</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* ===== HEADER / RED CARD ===== */
+  .header-section {
+    position: relative;
+    width: 100%;
+    height: 210px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+    border-radius: 0 0 30px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Pattern Overlay */
+  .pattern-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.20;
+    z-index: 0;
+    background-image: url('assets/M-PESA-pattern.svg');
+    background-size: 490px;
+    background-position: right -270px top -270px;
+    background-repeat: no-repeat;
+    border-radius: 0 0 30px 30px;
+    mix-blend-mode: overlay;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Language Selector */
+  .language-wrapper {
+    position: relative;
+    z-index: 20;
+    align-self: flex-start;
+    margin-left: 20px;
+    margin-top: 4px;
+  }
+
+  .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .language-selector:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .language-selector .lang-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+  }
+
+  .language-selector .lang-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
+  .language-selector .language {
+    color: #FFF;
+    font-family: 'switzer', sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 0.24px;
+    text-transform: uppercase;
+  }
+
+  .language-selector .chevron {
+    width: 14px;
+    height: 14px;
+    color: #FFF;
+    transition: transform 0.25s;
+  }
+
+  .language-selector.open .chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Language Dropdown */
+  .lang-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 160px;
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+  }
+
+  .lang-dropdown.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+
+  .lang-dropdown .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .lang-dropdown .lang-option:hover {
+    background: #F5F5F5;
+  }
+
+  .lang-dropdown .lang-option.active {
+    background: #FFF1F2;
+    color: var(--Primary);
+    font-weight: 600;
+  }
+
+  .lang-dropdown .lang-option .check {
+    margin-left: auto;
+    width: 16px;
+    height: 16px;
+    color: var(--Primary);
+    opacity: 0;
+  }
+
+  .lang-dropdown .lang-option.active .check {
+    opacity: 1;
+  }
+
+  /* M-PESA Logo - Centered in red card */
+  .mpesa-logo {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .mpesa-logo img {
+    height: 40px;
+    width: auto;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15));
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 16px 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Login User Card */
+  .login-user-card {
+    width: 100%;
+    background: #FFF;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    margin-top: 16px;
+    margin-bottom: auto;
+  }
+  .login-user-card .user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid #E0E0E0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .login-user-card .user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .login-user-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .login-user-details .welcome {
+    color: var(--On-Surface-Low);
+    font-size: 13px;
+    font-family: 'Switzer', sans-serif;
+  }
+  .login-user-details .name {
+    color: var(--On-Surface);
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Switzer', sans-serif;
+  }
+  .login-user-details .phone {
+    color: var(--On-Surface-Low);
+    font-size: 13px;
+    font-family: 'Switzer', sans-serif;
+  }
+  .phone-found-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #E8F9EC;
+    color: #1FC83B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Continue Button */
+  .continue-btn {
+    display: flex;
+    width: 328px;
+    max-width: 100%;
+    height: 40px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    background: var(--Primary, #FE353D);
+    color: var(--On-Primary, #FFF1F2);
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: auto;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+  }
+
+  .continue-btn:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .continue-btn:active {
+    transform: scale(0.98) translateY(0);
+  }
+
+  .continue-btn:disabled {
+    background: #E0E0E0;
+    color: #7C7C87;
+    box-shadow: none;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  /* Footer Links */
+  .footer-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0;
+    padding-bottom: 16px;
+    width: 100%;
+  }
+
+  .footer-links .forgot-pin {
+    color: var(--Primary);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .footer-links .forgot-pin:hover {
+    opacity: 0.7;
+  }
+
+  .footer-links .divider {
+    width: 1px;
+    height: 12px;
+    background: #D0D0D0;
+  }
+
+  .footer-links .link {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--On-Surface-Low);
+    font-size: 11px;
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  .footer-links .link:hover {
+    color: var(--On-Surface);
+  }
+
+  .footer-links .link i {
+    width: 11px !important;
+    height: 11px !important;
+    stroke-width: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Header Section -->
+    <div class="header-section">
+
+      <!-- Pattern Overlay -->
+      <div class="pattern-overlay"></div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+        </div>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="language-wrapper">
+        <div class="language-selector" id="langSelector" onclick="toggleLangDropdown()">
+          <div class="lang-icon">
+            <img src="assets/change_language_icon.svg" alt="Language">
+          </div>
+          <span id="currentLang" class="language">Language</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="lang-dropdown" id="langDropdown">
+          <div class="lang-option active" data-lang="English" onclick="selectLang(this)">
+            English
+            <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="አማርኛ" onclick="selectLang(this)">
+            አማርኛ
+            <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="Afaan Oromoo" onclick="selectLang(this)">
+            Afaan Oromoo
+            <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="ትግርኛ" onclick="selectLang(this)">
+            ትግርኛ
+            <i data-lucide="check" class="check"></i>
+          </div>
+          <div class="lang-option" data-lang="Soomaali" onclick="selectLang(this)">
+            Soomaali
+            <i data-lucide="check" class="check"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- M-PESA Logo - Centered -->
+      <div class="mpesa-logo">
+        <img src="assets/m-pesa-white-logo.svg" alt="M-PESA">
+      </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Login User Card -->
+      <div class="login-user-card">
+        <div class="user-avatar">
+          <img src="assets/avatars/avatar-1.png" alt="User Avatar">
+        </div>
+        <div class="login-user-details">
+          <span class="welcome">Welcome Back,</span>
+          <span class="name">Zemedkun Kidane</span>
+          <span class="phone">+251 77 00 24 23</span>
+        </div>
+        <div class="phone-found-icon">
+          <i data-lucide="check" style="width: 18px; height: 18px; stroke-width: 3px;"></i>
+        </div>
+      </div>
+
+      <!-- Send OTP Button -->
+      <button class="continue-btn" id="sendOtpBtn">Send OTP</button>
+
+      <!-- Footer Links -->
+      <div class="footer-links">
+        <a class="forgot-pin">Forgot PIN?</a>
+        <div class="divider"></div>
+        <a class="link">
+          <i data-lucide="headphones"></i>
+          Contact Us
+        </a>
+        <a class="link">
+          <i data-lucide="file-text"></i>
+          Terms and Conditions
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // ===== Language Dropdown =====
+  function toggleLangDropdown() {
+    const dropdown = document.getElementById('langDropdown');
+    const selector = document.getElementById('langSelector');
+    dropdown.classList.toggle('show');
+    selector.classList.toggle('open');
+  }
+
+  function selectLang(el) {
+    const lang = el.getAttribute('data-lang');
+    document.getElementById('currentLang').textContent = lang;
+
+    document.querySelectorAll('.lang-option').forEach(opt => opt.classList.remove('active'));
+    el.classList.add('active');
+
+    toggleLangDropdown();
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const wrapper = document.querySelector('.language-wrapper');
+    if (!wrapper.contains(e.target)) {
+      document.getElementById('langDropdown').classList.remove('show');
+      document.getElementById('langSelector').classList.remove('open');
+    }
+  });
+
+  // ===== Send OTP Action → redirect to OTP Verification =====
+  document.getElementById('sendOtpBtn').addEventListener('click', function() {
+    window.location.href = 'OTP Verification.html';
+  });
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

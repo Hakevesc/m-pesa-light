@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forgot PIN — Security Question</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif; background: transparent;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px; height: 780px; background: #F5F5F5;
+    border-radius: 30px; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .app-content { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ===== HEADER (160px) ===== */
+  .header-section {
+    position: relative; width: 100%; height: 160px; flex-shrink: 0;
+    background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+    border-radius: 0 0 30px 30px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .pattern-overlay {
+    position: absolute; inset: 0; opacity: 0.20; z-index: 0;
+    background-image: url('assets/M-PESA-pattern.svg');
+    background-size: 490px; background-position: right -270px top -270px;
+    background-repeat: no-repeat; border-radius: 0 0 30px 30px; mix-blend-mode: overlay;
+  }
+  .status-bar {
+    position: relative; z-index: 5;
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  .header-nav {
+    position: relative; z-index: 5;
+    width: 100%; display: flex; align-items: center; justify-content: center;
+    padding: 12px 20px 0;
+  }
+  .back-btn {
+    position: absolute; left: 20px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .back-btn:hover { transform: scale(1.1); }
+  .back-btn svg { width: 24px; height: 24px; stroke: #FFF; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { color: #FFF; font-family: 'Switzer', sans-serif; font-size: 18px; font-weight: 300; letter-spacing: 0.3px; }
+  .header-subtitle {
+    position: relative; z-index: 5;
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 22px; font-weight: 600; margin-top: 28px;
+    padding: 0 24px; text-align: left; width: 100%;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    padding: 28px 20px 0; overflow-y: auto;
+  }
+  .main-content::-webkit-scrollbar { width: 0; }
+
+  /* Step indicator */
+  .step-row {
+    width: 100%; max-width: 328px;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 20px;
+  }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--Primary); flex-shrink: 0;
+  }
+  .step-label {
+    color: var(--On-Surface-Low); font-family: 'Switzer', sans-serif;
+    font-size: 12px; font-weight: 500;
+  }
+  .step-label span { color: var(--Primary); font-weight: 600; }
+
+  /* Question card */
+  .question-card {
+    width: 100%; max-width: 328px;
+    background: #FFF; border-radius: 16px;
+    padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .question-meta {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+  }
+  .question-meta svg { width: 14px; height: 14px; stroke: var(--On-Surface-Low); stroke-width: 2; fill: none; }
+  .question-meta span {
+    color: var(--On-Surface-Low); font-family: 'Switzer', sans-serif;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .question-text {
+    color: var(--On-Surface); font-family: 'Switzer', sans-serif;
+    font-size: 16px; font-weight: 600; line-height: 1.45;
+  }
+
+  /* Answer input */
+  .answer-section {
+    width: 100%; max-width: 328px; margin-top: 28px;
+  }
+  .answer-label {
+    color: var(--On-Surface-Low); font-family: 'Switzer', sans-serif;
+    font-size: 12px; font-weight: 500; display: block; margin-bottom: 8px;
+  }
+  .answer-input-wrap {
+    width: 100%; border-bottom: 2px solid #E0E0E0;
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 8px; transition: border-color 0.2s;
+  }
+  .answer-input-wrap:focus-within { border-bottom-color: var(--Primary); }
+  .answer-input-wrap.error { border-bottom-color: var(--Primary); animation: shake 0.4s ease; }
+  .answer-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: 'Switzer', sans-serif; font-size: 18px; font-weight: 500;
+    color: var(--On-Surface);
+  }
+  .answer-input::placeholder { color: #C8C8CC; font-weight: 400; }
+  .clear-btn {
+    background: none; border: none; cursor: pointer; padding: 2px;
+    display: none; color: var(--On-Surface-Low);
+  }
+  .clear-btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+  .clear-btn.show { display: flex; align-items: center; }
+
+  .error-text {
+    color: var(--Primary); font-family: 'Switzer', sans-serif;
+    font-size: 12px; font-weight: 500; margin-top: 6px;
+    visibility: hidden; min-height: 18px;
+  }
+  .error-text.show { visibility: visible; }
+
+  /* Hint */
+  .hint-text {
+    width: 100%; max-width: 328px; margin-top: 16px;
+    color: var(--On-Surface-Low); font-family: 'Switzer', sans-serif;
+    font-size: 12px; font-weight: 400; line-height: 1.5; text-align: left;
+  }
+
+  /* ===== BOTTOM BUTTONS ===== */
+  .bottom-area {
+    width: 100%; display: flex; flex-direction: column; align-items: center;
+    padding: 0 20px 28px; margin-top: auto; gap: 10px;
+  }
+  .btn-primary {
+    width: 100%; height: 48px; border-radius: 12px;
+    background: var(--Primary); color: #FFF1F2;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25);
+  }
+  .btn-primary:hover { background: #E5303A; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(254,53,61,0.35); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { background: #E0E0E0; color: #7C7C87; box-shadow: none; cursor: default; pointer-events: none; }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <div class="header-section">
+      <div class="pattern-overlay"></div>
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+        </div>
+      </div>
+      <div class="header-nav">
+        <button class="back-btn" onclick="window.location.href='M-PESA No. Login.html'">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="header-title">Forgot PIN</span>
+      </div>
+      <span class="header-subtitle">Security Question</span>
+    </div>
+
+    <div class="main-content">
+
+      <div class="step-row">
+        <div class="step-dot"></div>
+        <span class="step-label">Step <span>1 of 2</span> — Answer your security question</span>
+      </div>
+
+      <!-- Question card -->
+      <div class="question-card">
+        <div class="question-meta">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Security Question</span>
+        </div>
+        <p class="question-text">What is your mother's maiden name?</p>
+      </div>
+
+      <!-- Answer input -->
+      <div class="answer-section">
+        <label class="answer-label" for="answerInput">Your Answer</label>
+        <div class="answer-input-wrap" id="answerWrap">
+          <input
+            type="text"
+            class="answer-input"
+            id="answerInput"
+            placeholder="Type your answer"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          >
+          <button class="clear-btn" id="clearBtn" onclick="clearAnswer()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </button>
+        </div>
+        <div class="error-text" id="errorText">Incorrect answer. Please try again.</div>
+      </div>
+
+      <p class="hint-text">Your answer is case-insensitive. Make sure it matches what you set during registration.</p>
+
+    </div>
+
+    <div class="bottom-area">
+      <button class="btn-primary" id="continueBtn" disabled onclick="verify()">Continue</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DEMO_ANSWER = 'almaz';
+
+  const answerInput = document.getElementById('answerInput');
+  const answerWrap  = document.getElementById('answerWrap');
+  const clearBtn    = document.getElementById('clearBtn');
+  const continueBtn = document.getElementById('continueBtn');
+  const errorText   = document.getElementById('errorText');
+
+  answerInput.addEventListener('input', () => {
+    const hasValue = answerInput.value.trim().length > 0;
+    continueBtn.disabled = !hasValue;
+    clearBtn.classList.toggle('show', hasValue);
+    errorText.classList.remove('show');
+    answerWrap.classList.remove('error');
+  });
+
+  function clearAnswer() {
+    answerInput.value = '';
+    continueBtn.disabled = true;
+    clearBtn.classList.remove('show');
+    answerInput.focus();
+  }
+
+  function verify() {
+    const val = answerInput.value.trim().toLowerCase();
+    if (val === DEMO_ANSWER) {
+      sessionStorage.setItem('pinResetFlow', 'forgot');
+      window.location.href = 'Create PIN.html';
+    } else {
+      answerWrap.classList.add('error');
+      errorText.classList.add('show');
+    }
+  }
+
+  answerInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !continueBtn.disabled) verify();
+  });
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

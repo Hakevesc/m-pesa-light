@@ -1,0 +1,213 @@
+{
+  "version": "1.0.0",
+  "designTokens": {
+    "colors": {
+      "Primary": "#FE353D",
+      "Primary-Container": "#FFDFE0",
+      "On-Primary": "#FFF1F2",
+      "On-Surface": "#1C1C21",
+      "On-Surface-Low": "#7C7C87",
+      "Surface-Container": "#FCFCFC",
+      "Success": "#1FC83B"
+    },
+    "spacing": "8px",
+    "fontFamily": "Switzer",
+    "mobileWidth": "390px"
+  },
+  "components": {
+    "button": [
+      {
+        "name": "PrimaryButton",
+        "className": ".btn-primary",
+        "file": "components/button.html",
+        "variants": ["default", "disabled", "loading"],
+        "props": {
+          "label": {"type": "string", "required": true},
+          "icon": {"type": "string", "optional": true}
+        },
+        "description": "Primary CTA button with M-PESA branding",
+        "structure": "<button class=\"btn-primary\"><i data-lucide=\"ICON\"></i> LABEL</button>"
+      },
+      {
+        "name": "SecondaryButton",
+        "className": ".btn-secondary",
+        "file": "components/button.html",
+        "variants": ["default", "disabled"],
+        "props": {
+          "label": {"type": "string", "required": true}
+        },
+        "description": "Secondary ghost button",
+        "structure": "<button class=\"btn-secondary\">LABEL</button>"
+      }
+    ],
+    "input": [
+      {
+        "name": "TextField",
+        "className": ".form-field",
+        "file": "component-library.html",
+        "variants": ["filled", "empty"],
+        "props": {
+          "label": {"type": "string", "required": true},
+          "placeholder": {"type": "string", "optional": true},
+          "value": {"type": "string", "optional": true}
+        },
+        "description": "Text input field with label",
+        "structure": "<div class=\"form-field\"><label>LABEL</label><input type=\"text\" placeholder=\"PLACEHOLDER\"></div>"
+      },
+      {
+        "name": "AmountInput",
+        "className": ".amount-value",
+        "file": "components/transfer-enter-amount-content.html",
+        "variants": ["with-currency", "editable"],
+        "props": {
+          "value": {"type": "number", "required": true},
+          "currency": {"type": "string", "default": "ETB"}
+        },
+        "description": "Amount display with currency",
+        "structure": "<div class=\"amount-display\"><span class=\"amount-value\">VALUE</span><span class=\"amount-currency\">CURRENCY</span></div>"
+      },
+      {
+        "name": "PinInput",
+        "className": ".pin-container",
+        "file": "component-library.html",
+        "variants": ["active", "filled", "empty"],
+        "props": {
+          "length": {"type": "number", "default": 4}
+        },
+        "description": "PIN entry input boxes",
+        "structure": "<div class=\"pin-container\"><div class=\"pin-box\"></div></div>"
+      },
+      {
+        "name": "Keypad",
+        "className": ".keypad",
+        "file": "components/transfer-enter-amount-content.html",
+        "variants": ["numeric", "dialpad"],
+        "props": {},
+        "description": "Numeric keypad grid",
+        "structure": "<div class=\"keypad\"><button class=\"key\">1</button></div>"
+      }
+    ],
+    "card": [
+      {
+        "name": "BalanceCard",
+        "className": ".balance-card-wrapper",
+        "file": "components/balance-card.html",
+        "variants": ["visible", "hidden"],
+        "props": {
+          "mainBalance": {"type": "string"},
+          "rewardBalance": {"type": "string"},
+          "errifBalance": {"type": "string"}
+        },
+        "description": "Account balance display card",
+        "structure": "<div class=\"balance-card-wrapper\"><div class=\"balance-card\">...</div></div>"
+      },
+      {
+        "name": "TransactionCard",
+        "className": ".receipt-card",
+        "file": "component-library.html",
+        "variants": ["success", "error", "pending"],
+        "props": {
+          "title": {"type": "string"},
+          "amount": {"type": "number"},
+          "transactionId": {"type": "string"}
+        },
+        "description": "Transaction confirmation/receipt card",
+        "structure": "<div class=\"receipt-card\">...</div>"
+      },
+      {
+        "name": "ReceiverCard",
+        "className": ".receiver-card",
+        "file": "components/transfer-enter-amount-content.html",
+        "variants": ["bank", "wallet"],
+        "props": {
+          "name": {"type": "string"},
+          "bank": {"type": "string"},
+          "account": {"type": "string"}
+        },
+        "description": "Recipient information card",
+        "structure": "<div class=\"receiver-card\"><div class=\"receiver-avatar\">AVATAR</div><div class=\"receiver-info\">...</div></div>"
+      }
+    ],
+    "navigation": [
+      {
+        "name": "HeaderNav",
+        "className": ".header-nav",
+        "file": "component-library.html",
+        "variants": ["back", "close", "actions"],
+        "props": {
+          "title": {"type": "string", "required": true},
+          "showBack": {"type": "boolean", "optional": true},
+          "showClose": {"type": "boolean", "optional": true}
+        },
+        "description": "Screen header with navigation",
+        "structure": "<div class=\"header-nav\"><button class=\"back-btn\"></button><span class=\"header-title\">TITLE</span></div>"
+      },
+      {
+        "name": "AppBar",
+        "className": ".welcome-app-bar",
+        "file": "components/welcome-app-bar.html",
+        "variants": ["with-avatar", "with-notification"],
+        "props": {
+          "greeting": {"type": "string"},
+          "name": {"type": "string"}
+        },
+        "description": "App bar with user greeting",
+        "structure": "<div class=\"welcome-app-bar\"><div class=\"leading-icon\">...</div><span class=\"title\">GREETING</span></div>"
+      }
+    ],
+    "layout": [
+      {
+        "name": "QuickActions",
+        "className": ".actions",
+        "file": "components/actions.html",
+        "variants": ["default"],
+        "props": {
+          "actions": {"type": "array"}
+        },
+        "description": "Grid of quick action buttons",
+        "structure": "<div class=\"actions\"><div class=\"primary-action\">...</div></div>"
+      },
+      {
+        "name": "PhoneFrame",
+        "className": ".phone-frame",
+        "file": "components/phone.html",
+        "variants": ["default"],
+        "props": {},
+        "description": "Mobile device frame container",
+        "structure": "<div class=\"phone-frame\"><div class=\"app-content\">CONTENT</div></div>"
+      }
+    ],
+    "overlay": [
+      {
+        "name": "Modal",
+        "className": ".modal-overlay",
+        "file": "components/modal.html",
+        "variants": ["alert", "confirmation"],
+        "props": {
+          "title": {"type": "string"},
+          "description": {"type": "string"}
+        },
+        "description": "Modal dialog overlay",
+        "structure": "<div class=\"modal-overlay\"><div class=\"fayda-modal\">...</div></div>"
+      },
+      {
+        "name": "Toast",
+        "className": ".toast",
+        "file": "component-library.html",
+        "variants": ["success", "error", "dark"],
+        "props": {
+          "title": {"type": "string"},
+          "subtitle": {"type": "string"}
+        },
+        "description": "Notification toast message",
+        "structure": "<div class=\"toast success\"><div class=\"toast-icon\">...</div><div class=\"toast-content\">...</div></div>"
+      }
+    ]
+  },
+  "screenTemplates": {
+    "loan": ["HeaderNav", "TextField", "TextField", "TransactionCard", "PrimaryButton"],
+    "transfer": ["HeaderNav", "ReceiverCard", "AmountInput", "Keypad", "PrimaryButton"],
+    "payment": ["HeaderNav", "TextField", "TextField", "PrimaryButton"],
+    "airtime": ["HeaderNav", "TextField", "AmountInput", "Keypad", "PrimaryButton"]
+  }
+}

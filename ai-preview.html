@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA AI Screen Builder</title>
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-button.css">
+<style>
+:root {
+  --Preview-BG: #f4f5f7;
+  --Panel-Width: 400px;
+}
+
+body {
+  background: var(--Preview-BG);
+  font-family: var(--Font-Family, 'Switzer', sans-serif);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--Panel-Width);
+  background: white;
+  padding: 24px;
+  overflow-y: auto;
+  border-right: 1px solid #e2e8e4;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar h1 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.sidebar p {
+  font-size: 14px;
+  color: var(--On-Surface-Low, #7C7C87);
+}
+
+.prompt-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.prompt-input:focus {
+  outline: none;
+  border-color: var(--Primary, #FE353D);
+}
+
+.btn-build {
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--Primary, #FE353D);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-build:hover {
+  opacity: 0.9;
+}
+
+.btn-build:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.output-section {
+  margin-top: 16px;
+}
+
+.output-section h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--On-Surface-Low);
+}
+
+.output-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-small {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+
+.btn-small.primary {
+  background: var(--Primary, #FE353D);
+  color: white;
+  border-color: var(--Primary);
+}
+
+.main-preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  overflow: auto;
+}
+
+.phone-preview {
+  width: 390px;
+  height: 780px;
+  background: #f5f5f5;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+#preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--On-Surface-Low);
+}
+
+.error-message {
+  background: #ffefef;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.examples {
+  margin-top: 24px;
+}
+
+.examples h3 {
+  font-size: 13px;
+  color: var(--On-Surface-Low);
+  margin-bottom: 8px;
+}
+
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.example-btn {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.example-btn:hover {
+  background: #e9ecef;
+}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div>
+    <h1>M-PESA AI Builder</h1>
+    <p>Generate screens from natural language prompts</p>
+  </div>
+
+  <div>
+    <textarea id="prompt-input" class="prompt-input" rows="4" placeholder="Describe the screen you want to build... e.g., 'Loan application screen with amount input, period selector, and apply button'">Loan application screen with amount input, repayment period selector, summary card and submit button</textarea>
+    <button id="build-btn" class="btn-build">Generate Screen</button>
+  </div>
+
+  <div id="error-container"></div>
+
+  <div class="output-section">
+    <h3>Generated Screen</h3>
+    <pre id="json-output" style="background:#f8f9fa; padding:12px; border-radius:8px; font-size:12px; max-height:200px; overflow:auto;"></pre>
+    <div class="output-actions">
+      <button class="btn-small" onclick="copyJSON()">Copy JSON</button>
+      <button class="btn-small primary" onclick="downloadHTML()">Download HTML</button>
+    </div>
+  </div>
+
+  <div class="examples">
+    <h3>Quick Examples</h3>
+    <div class="example-list">
+      <button class="example-btn" onclick="setPrompt('Create a loan application screen with amount input, period selector, and apply button')">Loan Application</button>
+      <button class="example-btn" onclick="setPrompt('Build an airtime topup screen with phone number input and amount')">Airtime Topup</button>
+      <button class="example-btn" onclick="setPrompt('Create a bill payment screen with biller selection and amount input')">Bill Payment</button>
+      <button class="example-btn" onclick="setPrompt('Build a merchant payment screen with QR scanner')">Merchant Payment</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-preview">
+  <div class="phone-preview">
+    <iframe id="preview-frame"></iframe>
+  </div>
+</div>
+
+<script>
+const promptInput = document.getElementById('prompt-input');
+const buildBtn = document.getElementById('build-btn');
+const previewFrame = document.getElementById('preview-frame');
+const jsonOutput = document.getElementById('json-output');
+const errorContainer = document.getElementById('error-container');
+
+buildBtn.addEventListener('click', generateScreen);
+
+async function generateScreen() {
+  const prompt = promptInput.value.trim();
+  if (!prompt) return;
+
+  buildBtn.disabled = true;
+  buildBtn.textContent = 'Generating...';
+  errorContainer.innerHTML = '';
+
+  try {
+    // If server is running, use it; otherwise, use mock data
+    const response = await fetch('/api/generate-screen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      displayResult(result);
+    } else {
+      throw new Error('Server not available');
+    }
+  } catch (err) {
+    // Fallback: generate mock output for demo purposes
+    console.log('Using mock output (server not available)');
+    const mockResult = generateMockScreen(prompt);
+    displayResult(mockResult);
+  }
+}
+
+function generateMockScreen(prompt) {
+  // This is a client-side fallback when server is not running
+  const screenName = prompt.includes('loan') ? 'LoanApplication' : 
+                    prompt.includes('airtime') ? 'AirtimeTopup' : 
+                    prompt.includes('bill') ? 'BillPayment' : 
+                    prompt.includes('merchant') ? 'MerchantPayment' : 'GeneratedScreen';
+  
+  return {
+    screen: screenName,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${screenName}</title>
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-button.css">
+<link rel="stylesheet" href="styles/component-extras.css">
+</head>
+<body>
+<div class="phone-frame">
+<div class="app-content">
+<div class="header-nav" data-component="HeaderNav">
+<button class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+<span class="header-title">${screenName}</span>
+<div style="width:36px;"></div>
+</div>
+${screenName === 'LoanApplication' ? `
+<div class="form-field" data-component="TextField"><label>Loan Amount</label><input type="number" placeholder="Enter amount"></div>
+<div class="form-field" data-component="TextField"><label>Repayment Period</label><input type="text" placeholder="Select months"></div>
+<div class="receipt-card" data-component="TransactionCard" style="margin-top:20px;">
+<div class="success-icon-wrapper"><svg viewBox="0 0 24 24" fill="none" stroke="white"><path d="M20 6 9 17l-5-5"/></svg></div>
+<div class="receipt-header"><h2>Loan Summary</h2></div>
+</div>
+<button class="btn-primary" style="margin-top:auto;"><i data-lucide="check-circle"></i> Apply</button>
+` : ''}
+</div>
+</div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+<script src="figma-export.js"></script>
+</body>
+</html>`,
+    figma: {
+      version: 3,
+      name: screenName,
+      width: 390,
+      height: 780,
+      components: ['HeaderNav', 'TextField', 'TransactionCard', 'PrimaryButton']
+    }
+  };
+}
+
+function displayResult(result) {
+  buildBtn.disabled = false;
+  buildBtn.textContent = 'Generate Screen';
+  
+  jsonOutput.textContent = JSON.stringify({
+    screen: result.screen,
+    components: result.figma?.components || []
+  }, null, 2);
+  
+  previewFrame.srcdoc = result.html;
+}
+
+function setPrompt(text) {
+  promptInput.value = text;
+}
+
+function copyJSON() {
+  const text = jsonOutput.textContent;
+  navigator.clipboard.writeText(text);
+}
+
+function downloadHTML() {
+  const html = previewFrame.srcdoc;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'generated-screen.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

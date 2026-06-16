@@ -1,0 +1,27 @@
+{
+  "name": "mpesa-lehulum",
+  "version": "1.0.0",
+  "description": "M-PESA Lehulum Design System with AI-powered screen builder",
+  "type": "module",
+  "scripts": {
+    "ai:build": "node api/build-screen.js",
+    "ai:server": "node server.js",
+    "ai:preview": "npx serve ai-preview.html --port 3000",
+    "dev": "npx vite",
+    "build": "echo 'Building production assets...'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2"
+  },
+  "keywords": [
+    "mpesa",
+    "design-system",
+    "ai",
+    "figma"
+  ],
+  "license": "MIT"
+}

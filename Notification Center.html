@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications Center</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+    --Primary-Light: #FFF1F2;
+    --Warning-Light: #FFF8E1;
+    --Warning: #FF9800;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px 0;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+
+  .back-btn:hover {
+    background: rgba(0,0,0,0.05);
+    transform: scale(1.05);
+  }
+
+  .back-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.5px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  /* Main Content */
+  .main-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Filter Tabs */
+  .filter-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .filter-tab {
+    flex: 1;
+    height: 40px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .filter-tab.active {
+    background: var(--Primary);
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25);
+  }
+
+  .filter-tab.inactive {
+    background: #E0E0E0;
+    color: var(--On-Surface-Low);
+  }
+
+  .filter-tab.inactive:hover {
+    background: #D0D0D0;
+  }
+
+  .filter-tab.active:hover {
+    background: #E5303A;
+    transform: translateY(-1px);
+  }
+
+  /* Tab Content */
+  .tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tab-content.active {
+    display: flex;
+  }
+
+  /* Notification Item */
+  .notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 12px;
+    border-radius: 16px;
+    background: #FFF;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .notif-icon-col {
+    flex-shrink: 0;
+  }
+
+  .notif-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .notif-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .notification-item:hover {
+    background: #FAFAFA;
+    transform: translateX(2px);
+  }
+
+  .notification-item:active {
+    transform: scale(0.98);
+  }
+
+  /* Notification Icon */
+  .notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--Primary-Light);
+  }
+
+  .notif-icon i, .notif-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--Primary);
+    stroke-width: 2px;
+  }
+  .notif-icon img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+
+  .notif-icon.success {
+    background: var(--Success-Light);
+  }
+  .notif-icon.success i, .notif-icon.success svg { color: var(--Success); }
+
+  .notif-icon.warning {
+    background: var(--Warning-Light);
+  }
+  .notif-icon.warning i, .notif-icon.warning svg { color: var(--Warning); }
+
+  /* Notification Title */
+  .notif-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    flex: 1;
+  }
+
+  /* Notification Description (full width below title) */
+  .notif-description {
+    color: var(--On-Surface-Low);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.1px;
+    width: 100%;
+  }
+
+  .notif-description .amount {
+    font-weight: 700;
+  }
+
+  .notif-description .amount.positive {
+    color: var(--Success);
+  }
+
+  .notif-description .amount.negative {
+    color: var(--Primary);
+  }
+
+  .notif-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .notif-bottom-row .amount {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .notif-bottom-row .amount.positive {
+    color: var(--Success);
+  }
+
+  .notif-bottom-row .amount.negative {
+    color: var(--Primary);
+  }
+
+  .notif-meta {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+
+  /* Notification Date (right of title) */
+  .notif-date {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Empty State */
+  .empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    flex: 1;
+  }
+
+  .empty-state.active {
+    display: flex;
+  }
+
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: #D0D0D0;
+    stroke-width: 1.5px;
+    fill: none;
+  }
+
+  .empty-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  .empty-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* Section Header */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    padding: 0 4px;
+    margin-top: 8px;
+  }
+
+  .section-header .title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .section-header .see-all {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .section-header .see-all:hover {
+    color: var(--Primary);
+  }
+
+  .section-header:first-child {
+    margin-top: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Notifications Center</span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="switchTab('transactions', this)">Transactions</button>
+        <button class="filter-tab inactive" onclick="switchTab('alert', this)">Alert</button>
+        <button class="filter-tab inactive" onclick="switchTab('rewards', this)">Rewards</button>
+      </div>
+
+      <!-- ===== TRANSACTIONS TAB ===== -->
+      <div class="tab-content active" id="tab-transactions">
+
+        <div class="section-header">
+          <span class="title">All Transactions</span>
+          <span class="see-all" onclick="seeAll()">See all</span>
+        </div>
+
+        <!-- Transfer Money (Incoming) -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon success">
+              <img src="assets/Transfer Money.svg" alt="Transfer Money">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">From Mikias Dereje</span>
+              <span class="notif-date">July 14, 2027</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount positive">+1,000.00 Br</span>
+              <span class="notif-meta">Transfer Money</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transfer Money (Outgoing) -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <img src="assets/Transfer Money.svg" alt="Transfer Money">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">To Hana Kagnew</span>
+              <span class="notif-date">July 14, 2027</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount negative">-1,000.00 Br</span>
+              <span class="notif-meta">Transfer Money</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bill Payment -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <img src="assets/Bill Payment.svg" alt="Bill Payment">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Ethiopia Electric Utility</span>
+              <span class="notif-date">July 14, 2026</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount negative">-5,000.00 Br</span>
+              <span class="notif-meta">Bill Payment</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Merchant Payment -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <img src="assets/Merchant Payemnt.svg" alt="Merchant Payment">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">London Cafe</span>
+              <span class="notif-date">July 14, 2027</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount negative">-350.00 Br</span>
+              <span class="notif-meta">Merchant Payment</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Airtime Purchase - Safaricom -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <img src="assets/Airtime Package.svg" alt="Airtime Package">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Airtime Top-up</span>
+              <span class="notif-date">Today</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount negative">-50.00 Br</span>
+              <span class="notif-meta">Safaricom Airtime</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Airtime Purchase - Ethiotelecom -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <img src="assets/Airtime Package.svg" alt="Airtime Package">
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Airtime Top-up</span>
+              <span class="notif-date">Today</span>
+            </div>
+            <div class="notif-bottom-row">
+              <span class="amount negative">-50.00 Br</span>
+              <span class="notif-meta">Ethiotelecom Airtime</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== ALERT TAB ===== -->
+      <div class="tab-content" id="tab-alert">
+
+        <!-- Alert 1 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <i data-lucide="alert-triangle"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Network Timeout Alert</span>
+              <span class="notif-date">2 days ago</span>
+            </div>
+            <p class="notif-description">Your transaction to Mom failed due to a temporary network issue. Please check your balance before trying again. Reference: ERR-999.</p>
+          </div>
+        </div>
+
+        <!-- Alert 2 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <i data-lucide="shield-alert"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Security Alert</span>
+              <span class="notif-date">Sep 18, 2026</span>
+            </div>
+            <p class="notif-description">New device login detected from Addis Ababa. If this wasn't you, please contact support immediately.</p>
+          </div>
+        </div>
+
+        <!-- Alert 3 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon warning">
+              <i data-lucide="alert-circle"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Low Balance Alert</span>
+              <span class="notif-date">Sep 15, 2026</span>
+            </div>
+            <p class="notif-description">Your M-PESA balance is below 500 Birr. Top up to continue enjoying uninterrupted service.</p>
+          </div>
+        </div>
+
+        <!-- Alert 4 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon">
+              <i data-lucide="calendar"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Payment Due Alert</span>
+              <span class="notif-date">Sep 12, 2026</span>
+            </div>
+            <p class="notif-description">Your monthly bill payment of 1,200 Birr is due in 3 days. Please ensure sufficient balance.</p>
+          </div>
+        </div>
+
+        <!-- Alert 5 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon warning">
+              <i data-lucide="ban"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Transaction Limit Alert</span>
+              <span class="notif-date">Sep 10, 2026</span>
+            </div>
+            <p class="notif-description">You have reached your daily transaction limit of 50,000 Birr. Limit will reset at midnight.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== REWARDS TAB ===== -->
+      <div class="tab-content" id="tab-rewards">
+
+        <!-- Reward 1 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon success">
+              <i data-lucide="gift"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Cashback Reward</span>
+              <span class="notif-date">3 days ago</span>
+            </div>
+            <p class="notif-description">Congratulations! You earned 150 Birr cashback on your merchant payment at London Cafe.</p>
+          </div>
+        </div>
+
+        <!-- Reward 2 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon success">
+              <i data-lucide="award"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Loyalty Bonus</span>
+              <span class="notif-date">Sep 19, 2026</span>
+            </div>
+            <p class="notif-description">You've unlocked Silver Tier! Enjoy 5% cashback on all transactions this month.</p>
+          </div>
+        </div>
+
+        <!-- Reward 3 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon success">
+              <i data-lucide="users"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Referral Bonus</span>
+              <span class="notif-date">Sep 17, 2026</span>
+            </div>
+            <p class="notif-description">Aster Mequanent joined using your referral code. You earned 200 Birr bonus!</p>
+          </div>
+        </div>
+
+        <!-- Reward 4 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon success">
+              <i data-lucide="cake"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Birthday Reward</span>
+              <span class="notif-date">Sep 14, 2026</span>
+            </div>
+            <p class="notif-description">Happy Birthday! Enjoy 500 Birr special reward as our gift to you.</p>
+          </div>
+        </div>
+
+        <!-- Reward 5 -->
+        <div class="notification-item">
+          <div class="notif-icon-col">
+            <div class="notif-icon warning">
+              <i data-lucide="star"></i>
+            </div>
+          </div>
+          <div class="notif-body">
+            <div class="notif-top-row">
+              <span class="notif-title">Weekly Bonus</span>
+              <span class="notif-date">Sep 11, 2026</span>
+            </div>
+            <p class="notif-description">Complete 10 transactions this week to earn an extra 100 Birr bonus.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Tab switching
+  function switchTab(tabName, el) {
+    // Update tab button styles
+    const tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(tab => {
+      tab.classList.remove('active');
+      tab.classList.add('inactive');
+    });
+    el.classList.remove('inactive');
+    el.classList.add('active');
+
+    // Show/hide tab content
+    document.querySelectorAll('.tab-content').forEach(tc => {
+      tc.classList.remove('active');
+    });
+    document.getElementById('tab-' + tabName).classList.add('active');
+  }
+
+  // See all transactions
+  function seeAll() {
+    console.log('See all clicked');
+    // In real app, navigate to full transaction history
+  }
+
+  // Go back
+  function goBack() {
+    window.location.href = 'Lehulum Home.html';
+  }
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

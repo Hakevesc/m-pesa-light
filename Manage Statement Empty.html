@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Statement - Schedule</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+    --Border: #E8E8EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { background: rgba(0,0,0,0.05); }
+
+  .back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .header-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
+
+  .header-icon-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  /* Main Content */
+  .main-content {
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Tab Buttons */
+  .tab-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .tab-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.2px;
+  }
+
+  .tab-btn.active {
+    background: var(--Primary);
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25);
+  }
+
+  .tab-btn.inactive {
+    background: #E0E0E0;
+    color: var(--On-Surface-Low);
+  }
+
+  .tab-btn.inactive:hover { background: #D5D5D5; }
+  .tab-btn.active:hover { background: #E5303A; transform: translateY(-1px); }
+
+  /* Empty State */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: #D0D0D0;
+    stroke-width: 1.5px;
+    fill: none;
+  }
+
+  .empty-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  .empty-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--On-Surface);
+    color: #FFF;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Manage Statement</span>
+      <button class="header-icon-btn" onclick="showToast('Statement history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Tab Buttons -->
+      <div class="tab-buttons">
+        <button class="tab-btn inactive" data-tab="pdf" onclick="switchTab('pdf', this)">Generate PDF</button>
+        <button class="tab-btn inactive" data-tab="email" onclick="switchTab('email', this)">Send Email</button>
+        <button class="tab-btn active" data-tab="schedule" onclick="switchTab('schedule', this)">Schedule</button>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <rect x="18" y="14" width="44" height="54" rx="6" stroke="currentColor" stroke-width="2"/>
+            <line x1="26" y1="14" x2="26" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="54" y1="14" x2="54" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="18" y1="28" x2="62" y2="28" stroke="currentColor" stroke-width="2"/>
+            <line x1="28" y1="38" x2="52" y2="38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="28" y1="46" x2="48" y2="46" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="28" y1="54" x2="42" y2="54" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="60" cy="20" r="10" fill="#FE353D" stroke="none"/>
+            <path d="M60 16V20H64" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2 class="empty-title">No Scheduled Statements</h2>
+        <p class="empty-subtitle">We'll let you know when there will be something to update you.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // ===== Tab Switching =====
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+      btn.classList.add('inactive');
+    });
+    el.classList.remove('inactive');
+    el.classList.add('active');
+    showToast(`Switched to ${el.textContent}`);
+  }
+
+  // ===== Actions =====
+  function goBack() {
+    showToast('Navigating back...');
+  }
+
+  // ===== Toast =====
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

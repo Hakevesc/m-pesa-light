@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Lehulum — Welcome</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root { --Primary: #FE353D; --On-Surface: #1C1C21; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Switzer', 'Inter', sans-serif;
+    background: transparent;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px; height: 780px;
+    border-radius: 30px; overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+
+  /* ===== SLIDE BACKGROUNDS (crossfade) ===== */
+  .slide-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center top;
+    opacity: 0;
+    transition: opacity 0.55s ease;
+    z-index: 0;
+  }
+  .slide-bg.active { opacity: 1; }
+
+  /* Overlays stay always on top of backgrounds */
+  .overlay-top {
+    position: absolute; top: 0; left: 0; right: 0; height: 160px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%);
+    z-index: 1; pointer-events: none;
+  }
+  .overlay-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 65%;
+    background: linear-gradient(to top,
+      rgba(0,0,0,0.92) 0%,
+      rgba(0,0,0,0.72) 40%,
+      rgba(0,0,0,0.20) 75%,
+      transparent 100%);
+    z-index: 1; pointer-events: none;
+  }
+
+  /* ===== SCREEN LAYOUT ===== */
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    z-index: 2;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  .logo-wrap {
+    display: flex; justify-content: center; padding: 32px 20px 0;
+  }
+  .logo-wrap img { height: 36px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+
+  .spacer { flex: 1; }
+
+  .bottom-content {
+    padding: 0 24px 36px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  /* ===== SLIDE TEXT (fade in/out) ===== */
+  .slide-text {
+    text-align: center; margin-bottom: 24px; width: 100%;
+    transition: opacity 0.28s ease;
+  }
+  .slide-text h1 {
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 28px; font-weight: 700; line-height: 1.25;
+    margin-bottom: 10px; letter-spacing: 0.2px;
+  }
+  .slide-text p {
+    color: rgba(255,255,255,0.85); font-family: 'Switzer', sans-serif;
+    font-size: 15px; font-weight: 300; line-height: 1.5;
+  }
+
+  /* ===== PAGINATION DOTS ===== */
+  .pagination {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 28px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transition: width 0.3s ease, border-radius 0.3s ease;
+    position: relative; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .dot.dim { background: rgba(255,255,255,0.20); }
+  .dot.active {
+    width: 24px; border-radius: 4px;
+    background: rgba(255,255,255,0.30);
+  }
+  .dot.active::after {
+    content: '';
+    position: absolute; left: 0; top: 0;
+    height: 100%; width: 0;
+    background: #FFF; border-radius: inherit;
+    animation: dotFill 2s linear forwards;
+  }
+  @keyframes dotFill { to { width: 100%; } }
+
+  /* ===== BUTTON ===== */
+  .btn {
+    width: 100%; height: 48px; border-radius: 12px;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none;
+    background: #FFF; color: var(--On-Surface);
+  }
+  .btn:hover { background: #F5F5F5; transform: translateY(-1px); }
+  .btn:active { background: #ECECEC; transform: scale(0.98); }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- Slide backgrounds (stacked, crossfade via opacity) -->
+  <div class="slide-bg active" id="bg0" style="background-image: url('assets/first-visit-2.jpg')"></div>
+  <div class="slide-bg"        id="bg1" style="background-image: url('assets/first-visit-3.jpg')"></div>
+  <div class="slide-bg"        id="bg2" style="background-image: url('assets/first-visit-4.jpg')"></div>
+
+  <div class="overlay-top"></div>
+  <div class="overlay-bottom"></div>
+
+  <div class="screen">
+
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+        <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.4"/></svg>
+        <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+      </div>
+    </div>
+
+    <div class="logo-wrap">
+      <img src="assets/m-pesa-white-logo.svg" alt="M-PESA">
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="bottom-content">
+
+      <!-- Text fades in/out, content swapped via JS -->
+      <div class="slide-text" id="slideText">
+        <h1 id="slideTitle"></h1>
+        <p  id="slideDesc"></p>
+      </div>
+
+      <div class="pagination">
+        <div class="dot dim"></div>
+        <div class="dot" data-idx="0"></div>
+        <div class="dot" data-idx="1"></div>
+        <div class="dot" data-idx="2"></div>
+      </div>
+
+      <a href="Signup.html" class="btn">Sign Up</a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const slides = [
+    { title: 'Send Money<br>Instantly',      desc: 'Transfer Birr to anyone, anywhere in seconds. No fees, no hassle.' },
+    { title: 'Stay Connected<br>Always',     desc: 'Buy voice, data, and SMS bundles for yourself or others instantly.' },
+    { title: 'Skip the<br>Queue',            desc: 'Pay your electricity, water, and other utility bills directly from your phone.' }
+  ];
+
+  const bgs      = [document.getElementById('bg0'), document.getElementById('bg1'), document.getElementById('bg2')];
+  const slideText = document.getElementById('slideText');
+  const titleEl  = document.getElementById('slideTitle');
+  const descEl   = document.getElementById('slideDesc');
+  const dots     = document.querySelectorAll('.dot[data-idx]');
+
+  let current = 0;
+  let timer   = null;
+
+  function activateDot(idx) {
+    dots.forEach(d => {
+      const isActive = parseInt(d.dataset.idx) === idx;
+      if (isActive) {
+        d.classList.remove('active');
+        void d.offsetWidth;      // force reflow → restarts the ::after animation
+        d.classList.add('active');
+      } else {
+        d.classList.remove('active');
+      }
+    });
+  }
+
+  function goToSlide(idx) {
+    const prev = current;
+    current = idx;
+
+    // Crossfade backgrounds
+    bgs[prev].classList.remove('active');
+    bgs[idx].classList.add('active');
+
+    // Fade text out → swap → fade in
+    slideText.style.opacity = '0';
+    setTimeout(() => {
+      titleEl.innerHTML  = slides[idx].title;
+      descEl.textContent = slides[idx].desc;
+      slideText.style.opacity = '1';
+    }, 280);
+
+    // Restart active dot animation
+    activateDot(idx);
+
+    // Schedule next
+    clearTimeout(timer);
+    timer = setTimeout(() => goToSlide((current + 1) % slides.length), 2000);
+  }
+
+  // Read optional start slide from URL (?s=1 or ?s=2)
+  const startIdx = Math.min(parseInt(new URLSearchParams(location.search).get('s') || '0'), slides.length - 1);
+
+  // Init (no fade-out on first load)
+  titleEl.innerHTML  = slides[startIdx].title;
+  descEl.textContent = slides[startIdx].desc;
+  bgs[startIdx].classList.add('active');
+  if (startIdx > 0) bgs[0].classList.remove('active');
+  activateDot(startIdx);
+  current = startIdx;
+  timer = setTimeout(() => goToSlide((current + 1) % slides.length), 2000);
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!-- QR Speed-Dial FAB Component -->
+<div class="qr-fab-wrapper" id="qrFabWrapper">
+
+  <!-- Backdrop (click to close) -->
+  <div class="qr-fab-backdrop" id="qrFabBackdrop"></div>
+
+  <!-- Action items (appear when open) -->
+  <div class="qr-fab-menu" id="qrFabMenu">
+
+    <!-- Option 1: My QR Code -->
+    <div class="qr-fab-item" id="qrActionMyQR" role="button" tabindex="0" aria-label="My QR Code">
+      <span class="qr-fab-label">My QR Code</span>
+      <div class="qr-fab-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="3" height="3"/>
+          <rect x="18" y="14" width="3" height="3"/>
+          <rect x="14" y="18" width="3" height="3"/>
+          <rect x="18" y="18" width="3" height="3"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Option 2: Scan QR Code -->
+    <div class="qr-fab-item" id="qrActionScan" role="button" tabindex="0" aria-label="Scan QR Code">
+      <span class="qr-fab-label">Scan QR Code</span>
+      <div class="qr-fab-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+          <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+          <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <line x1="7" y1="12" x2="17" y2="12"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Option 3: Verify Receipt -->
+    <div class="qr-fab-item" id="qrActionVerify" role="button" tabindex="0" aria-label="Verify Receipt">
+      <span class="qr-fab-label">Verify Receipt</span>
+      <div class="qr-fab-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <polyline points="9 15 11 17 15 13"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main FAB button -->
+  <button class="qr-popup" id="qrFabBtn" title="QR Actions" aria-label="Open QR actions" aria-expanded="false">
+    <div class="frame-2061">
+      <!-- Default QR icon -->
+      <span class="qr-open-icon">
+        <img src="assets/qr-scan.svg" alt="QR Scan" onerror="this.style.display='none'; this.parentElement.innerHTML = '<svg width=\'30\' height=\'30\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'7\' height=\'7\'/><rect x=\'14\' y=\'3\' width=\'7\' height=\'7\'/><rect x=\'14\' y=\'14\' width=\'7\' height=\'7\'/><rect x=\'3\' y=\'14\' width=\'7\' height=\'7\'/><line x1=\'6.5\' y1=\'6.5\' x2=\'6.51\' y2=\'6.5\'/><line x1=\'17.5\' y1=\'6.5\' x2=\'17.51\' y2=\'6.5\'/><line x1=\'17.5\' y1=\'17.5\' x2=\'17.51\' y2=\'17.5\'/><line x1=\'6.5\' y1=\'17.5\' x2=\'6.51\' y2=\'17.5\'/></svg>';">
+      </span>
+    </div>
+  </button>
+
+</div>

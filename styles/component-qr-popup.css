@@ -1,0 +1,176 @@
+/* ============================================================
+   Component: QR Popup — Speed-Dial FAB Menu
+   Floating QR button with animated action menu (My QR Code,
+   Scan QR Code, Verify Receipt)
+   ============================================================ */
+
+/* ── FAB Wrapper (positions everything) ── */
+.qr-fab-wrapper {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* ── Backdrop overlay ── */
+.qr-fab-backdrop {
+  position: absolute;
+  inset: -9999px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.qr-fab-wrapper.open .qr-fab-backdrop {
+  pointer-events: all;
+  opacity: 1;
+}
+
+/* ── Speed-dial action items ── */
+.qr-fab-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.qr-fab-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(16px) scale(0.88);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+/* Stagger delays */
+.qr-fab-item:nth-child(1) { transition-delay: 0.06s; }
+.qr-fab-item:nth-child(2) { transition-delay: 0.03s; }
+.qr-fab-item:nth-child(3) { transition-delay: 0.00s; }
+
+.qr-fab-wrapper.open .qr-fab-item {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+/* When opening, reverse stagger (top item appears last → first) */
+.qr-fab-wrapper.open .qr-fab-item:nth-child(1) { transition-delay: 0.00s; }
+.qr-fab-wrapper.open .qr-fab-item:nth-child(2) { transition-delay: 0.05s; }
+.qr-fab-wrapper.open .qr-fab-item:nth-child(3) { transition-delay: 0.10s; }
+
+/* Label pill */
+.qr-fab-label {
+  background: #FFFFFF;
+  color: #1C1C21;
+  font-family: 'Switzer', 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+}
+
+/* Mini action icon */
+.qr-fab-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13), 0 1px 4px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, transform 0.15s;
+}
+.qr-fab-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: #FE353D;
+  stroke-width: 2px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.qr-fab-item:hover .qr-fab-icon {
+  background: #FFF1F2;
+  transform: scale(1.08);
+}
+.qr-fab-item:hover .qr-fab-label {
+  color: #FE353D;
+}
+
+/* ── Main FAB Button ── */
+.qr-popup {
+  position: relative;
+  display: inline-flex;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100px;
+  background: var(--Primary-Container, #FFDFE0);
+  box-shadow: 0 4px 12px rgba(254, 53, 61, 0.28), 0 1px 4px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.qr-popup:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 18px rgba(254, 53, 61, 0.35), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.qr-fab-wrapper.open .qr-popup {
+  box-shadow: 0 6px 20px rgba(254, 53, 61, 0.40), 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.qr-popup .frame-2061 {
+  display: flex;
+  width: 50px;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  background: var(--M-Pesa-Red-Gradient, linear-gradient(180deg, #C41520 0%, #FE353D 100%));
+  transition: transform 0.3s ease;
+}
+.qr-fab-wrapper.open .qr-popup .frame-2061 {
+  transform: rotate(45deg);
+}
+
+.qr-popup .frame-2061 img,
+.qr-popup .frame-2061 svg {
+  width: 30px;
+  height: 30px;
+  transition: opacity 0.2s;
+}
+.qr-popup .frame-2061 img {
+  object-fit: contain;
+}
+
+/* Close icon shown when open */
+.qr-close-icon {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-fab-wrapper.open .qr-popup .qr-close-icon {
+  opacity: 1;
+}
+.qr-fab-wrapper.open .qr-popup .qr-open-icon {
+  opacity: 0;
+}

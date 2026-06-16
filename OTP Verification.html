@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP Verification</title>
+  <style>
+    @import url("styles/component-keypad.css");
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+    @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+    :root {
+      --Primary: #FE353D;
+      --Primary-Dark: #C41520;
+      --Primary-Darker: #A41016;
+      --On-Surface: #1C1C21;
+      --On-Surface-Low: #7C7C87;
+      --Surface-Container: #FCFCFC;
+      --Gray-0: #FFF;
+      --On-Primary: #FFF1F2;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Switzer', sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .phone-frame {
+      width: 360px;
+      height: 780px;
+      background: #F5F5F5;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .app-content {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-content::-webkit-scrollbar { display: none; }
+
+    /* ===== HEADER ===== */
+    .header-section {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+      border-radius: 0 0 30px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pattern-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0.20;
+      z-index: 0;
+      background-image: url('assets/M-PESA-pattern.svg');
+      background-size: 490px;
+      background-position: right -270px top -270px;
+      background-repeat: no-repeat;
+      border-radius: 0 0 30px 30px;
+      mix-blend-mode: overlay;
+    }
+
+    .status-bar {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 14px 24px 8px;
+    }
+
+    .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .status-icons svg { width: 18px; height: 18px; }
+
+    .header-nav {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px 0;
+    }
+
+    .back-btn {
+      position: absolute;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover { transform: scale(1.05); }
+
+    .header-title {
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .header-subtitle {
+      position: relative;
+      z-index: 5;
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 14px;
+      padding: 0 24px;
+      text-align: left;
+      width: 100%;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      padding: 20px 20px 0px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Instruction Text — pushed to top with less margin */
+    .instruction {
+      color: var(--On-Surface);
+      font-family: 'Switzer', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      text-align: center;
+      margin-top: 20px;
+      margin-bottom: 4px;
+      line-height: 1.5;
+    }
+
+    /* Auto-filling sub-label */
+    .instruction-sub {
+      font-family: 'Switzer', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--Primary);
+      text-align: center;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 22px;
+      transition: all 0.4s ease;
+    }
+
+    .spinner {
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(254, 53, 61, 0.25);
+      border-top-color: var(--Primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== OTP BOXES (numbers visible, 36px) ===== */
+    .otp-container {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+      justify-content: center;
+    }
+
+    .otp-box {
+      width: 60px;
+      height: 64px;
+      border-radius: 16px;
+      background: #FFF;
+      border: 2px solid #ECECEC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--On-Surface);
+      position: relative;
+    }
+
+    .otp-box.active {
+      border-color: var(--Primary);
+      background: #FFF5F5;
+    }
+
+    .otp-box.active::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 28px;
+      background: var(--Primary);
+      animation: cursor-blink 1s step-end infinite;
+    }
+
+    .otp-box.success {
+      border-color: #1FC83B;
+      background: #F0FFF4;
+      color: var(--On-Surface); /* text stays black */
+    }
+
+    @keyframes cursor-blink {
+      from, to { background-color: transparent; }
+      50% { background-color: var(--Primary); }
+    }
+
+    /* Hidden Input */
+    .otp-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Resend OTP */
+    .resend-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .resend-label {
+      font-family: 'Switzer', sans-serif;
+      font-size: 13px;
+      color: var(--On-Surface-Low);
+    }
+
+    .resend-btn {
+      font-family: 'Switzer', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--Primary);
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: opacity 0.2s;
+    }
+
+    .resend-btn:hover { opacity: 0.7; }
+
+    /* Action Button */
+    .action-btn {
+      display: flex;
+      width: 328px;
+      max-width: 100%;
+      height: 40px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 12px;
+      background: var(--Primary, #FE353D);
+      color: var(--On-Primary, #FFF1F2);
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.5;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 12px;
+      margin-bottom: 0;
+      box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+    }
+
+    .action-btn:hover:not(:disabled) {
+      background: #E5303A;
+      box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active:not(:disabled) { transform: scale(0.98) translateY(0); }
+
+    .action-btn:disabled {
+      background: #E0E0E0;
+      color: #7C7C87;
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* ===== KEYPAD ===== */
+    
+
+    
+
+    
+
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+
+    /* Footer Links */
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding-bottom: 10px;
+      width: 100%;
+    }
+
+    .footer-links .divider { width: 1px; height: 12px; background: #D0D0D0; }
+
+    .footer-links .link {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--On-Surface-Low);
+      font-size: 11px;
+      font-weight: 400;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .footer-links .link:hover { color: var(--On-Surface); }
+    .footer-links .link i { width: 11px !important; height: 11px !important; stroke-width: 2px; }
+  </style>
+</head>
+
+<body>
+
+  <div class="phone-frame">
+    <div class="app-content">
+
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="pattern-overlay"></div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="time">10:00</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+            <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+            <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+          </div>
+        </div>
+
+        <!-- Header Nav -->
+        <div class="header-nav">
+          <button class="back-btn" onclick="history.back()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <span class="header-title">Sign Up</span>
+        </div>
+
+        <div class="header-subtitle">Enter OTP Verification</div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+
+        <!-- Instruction — pushed to top -->
+        <p class="instruction" id="instructionText">OTP code sent to +25177 00 24 23</p>
+
+        <!-- Auto-filling sub-label -->
+        <div class="instruction-sub" id="instructionSub">
+          <div class="spinner" id="spinner"></div>
+          <span id="subText">Auto-filling...</span>
+        </div>
+
+        <!-- OTP Boxes (shows actual numbers) -->
+        <div class="otp-container" id="otpContainer">
+          <div class="otp-box" data-index="0"></div>
+          <div class="otp-box" data-index="1"></div>
+          <div class="otp-box" data-index="2"></div>
+          <div class="otp-box" data-index="3"></div>
+        </div>
+
+        <!-- Hidden Input -->
+        <input type="tel" class="otp-input" id="otpInput" maxlength="4" inputmode="numeric">
+
+        <!-- Resend Row — has own bottom margin away from button -->
+        <div class="resend-row">
+          <span class="resend-label">Didn't receive the OTP?</span>
+          <button class="resend-btn" id="resendBtn">Resend now</button>
+        </div>
+
+        <!-- Keypad -->
+        <div class="keypad">
+          <button class="key" onclick="pressKey('1')">1</button>
+          <button class="key" onclick="pressKey('2')">2</button>
+          <button class="key" onclick="pressKey('3')">3</button>
+          <button class="key" onclick="pressKey('4')">4</button>
+          <button class="key" onclick="pressKey('5')">5</button>
+          <button class="key" onclick="pressKey('6')">6</button>
+          <button class="key" onclick="pressKey('7')">7</button>
+          <button class="key" onclick="pressKey('8')">8</button>
+          <button class="key" onclick="pressKey('9')">9</button>
+          <button class="key empty"></button>
+          <button class="key" onclick="pressKey('0')">0</button>
+          <button class="key backspace" onclick="pressBackspace()">
+            <i data-lucide="delete"></i>
+          </button>
+        </div>
+
+        <!-- Action Button — sits above footer with clear gap from keyboard -->
+        <button class="action-btn" id="actionBtn" disabled>Verify</button>
+
+        <!-- Footer Links -->
+        <div class="footer-links">
+          <a class="link"><i data-lucide="headphones"></i> Contact Us</a>
+          <div class="divider"></div>
+          <a class="link"><i data-lucide="file-text"></i> Terms and Conditions</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    lucide.createIcons();
+
+    let otp = '';
+    let verified = false;
+
+    const otpInput    = document.getElementById('otpInput');
+    const otpBoxes    = document.querySelectorAll('.otp-box');
+    const actionBtn   = document.getElementById('actionBtn');
+    const instrText   = document.getElementById('instructionText');
+    const instrSub    = document.getElementById('instructionSub');
+    const spinner     = document.getElementById('spinner');
+    const subText     = document.getElementById('subText');
+
+    // ===== Render OTP digits in boxes =====
+    function updateDisplay() {
+      otpBoxes.forEach((box, i) => {
+        box.classList.remove('active', 'success');
+        box.textContent = otp[i] || '';
+
+        if (i < otp.length) {
+          // filled — no special class, just show number
+        } else if (i === otp.length && !verified) {
+          box.classList.add('active');
+        }
+      });
+
+      actionBtn.disabled = otp.length < 4;
+    }
+
+    function pressKey(val) {
+      if (otp.length < 4 && !verified) {
+        otp += val;
+        otpInput.value = otp;
+        updateDisplay();
+      }
+    }
+
+    function pressBackspace() {
+      if (!verified) {
+        otp = otp.slice(0, -1);
+        otpInput.value = otp;
+        updateDisplay();
+      }
+    }
+
+    // ===== Auto-fill after 1.5s =====
+    const autoOTP = '7219';
+    let afIndex = 0;
+
+    function autoFill() {
+      if (afIndex < autoOTP.length) {
+        pressKey(autoOTP[afIndex++]);
+        setTimeout(autoFill, 300);
+      } else {
+        setTimeout(showSuccess, 400);
+      }
+    }
+
+    setTimeout(autoFill, 1500);
+
+    // ===== Success state =====
+    function showSuccess() {
+      verified = true;
+
+      // OTP boxes go green, text stays black (default color)
+      otpBoxes.forEach(box => {
+        box.classList.remove('active');
+        box.classList.add('success');
+      });
+
+      // Description stays black, updated text in two lines
+      instrText.innerHTML = '+25177 00 24 23 has been<br>verified successfully!';
+      instrText.style.color = 'var(--On-Surface)';
+      instrText.style.fontWeight = '500';
+
+      // Sub-label: hide content but keep spacing
+      instrSub.style.visibility = 'hidden';
+
+      actionBtn.disabled = false;
+      actionBtn.textContent = 'Continue';
+    }
+
+    // Continue → redirect
+    actionBtn.addEventListener('click', function () {
+      if (!verified && otp.length === 4) {
+        showSuccess();
+      } else if (verified) {
+        window.location.href = 'SignUp Confirmation.html';
+      }
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+      else if (e.key === 'Backspace') pressBackspace();
+      else if (e.key === 'Enter' && !actionBtn.disabled) actionBtn.click();
+    });
+
+    document.querySelector('.keypad').addEventListener('click', () => otpInput.focus());
+
+    updateDisplay();
+  </script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

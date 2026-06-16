@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Date Picker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+    --Border: #E8E8EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .date-picker {
+    width: 328px;
+    background: #FFF;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  }
+
+  .picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--Border);
+    margin-bottom: 16px;
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--Border);
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .nav-btn:hover {
+    border-color: var(--Primary);
+    background: var(--Primary-Light);
+  }
+
+  .nav-btn:hover svg { stroke: var(--Primary); }
+  .nav-btn:active { transform: scale(0.92); }
+
+  .nav-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--On-Surface);
+    stroke-width: 2px;
+    transition: stroke 0.2s;
+  }
+
+  .view-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+
+  .view-selector:hover { background: var(--Primary-Light); }
+
+  .view-selector .view-text {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .view-selector .chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--On-Surface);
+    transition: transform 0.25s;
+  }
+
+  .picker-grid {
+    display: grid;
+    gap: 8px;
+    padding: 4px 0;
+  }
+
+  .month-grid, .year-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .day-grid {
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 8px;
+    column-gap: 4px;
+  }
+
+  .day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 8px;
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .grid-item {
+    border-radius: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .month-grid .grid-item, .year-grid .grid-item {
+    height: 48px;
+  }
+
+  .day-grid .grid-item {
+    height: 36px;
+    width: 36px;
+    margin: 0 auto;
+  }
+
+  .grid-item.faded {
+    color: #C0C0C8;
+  }
+
+  .grid-item:hover:not(.empty) {
+    background: #F5F5F5;
+  }
+
+  .grid-item.selected {
+    background: var(--Primary);
+    color: #FFF;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.3);
+  }
+
+  .grid-item.selected:hover { background: #E5303A; }
+  .grid-item:active:not(.empty) { transform: scale(0.95); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="date-picker">
+  <!-- Day View -->
+  <div class="view" id="dayView">
+    <div class="picker-header">
+      <button class="nav-btn" onclick="navigateMonth(-1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="view-selector" onclick="switchView('month')">
+        <span class="view-text" id="dayViewLabel">Sep 2024</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <button class="nav-btn" onclick="navigateMonth(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div class="day-headers">
+      <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+    </div>
+    <div class="picker-grid day-grid" id="dayGrid"></div>
+  </div>
+
+  <!-- Month View -->
+  <div class="view" id="monthView">
+    <div class="picker-header">
+      <button class="nav-btn" onclick="navigateYear(-1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="view-selector" onclick="switchView('year')">
+        <span class="view-text" id="monthViewLabel">2024</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <button class="nav-btn" onclick="navigateYear(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div class="picker-grid month-grid" id="monthGrid"></div>
+  </div>
+
+  <!-- Year View -->
+  <div class="view" id="yearView">
+    <div class="picker-header">
+      <button class="nav-btn" onclick="navigateYearRange(-9)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="view-selector" onclick="switchView('month')">
+        <span class="view-text" id="yearViewLabel">2020 - 2028</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+      <button class="nav-btn" onclick="navigateYearRange(9)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div class="picker-grid year-grid" id="yearGrid"></div>
+  </div>
+</div>
+
+<script>
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  let state = {
+    viewDate: new Date(), 
+    selectedDate: new Date(),
+    yearRangeStart: Math.floor(new Date().getFullYear() / 9) * 9
+  };
+
+  function renderDayView() {
+    const grid = document.getElementById('dayGrid');
+    grid.innerHTML = '';
+    
+    const year = state.viewDate.getFullYear();
+    const month = state.viewDate.getMonth();
+    
+    document.getElementById('dayViewLabel').textContent = monthFull[month] + ' ' + year;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    // JS getDay() is 0=Sun, 1=Mon. We want 0=Mon, 6=Sun
+    let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+    
+    // Previous month days
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const btn = document.createElement('button');
+      btn.className = 'grid-item faded';
+      btn.textContent = daysInPrevMonth - i;
+      btn.onclick = () => {
+        navigateMonth(-1);
+        selectDate(new Date(year, month - 1, daysInPrevMonth - i));
+      };
+      grid.appendChild(btn);
+    }
+    
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      const btn = document.createElement('button');
+      let isSelected = state.selectedDate.getDate() === i && 
+                       state.selectedDate.getMonth() === month && 
+                       state.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = i;
+      btn.onclick = () => selectDate(new Date(year, month, i));
+      grid.appendChild(btn);
+    }
+    
+    // Next month days to complete 6 rows (42 cells)
+    const totalCells = startOffset + daysInMonth;
+    const remainingCells = 42 - totalCells;
+    for (let i = 1; i <= remainingCells; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'grid-item faded';
+      btn.textContent = i;
+      btn.onclick = () => {
+        navigateMonth(1);
+        selectDate(new Date(year, month + 1, i));
+      };
+      grid.appendChild(btn);
+    }
+  }
+
+  function renderMonthView() {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    const year = state.viewDate.getFullYear();
+    document.getElementById('monthViewLabel').textContent = year;
+    
+    months.forEach((m, index) => {
+      const btn = document.createElement('button');
+      let isSelected = state.selectedDate.getMonth() === index && state.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = m;
+      btn.onclick = () => {
+        state.viewDate.setMonth(index);
+        switchView('day');
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderYearView() {
+    const grid = document.getElementById('yearGrid');
+    grid.innerHTML = '';
+    const start = state.yearRangeStart;
+    document.getElementById('yearViewLabel').textContent = start + ' - ' + (start + 8);
+    
+    for (let i = 0; i < 9; i++) {
+      const year = start + i;
+      const btn = document.createElement('button');
+      let isSelected = state.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = year;
+      btn.onclick = () => {
+        state.viewDate.setFullYear(year);
+        switchView('month');
+      };
+      grid.appendChild(btn);
+    }
+  }
+
+  function switchView(view) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(view + 'View').classList.add('active');
+    
+    if (view === 'day') renderDayView();
+    if (view === 'month') renderMonthView();
+    if (view === 'year') renderYearView();
+  }
+
+  function selectDate(date) {
+    state.selectedDate = date;
+    state.viewDate = new Date(date);
+    renderDayView();
+  }
+
+  function navigateMonth(delta) {
+    state.viewDate.setMonth(state.viewDate.getMonth() + delta);
+    renderDayView();
+  }
+
+  function navigateYear(delta) {
+    state.viewDate.setFullYear(state.viewDate.getFullYear() + delta);
+    renderMonthView();
+  }
+
+  function navigateYearRange(delta) {
+    state.yearRangeStart += delta;
+    renderYearView();
+  }
+
+  // Initialize
+  switchView('month'); // Start in month view
+</script>
+</body>
+</html>

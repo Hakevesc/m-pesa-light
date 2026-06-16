@@ -1,0 +1,68 @@
+/* ===== BUTTON COMPONENT ===== */
+.btn-primary {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--Primary, #FE353D);
+  color: var(--On-Primary, #FFF1F2);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+}
+
+.btn-primary:hover {
+  background: #E5303A;
+  box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.98) translateY(0);
+}
+
+.btn-primary i {
+  width: 18px !important;
+  height: 18px !important;
+  color: #FFF;
+  stroke-width: 2px;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: #F5F5F5;
+  color: var(--On-Surface-Low);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.btn-secondary:hover {
+  background: #ECECEC;
+  color: var(--On-Surface);
+}
+
+.btn-secondary:active {
+  background: #E0E0E0;
+}

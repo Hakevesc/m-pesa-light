@@ -1,0 +1,170 @@
+<!-- Header Navigation -->
+<div class="header-nav">
+  <button class="back-btn" onclick="goBack()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+  </button>
+  <span class="header-title">Transfer to Bank</span>
+  <div style="width: 36px;"></div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="bank-selector" id="bankSelector" onclick="toggleBankDropdown()">
+    <div class="bank-selector-left">
+      <div class="bank-logo" id="selectedBankLogo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 21 21 21 21 10"/>
+          <polyline points="3 10 3 21"/>
+          <line x1="9" y1="10" x2="9" y2="16"/>
+          <line x1="13" y1="10" x2="13" y2="16"/>
+          <line x1="17" y1="10" x2="17" y2="16"/>
+          <polygon points="3 6 21 6 12 1 3 6"/>
+        </svg>
+      </div>
+      <div class="bank-info">
+        <span class="bank-name" id="selectedBankName" style="display: none;">Awash Bank</span>
+        <span class="bank-placeholder">Select Bank</span>
+      </div>
+    </div>
+    <div class="bank-selector-right">
+      <span class="change-btn">Change</span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+  </div>
+
+  <div class="bank-dropdown" id="bankDropdown">
+    <div class="bank-option" onclick="selectBank('Awash Bank', 'assets/banks logo/awass-bank.png')">
+      <div class="bank-option-logo"><img src="assets/banks logo/awass-bank.png" alt="Awash Bank" onerror="this.style.display='none'"></div>
+      <span class="bank-option-name">Awash Bank</span>
+    </div>
+    <div class="bank-option" onclick="selectBank('Dashen Bank', 'assets/banks logo/dashen-bank.png')">
+      <div class="bank-option-logo"><img src="assets/banks logo/dashen-bank.png" alt="Dashen Bank" onerror="this.style.display='none'"></div>
+      <span class="bank-option-name">Dashen Bank</span>
+    </div>
+    <div class="bank-option" onclick="selectBank('CBE', 'assets/banks logo/cbe-logo.png')">
+      <div class="bank-option-logo"><img src="assets/banks logo/cbe-logo.png" alt="CBE" onerror="this.style.display='none'"></div>
+      <span class="bank-option-name">Commercial Bank of Ethiopia</span>
+    </div>
+    <div class="bank-option" onclick="selectBank('Abyssinia Bank', 'assets/banks logo/abyssinya-bank.png')">
+      <div class="bank-option-logo"><img src="assets/banks logo/abyssinya-bank.png" alt="Abyssinia Bank" onerror="this.style.display='none'"></div>
+      <span class="bank-option-name">Abyssinia Bank</span>
+    </div>
+  </div>
+
+  <div class="account-input-wrapper">
+    <input type="tel" class="account-input" id="accountInput" placeholder="Account Number" maxlength="15" oninput="handleAccountInput()">
+  </div>
+
+  <div class="fetching-state" id="fetchingState">
+    <div class="spinner"></div>
+    <span>Fetching name</span>
+  </div>
+
+  <div class="account-found" id="accountFound">
+    <div class="account-check-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <div class="account-found-content">
+      <span class="account-found-label">Account Found</span>
+      <span class="account-found-name" id="accountName">Kidist Birhanu</span>
+      <p class="account-warning">Please ensure the name matches</p>
+    </div>
+  </div>
+
+  <div class="keypad">
+    <button class="key" onclick="pressKey('1')">1</button>
+    <button class="key" onclick="pressKey('2')">2</button>
+    <button class="key" onclick="pressKey('3')">3</button>
+    <button class="key" onclick="pressKey('4')">4</button>
+    <button class="key" onclick="pressKey('5')">5</button>
+    <button class="key" onclick="pressKey('6')">6</button>
+    <button class="key" onclick="pressKey('7')">7</button>
+    <button class="key" onclick="pressKey('8')">8</button>
+    <button class="key" onclick="pressKey('9')">9</button>
+    <button class="key" style="visibility: hidden;"></button>
+    <button class="key" onclick="pressKey('0')">0</button>
+    <button class="key delete" onclick="deleteKey()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+        <line x1="18" y1="9" x2="12" y2="15"></line>
+        <line x1="12" y1="9" x2="18" y2="15"></line>
+      </svg>
+    </button>
+  </div>
+
+  <button class="continue-btn" id="continueBtn" onclick="continueTransfer()" disabled>Continue</button>
+</div>
+
+<script>
+  let selectedBank = null;
+  let typingTimeout;
+  let accountFound = false;
+
+  function toggleBankDropdown() {
+    document.getElementById('bankDropdown').classList.toggle('show');
+    document.getElementById('bankSelector').classList.toggle('open');
+  }
+
+  function selectBank(name, logo) {
+    selectedBank = { name, logo };
+    document.getElementById('selectedBankName').textContent = name;
+    document.getElementById('selectedBankName').style.display = 'block';
+    document.getElementById('selectedBankLogo').innerHTML = `<img src="${logo}" alt="${name}" onerror="this.style.display='none'">`;
+    document.getElementById('bankSelector').classList.add('has-bank');
+    document.querySelectorAll('.bank-option').forEach(opt => {
+      opt.classList.remove('selected');
+      if (opt.querySelector('.bank-option-name').textContent === name) opt.classList.add('selected');
+    });
+    toggleBankDropdown();
+    checkContinueButton();
+  }
+
+  function handleAccountInput() {
+    const input = document.getElementById('accountInput');
+    const fetchingState = document.getElementById('fetchingState');
+    const accountFound = document.getElementById('accountFound');
+    clearTimeout(typingTimeout);
+    accountFound.classList.remove('show');
+    this.accountFound = false;
+    if (input.value.length >= 8) {
+      typingTimeout = setTimeout(() => {
+        fetchingState.classList.add('show');
+        setTimeout(() => { fetchingState.classList.remove('show'); showAccountFound(); }, 1500);
+      }, 1000);
+    } else { checkContinueButton(); }
+  }
+
+  function showAccountFound() { document.getElementById('accountFound').classList.add('show'); this.accountFound = true; checkContinueButton(); }
+
+  function checkContinueButton() {
+    const btn = document.getElementById('continueBtn');
+    if (selectedBank && this.accountFound) { btn.classList.add('active'); btn.disabled = false; }
+    else { btn.classList.remove('active'); btn.disabled = true; }
+  }
+
+  function pressKey(key) {
+    const input = document.getElementById('accountInput');
+    if (input.value.length < 15) { input.value += key; handleAccountInput(); }
+  }
+
+  function deleteKey() {
+    const input = document.getElementById('accountInput');
+    input.value = input.value.slice(0, -1);
+    handleAccountInput();
+  }
+
+  function continueTransfer() { if (selectedBank && this.accountFound) { alert('Transferring...'); } }
+  function goBack() { console.log('Navigate back'); }
+
+  document.addEventListener('click', function(e) {
+    const selector = document.getElementById('bankSelector');
+    const dropdown = document.getElementById('bankDropdown');
+    if (!selector.contains(e.target)) { dropdown.classList.remove('show'); selector.classList.remove('open'); }
+  });
+</script>

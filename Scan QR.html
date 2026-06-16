@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan QR Code</title>
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  body { font-family: 'Inter', sans-serif; }
+
+  /* Camera fills the whole phone frame */
+  .camera {
+    position: absolute; inset: 0;
+    background: radial-gradient(120% 90% at 50% 30%, #2a2a31 0%, #161619 55%, #0a0a0c 100%);
+    overflow: hidden;
+  }
+  #cameraFeed {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; display: none;
+  }
+  .camera.live #cameraFeed { display: block; }
+  /* Subtle blurred "scene" for the simulated feed */
+  .camera-scene {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(40% 30% at 25% 25%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(35% 25% at 75% 70%, rgba(254,53,61,0.08), transparent);
+    filter: blur(2px);
+  }
+  .camera.live .camera-scene { display: none; }
+
+  /* Dark dimming with a transparent square cut-out via box-shadow */
+  .viewfinder {
+    position: absolute; top: 50%; left: 50%;
+    width: 226px; height: 226px;
+    transform: translate(-50%, -54%);
+    border-radius: 26px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  }
+  /* Corner brackets */
+  .corner { position: absolute; width: 34px; height: 34px; border: 4px solid #fff; }
+  .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-radius: 26px 0 0 0; }
+  .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-radius: 0 26px 0 0; }
+  .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-radius: 0 0 0 26px; }
+  .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-radius: 0 0 26px 0; }
+
+  .scan-line {
+    position: absolute; left: 10px; right: 10px; top: 12px; height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, #FE353D, transparent);
+    box-shadow: 0 0 14px 2px rgba(254,53,61,0.7);
+    animation: scanMove 2.2s ease-in-out infinite;
+  }
+  @keyframes scanMove {
+    0% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(196px); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0.4; }
+  }
+
+  /* Top bar */
+  .cam-top {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px;
+  }
+  .cam-time { color: #fff; font-size: 14px; font-weight: 600; font-family: 'Switzer', sans-serif; }
+  .cam-icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.16); backdrop-filter: blur(6px);
+    border: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cam-icon-btn:hover { background: rgba(255,255,255,0.28); }
+  .cam-icon-btn.active { background: #FE353D; }
+  .cam-icon-btn svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2; fill: none; }
+
+  .cam-title {
+    position: absolute; top: 64px; left: 0; right: 0; text-align: center; z-index: 5;
+    color: #fff; font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 600;
+  }
+
+  .cam-hint {
+    position: absolute; left: 0; right: 0; bottom: 168px; z-index: 5;
+    text-align: center; color: rgba(255,255,255,0.85);
+    font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 400; padding: 0 40px; line-height: 1.5;
+  }
+
+  /* Bottom controls */
+  .cam-bottom {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+    padding: 22px 28px 30px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .cam-action {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .cam-action .ic {
+    width: 52px; height: 52px; border-radius: 16px;
+    background: rgba(255,255,255,0.14); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .cam-action:hover .ic { background: rgba(255,255,255,0.26); }
+  .cam-action .ic svg { width: 22px; height: 22px; stroke: #fff; stroke-width: 2; fill: none; }
+  .cam-action span { color: rgba(255,255,255,0.9); font-family: 'Switzer', sans-serif; font-size: 11px; font-weight: 500; }
+
+  /* Detected result sheet */
+  .result-sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: #fff; border-radius: 24px 24px 30px 30px;
+    padding: 14px 20px 26px;
+    transform: translateY(110%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+  }
+  .result-sheet.show { transform: translateY(0); }
+  .result-sheet .grip { width: 40px; height: 4px; background: #D8D8DD; border-radius: 2px; margin: 0 auto 16px; }
+  .result-merchant { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .result-merchant .logo {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, #1FC83B, #4ADE80);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .result-merchant .logo svg { width: 26px; height: 26px; stroke: #fff; stroke-width: 2; fill: none; }
+  .result-merchant .info { flex: 1; }
+  .result-merchant .name { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 700; }
+  .result-merchant .sub { color: var(--On-Surface-Low); font-size: 12px; font-weight: 400; margin-top: 2px; }
+  .result-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #E8F9EC; color: var(--Success); border-radius: 8px; padding: 3px 9px;
+    font-family: 'Switzer', sans-serif; font-size: 11px; font-weight: 600; margin-top: 6px;
+  }
+  .result-badge svg { width: 12px; height: 12px; stroke: var(--Success); stroke-width: 3; fill: none; }
+  .result-actions { display: flex; gap: 12px; }
+  .result-btn {
+    flex: 1; height: 50px; border-radius: 14px; border: none; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.2s;
+  }
+  .result-btn.cancel { background: #F2F2F4; color: var(--On-Surface); }
+  .result-btn.cancel:hover { background: #E8E8EC; }
+  .result-btn.pay { background: var(--Primary); color: #fff; box-shadow: 0 4px 12px rgba(254,53,61,0.3); }
+  .result-btn.pay:hover { background: #E5303A; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="camera" id="camera">
+    <video id="cameraFeed" autoplay playsinline muted></video>
+    <div class="camera-scene"></div>
+
+    <!-- Top bar -->
+    <div class="cam-top">
+      <button class="cam-icon-btn" onclick="goBack()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <span class="cam-time">10:00</span>
+      <button class="cam-icon-btn" id="flashBtn" onclick="toggleFlash()" aria-label="Flash">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </button>
+    </div>
+
+    <div class="cam-title">Scan QR Code</div>
+
+    <!-- Viewfinder -->
+    <div class="viewfinder">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="scan-line"></div>
+    </div>
+
+    <div class="cam-hint" id="camHint">Point your camera at a merchant or M-PESA QR code to pay or receive.</div>
+
+    <!-- Bottom controls -->
+    <div class="cam-bottom">
+      <div class="cam-action" onclick="simulateScan()">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <span>Gallery</span>
+      </div>
+      <div class="cam-action" onclick="window.location.href='My QR Code.html'">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="14.01"/><line x1="20" y1="14" x2="20" y2="14.01"/><line x1="14" y1="20" x2="14" y2="20.01"/><line x1="20" y1="20" x2="20" y2="20.01"/></svg></div>
+        <span>My Code</span>
+      </div>
+    </div>
+
+    <!-- Detected result sheet -->
+    <div class="result-sheet" id="resultSheet">
+      <div class="grip"></div>
+      <div class="result-merchant">
+        <div class="logo">
+          <svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 13h6"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">London Cafe</div>
+          <div class="sub">Merchant • Till 047281</div>
+          <span class="result-badge"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Verified merchant</span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="result-btn cancel" onclick="rescan()">Rescan</button>
+        <button class="result-btn pay" onclick="window.location.href='Transfer_Enter Amount.html'">Pay Merchant</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const v = document.getElementById('cameraFeed');
+      v.srcObject = stream;
+      document.getElementById('camera').classList.add('live');
+      window._camStream = stream;
+    } catch (e) {}
+  }
+
+  function stopCamera() {
+    if (window._camStream) window._camStream.getTracks().forEach(t => t.stop());
+  }
+
+  function toggleFlash() {
+    document.getElementById('flashBtn').classList.toggle('active');
+  }
+
+  function simulateScan() {
+    document.getElementById('camHint').textContent = 'QR code detected';
+    document.getElementById('resultSheet').classList.add('show');
+  }
+
+  function rescan() {
+    document.getElementById('resultSheet').classList.remove('show');
+    document.getElementById('camHint').textContent = 'Point your camera at a merchant or M-PESA QR code to pay or receive.';
+  }
+
+  function goBack() {
+    stopCamera();
+    window.location.href = 'Lehulum Home.html';
+  }
+
+  startCamera();
+  setTimeout(simulateScan, 3000);
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

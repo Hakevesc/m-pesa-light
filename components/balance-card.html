@@ -1,0 +1,32 @@
+<!-- Balance Card Component -->
+<div class="balance-card-wrapper">
+  <div class="balance-card" id="balanceCard">
+    <div class="balance-card-top">
+      <div class="main-balance">
+        <div class="header"><span class="label">Main Balance (Birr)</span></div>
+        <div class="amount" id="mainBalance" data-value="12,580.00">* * * * * * * *</div>
+      </div>
+      <button class="add-money-btn">
+        <div class="plus-icon">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <span>Add Money</span>
+      </button>
+    </div>
+    <div class="balance-card-bottom">
+      <div class="other-balance">
+        <span class="header-label">Reward Balance</span>
+        <span class="amount" id="rewardBalance" data-value="1,250.00">****</span>
+      </div>
+      <div class="other-balance">
+        <span class="header-label">Errif Balance</span>
+        <span class="amount" id="errifBalance" data-value="3,450.00">****</span>
+      </div>
+      <div class="hide-unhide">
+        <button class="eye-btn" id="eyeBtn" title="Toggle balance visibility">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

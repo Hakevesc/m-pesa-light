@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fayda Registration Confirmed</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+    --On-Primary: #FFF1F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Modal Content */
+  .fayda-modal {
+    width: 340px;
+    background: #FFF;
+    border-radius: 24px;
+    padding: 32px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    width: 80px;
+    height: 6px;
+    background: #E8E8EC;
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 65%;
+    background: var(--Success);
+    border-radius: 3px;
+    animation: fillProgress 1s ease-out;
+  }
+
+  @keyframes fillProgress {
+    from { width: 0; }
+    to { width: 65%; }
+  }
+
+  /* Title */
+  .modal-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  /* Subtitle */
+  .modal-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    letter-spacing: 0.2px;
+  }
+
+  /* User Card */
+  .user-card {
+    width: 100%;
+    background: #F8F8FA;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #FFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+  }
+
+  .user-name {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .user-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--On-Surface-Low);
+  }
+
+  .status-badge {
+    color: var(--Success);
+    font-weight: 600;
+  }
+
+  .fayda-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #FFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .fayda-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+
+  /* Action Button */
+  .action-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--Primary);
+    color: var(--On-Primary);
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+  }
+
+  .action-btn:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .action-btn:active {
+    transform: scale(0.98) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <div class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="fayda-modal">
+      
+      <!-- Progress Bar -->
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+
+      <!-- Title -->
+      <h2 class="modal-title">Almost There, Hana!</h2>
+
+      <!-- Subtitle -->
+      <p class="modal-subtitle">
+        Registration is confirmed and linked with your Fayda ID.
+      </p>
+
+      <!-- User Card -->
+      <div class="user-card">
+        <div class="user-avatar">
+          <img src="assets/avatars/avatar-1.png" alt="Hana Kagnew Tilaye">
+        </div>
+        <div class="user-info">
+          <span class="user-name">Hana Kagnew Tilaye</span>
+          <div class="user-status">
+            Status: <span class="status-badge">Confirmed</span>
+          </div>
+        </div>
+        <div class="fayda-logo">
+          <img src="assets/fayda-logo-hq.png" alt="Fayda">
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button class="action-btn" onclick="setPin()">
+        Set Your PIN
+      </button>
+
+    </div>
+  </div>
+
+  <script>
+    // Close modal when clicking overlay
+    function closeModalOnOverlay(event) {
+      if (event.target === event.currentTarget) {
+        // Optional: prevent closing on overlay click
+        // Uncomment below to disable overlay click close
+        // return;
+        
+        console.log('Modal closed');
+      }
+    }
+
+    // Set PIN action
+    function setPin() {
+      console.log('Navigating to PIN setup...');
+      // In real app, this would navigate to PIN creation screen
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        console.log('Modal closed via Escape key');
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmation Receipt</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px;
+    background: #F5F5F5;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .close-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .header-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .header-action-btn:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .header-action-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  /* Scrollable Content Area */
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .scrollable-content::-webkit-scrollbar { width: 0; }
+
+  /* Receipt Card */
+  .receipt-card {
+    width: 100%;
+    background: #FFF;
+    border-radius: 20px;
+    padding: 48px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin-top: 32px;
+  }
+
+  /* Success Icon - overlapping top of receipt card */
+  .success-icon-wrapper {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--Success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #F5F5F5;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(31, 200, 59, 0.3);
+  }
+
+  /* Receipt Header */
+  .receipt-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .receipt-header h2 {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  .receipt-header p {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  /* Dashed Divider */
+  .dashed-divider {
+    width: calc(100% + 40px);
+    margin: 0 -20px 20px;
+    border: none;
+    border-top: 2px dashed #E0E0E0;
+    position: relative;
+  }
+
+  .dashed-divider::before,
+  .dashed-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: #F5F5F5;
+    border-radius: 50%;
+  }
+
+  .dashed-divider::before { left: -10px; }
+  .dashed-divider::after { right: -10px; }
+
+  /* Transaction Details */
+  .transaction-details {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .detail-row .label {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    flex-shrink: 0;
+    max-width: 140px;
+  }
+
+  .detail-row .value {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+    word-break: break-all;
+    flex: 1;
+  }
+
+  .detail-row .value.copyable {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 6px;
+  }
+
+  .copy-btn:hover {
+    background: var(--Primary-Light);
+  }
+
+  .copy-btn .copy-text {
+    color: var(--Primary);
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .copy-btn i {
+    width: 14px !important;
+    height: 14px !important;
+    color: var(--Primary);
+    stroke-width: 2px;
+  }
+
+  .copy-btn.copied .copy-text {
+    color: var(--Success);
+  }
+
+  .copy-btn.copied i {
+    color: var(--Success);
+  }
+
+  /* Stamp Watermark */
+  .stamp-watermark {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    width: 240px;
+    height: 240px;
+    opacity: 0.65;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .stamp-watermark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Amount Section */
+  .amount-section {
+    width: 100%;
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid #F0F0F0;
+    margin-top: 4px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .beneficiary-name {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+  }
+
+  .amount-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .amount-value {
+    color: var(--Primary);
+    font-family: 'Switzer', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .amount-currency {
+    color: var(--Primary);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    padding-left: 8px;
+    border-left: 2px solid var(--Primary);
+    line-height: 1;
+  }
+
+  /* QR Code */
+  .qr-wrapper {
+    padding: 8px;
+    border: 3px solid var(--Primary);
+    border-radius: 16px;
+    background: #FFF;
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+  }
+
+  .qr-wrapper img {
+    width: 80px;
+    height: 80px;
+    display: block;
+  }
+
+  /* Bottom Actions - Sticky at bottom */
+  .bottom-actions {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 16px 10px;
+    width: 100%;
+    background: #F5F5F5;
+    border-top: 1px solid #E8E8E8;
+  }
+
+  .action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    padding: 6px 0;
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .action-btn:active {
+    transform: scale(0.95);
+  }
+
+  .action-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--Primary-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .action-btn.favorited .action-icon {
+    background: #FFE0E2;
+  }
+  .action-btn:hover .action-icon {
+    background: #FFE0E2;
+  }
+
+  .action-icon svg,
+  .action-icon i {
+    width: 24px !important;
+    height: 24px !important;
+    color: var(--Primary);
+    stroke: var(--Primary);
+    stroke-width: 2px;
+  }
+
+  .action-label {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--On-Surface);
+    color: #FFF;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="close-btn" onclick="closeReceipt()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <span class="header-title">Confirmation Receipt</span>
+      <div class="header-actions">
+        <button class="header-action-btn" onclick="shareReceipt()" title="Share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+        <button class="header-action-btn" onclick="downloadReceipt()" title="Download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+
+      <!-- Receipt Card -->
+      <div class="receipt-card">
+
+        <!-- Success Icon (overlapping top) -->
+        <div class="success-icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"></path>
+          </svg>
+        </div>
+
+        <!-- Stamp Watermark -->
+        <div class="stamp-watermark">
+          <img src="assets/M-PESA-official_stamp.png" alt="M-PESA Stamp">
+        </div>
+        <!-- Receipt Header -->
+        <div class="receipt-header">
+          <h2>Transaction Successful</h2>
+          <p>Thank you for Choosing M-PESA For All</p>
+        </div>
+
+        <!-- Dashed Divider -->
+        <div class="dashed-divider"></div>
+
+        <!-- Transaction Details -->
+        <div class="transaction-details">
+          <div class="detail-row">
+            <span class="label">Transaction Type</span>
+            <span class="value">Bank Transfer</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Beneficiary's Bank</span>
+            <span class="value">Abyssinia Bank</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Beneficiary's Account Number</span>
+            <span class="value">978784356436</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Sender's M-PESA Number</span>
+            <span class="value">0712131415</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Transaction ID</span>
+            <span class="value copyable">
+              <button class="copy-btn" id="copyBtn" onclick="copyTransactionId()">
+                <span class="copy-text">Copy ID</span>
+                <i data-lucide="copy"></i>
+              </button>
+              <span id="transactionId">fxt45632578</span>
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Date and time</span>
+            <span class="value">12/12/2024 at 8:34 AM</span>
+          </div>
+        </div>
+
+        <!-- Amount Section -->
+        <div class="amount-section">
+          <div class="beneficiary-name">Kidist Alemayehu Tadesse</div>
+          <div class="amount-display">
+            <span class="amount-value">-1,050.20</span>
+            <span class="amount-currency">ETB</span>
+          </div>
+
+          <!-- QR Code -->
+          <div class="qr-wrapper">
+            <img id="qrCode" src="" alt="Transaction QR Code">
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bottom Actions - Sticky at bottom -->
+    <div class="bottom-actions">
+      <button class="action-btn" onclick="addToFavorite()">
+        <div class="action-icon">
+          <i data-lucide="heart"></i>
+        </div>
+        <span class="action-label">Add to Favorite</span>
+      </button>
+
+      <button class="action-btn" onclick="sendAgain()">
+        <div class="action-icon">
+          <i data-lucide="arrow-left-right"></i>
+        </div>
+        <span class="action-label">Send Again</span>
+      </button>
+
+      <button class="action-btn" onclick="reverseTransaction()">
+        <div class="action-icon">
+          <i data-lucide="rotate-ccw"></i>
+        </div>
+        <span class="action-label">Reverse</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Transaction data for QR code generation
+  const transactionData = {
+    type: 'Bank Transfer',
+    beneficiaryBank: 'Abyssinia Bank',
+    beneficiaryAccount: '978784356436',
+    beneficiaryName: 'Kidist Alemayehu Tadesse',
+    senderNumber: '0712131415',
+    transactionId: 'fxt45632578',
+    amount: '-1,050.20',
+    currency: 'ETB',
+    date: '12/12/2024',
+    time: '8:34 AM'
+  };
+
+  // Generate QR Code from transaction data
+  function generateQRCode() {
+    const qrData = JSON.stringify(transactionData);
+    const encodedData = encodeURIComponent(qrData);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodedData}&margin=10`;
+    document.getElementById('qrCode').src = qrUrl;
+  }
+
+  // Copy Transaction ID
+  function copyTransactionId() {
+    const transactionId = document.getElementById('transactionId').textContent;
+    const copyBtn = document.getElementById('copyBtn');
+
+    navigator.clipboard.writeText(transactionId).then(() => {
+      copyBtn.classList.add('copied');
+      copyBtn.querySelector('.copy-text').textContent = 'Copied!';
+      showToast('Transaction ID copied to clipboard');
+
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyBtn.querySelector('.copy-text').textContent = 'Copy ID';
+      }, 2000);
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = transactionId;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+
+      copyBtn.classList.add('copied');
+      copyBtn.querySelector('.copy-text').textContent = 'Copied!';
+      showToast('Transaction ID copied to clipboard');
+
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyBtn.querySelector('.copy-text').textContent = 'Copy ID';
+      }, 2000);
+    });
+  }
+
+  // Show Toast
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // Action handlers
+  function closeReceipt() {
+    showToast('Closing receipt...');
+  }
+
+  function shareReceipt() {
+    const shareData = {
+      title: 'M-PESA Transaction Receipt',
+      text: `Transaction ${transactionData.transactionId}: ${transactionData.amount} ${transactionData.currency} to ${transactionData.beneficiaryName}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else {
+      showToast('Share link copied!');
+    }
+  }
+
+  function downloadReceipt() {
+    showToast('Downloading receipt as PDF...');
+  }
+
+  function addToFavorite() {
+    // Navigate to Add Favourites page with transaction data
+    const data = {
+      accountName: transactionData.beneficiaryName,
+      transactionId: transactionData.transactionId,
+      amount: transactionData.amount,
+      currency: transactionData.currency,
+      type: transactionData.type
+    };
+    sessionStorage.setItem('favouriteData', JSON.stringify(data));
+    window.location.href = 'Add Favourites.html';
+  }
+
+  function sendAgain() {
+    showToast('Preparing to send again...');
+  }
+
+  function reverseTransaction() {
+    if (confirm('Are you sure you want to reverse this transaction?')) {
+      showToast('Reversal request submitted');
+    }
+  }
+
+  // Initialize
+  generateQRCode();
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

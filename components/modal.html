@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete Confirmation Modal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+    --Border: #E8E8EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Mock content behind modal */
+  .mock-content {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+  }
+
+  .mock-content h3 {
+    color: var(--On-Surface);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .mock-content p {
+    line-height: 1.6;
+  }
+
+  /* ===== MODAL OVERLAY ===== */
+  .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.25s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ===== BOTTOM SHEET MODAL ===== */
+  .bottom-modal {
+    width: 100%;
+    background: #FFF;
+    border-radius: 24px 24px 0 0;
+    padding: 12px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Drag Handle */
+  .drag-handle {
+    width: 40px;
+    height: 4px;
+    background: #D0D0D5;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Modal Content */
+  .modal-content {
+    text-align: center;
+    margin-bottom: 24px;
+    width: 100%;
+  }
+
+  .modal-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.3px;
+  }
+
+  .modal-description {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.2px;
+  }
+
+  /* Button Group */
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* Cancel Button */
+  .btn-cancel {
+    flex: 1;
+    height: 48px;
+    border-radius: 14px;
+    border: 1.5px solid var(--Border);
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+
+  .btn-cancel:hover {
+    background: #F5F5F5;
+    border-color: #D0D0D5;
+  }
+
+  .btn-cancel:active {
+    transform: scale(0.97);
+    background: #F0F0F0;
+  }
+
+  .btn-cancel i {
+    width: 18px !important;
+    height: 18px !important;
+    color: var(--On-Surface);
+    stroke-width: 2px;
+  }
+
+  /* Delete Button */
+  .btn-delete {
+    flex: 1;
+    height: 48px;
+    border-radius: 14px;
+    border: none;
+    background: var(--Primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25);
+  }
+
+  .btn-delete:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 16px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn-delete:active {
+    transform: scale(0.97) translateY(0);
+  }
+
+  .btn-delete i {
+    width: 18px !important;
+    height: 18px !important;
+    color: #FFF;
+    stroke-width: 2px;
+  }
+
+  /* ===== TRIGGER BUTTON (for demo) ===== */
+  .trigger-btn {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 24px;
+    background: var(--Primary);
+    color: #FFF;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.3);
+    transition: all 0.2s;
+    z-index: 50;
+  }
+
+  .trigger-btn:hover {
+    background: #E5303A;
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  .trigger-btn:active {
+    transform: translateX(-50%) scale(0.97);
+  }
+
+  /* Hidden state */
+  .modal-overlay.hidden {
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- Mock Background Content -->
+  <div class="mock-content">
+    <h3>Scheduled Statements</h3>
+    <p>Your monthly statement for 6 months is scheduled to be sent to your email.</p>
+  </div>
+
+  <!-- Trigger Button -->
+  <button class="trigger-btn" id="triggerBtn" onclick="openModal()">Show Delete Modal</button>
+
+  <!-- Bottom Modal Overlay -->
+  <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="bottom-modal" onclick="event.stopPropagation()">
+
+      <!-- Drag Handle -->
+      <div class="drag-handle"></div>
+
+      <!-- Modal Content -->
+      <div class="modal-content">
+        <h2 class="modal-title">Are you Sure?</h2>
+        <p class="modal-description">You want to delete your scheduled statement for 6 months</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">
+          <i data-lucide="x"></i>
+          Cancel
+        </button>
+        <button class="btn-delete" onclick="confirmDelete()">
+          <i data-lucide="trash-2"></i>
+          Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Open modal
+  function openModal() {
+    const overlay = document.getElementById('modalOverlay');
+    const triggerBtn = document.getElementById('triggerBtn');
+    overlay.classList.remove('hidden');
+    triggerBtn.style.display = 'none';
+  }
+
+  // Close modal
+  function closeModal() {
+    const overlay = document.getElementById('modalOverlay');
+    const triggerBtn = document.getElementById('triggerBtn');
+    overlay.classList.add('hidden');
+    triggerBtn.style.display = 'block';
+  }
+
+  // Close when clicking outside
+  function closeModalOutside(event) {
+    if (event.target === event.currentTarget) {
+      closeModal();
+    }
+  }
+
+  // Confirm delete action
+  function confirmDelete() {
+    closeModal();
+    // In real app, this would delete the scheduled statement
+    console.log('Scheduled statement deleted');
+    
+    // Update mock content to show deletion
+    const mockContent = document.querySelector('.mock-content');
+    mockContent.innerHTML = \`
+      <h3 style="color: #1FC83B;">✓ Deleted</h3>
+      <p>Your scheduled statement has been removed.</p>
+    \`;
+    
+    setTimeout(() => {
+      document.getElementById('triggerBtn').style.display = 'block';
+      document.getElementById('triggerBtn').textContent = 'Show Delete Modal Again';
+    }, 500);
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+</script>
+
+</body>
+</html>

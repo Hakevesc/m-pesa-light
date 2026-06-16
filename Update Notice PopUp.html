@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automatic Update Notice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+    --Surface-Container: #FCFCFC;
+    --Border: #E8E8EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Modal Content */
+  .update-modal {
+    width: 340px;
+    background: #FFF;
+    border-radius: 24px;
+    padding: 40px 30px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Pattern Decoration */
+  .pattern-decoration {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 120px;
+    height: 120px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .pattern-decoration img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Close Button */
+  .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+
+  .close-btn:hover {
+    background: #F0F0F0;
+  }
+
+  .close-btn:active {
+    transform: scale(0.9);
+  }
+
+  .close-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--On-Surface);
+    stroke-width: 2px;
+  }
+
+  /* Icon Container */
+  .icon-container {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    background: var(--Success-Light);
+    border: 2px solid var(--Success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .icon-container i,
+  .icon-container svg {
+    width: 30px !important;
+    height: 30px !important;
+    color: var(--Success);
+    stroke: var(--Success);
+    stroke-width: 2px;
+  }
+
+  /* Title */
+  .modal-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+    line-height: 1.3;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Subtitle */
+  .modal-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    letter-spacing: 0.2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Features List */
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+  }
+
+  .feature-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--Success);
+    background: var(--Success-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .feature-check i,
+  .feature-check svg {
+    width: 15px !important;
+    height: 15px !important;
+    color: var(--Success);
+    stroke: var(--Success);
+    stroke-width: 2px;
+  }
+
+  .feature-text {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-align: left;
+  }
+
+  /* Dismiss Button */
+  .dismiss-btn {
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--Primary);
+    color: #FFF;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+    position: relative;
+    z-index: 1;
+  }
+
+  .dismiss-btn:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .dismiss-btn:active {
+    transform: scale(0.98) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <div class="modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="update-modal">
+      
+      <!-- Pattern Decoration -->
+      <div class="pattern-decoration">
+        <img src="assets/M-PESA-pattern.svg" alt="Pattern">
+      </div>
+
+      <!-- Close Button -->
+      <button class="close-btn" onclick="closeModal()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Icon -->
+      <div class="icon-container">
+        <i data-lucide="rocket"></i>
+      </div>
+
+      <!-- Title -->
+      <h2 class="modal-title">Automatic Update Notice!</h2>
+
+      <!-- Subtitle -->
+      <p class="modal-subtitle">
+        We just pushed automatic improvements to make your app experience better.
+      </p>
+
+      <!-- Features List -->
+      <div class="features-list">
+        <div class="feature-item">
+          <div class="feature-check">
+            <i data-lucide="check"></i>
+          </div>
+          <span class="feature-text">Custom Favorites Categories</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <i data-lucide="check"></i>
+          </div>
+          <span class="feature-text">Faster Account Lookup</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check">
+            <i data-lucide="check"></i>
+          </div>
+          <span class="feature-text">PDF Receipt Stamping</span>
+        </div>
+      </div>
+
+      <!-- Dismiss Button -->
+      <button class="dismiss-btn" onclick="dismissUpdate()">Dismiss</button>
+
+    </div>
+  </div>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Close modal
+    function closeModal() {
+      console.log('Modal closed');
+      // In real app, this would hide the modal
+    }
+
+    // Close on overlay click
+    function closeModalOnOverlay(event) {
+      if (event.target === event.currentTarget) {
+        closeModal();
+      }
+    }
+
+    // Dismiss update
+    function dismissUpdate() {
+      console.log('Update dismissed');
+      // In real app, this would save preference and hide modal
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

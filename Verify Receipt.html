@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Receipt</title>
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  body { font-family: 'Inter', sans-serif; }
+
+  .camera {
+    position: absolute; inset: 0;
+    background: radial-gradient(120% 90% at 50% 30%, #2a2a31 0%, #161619 55%, #0a0a0c 100%);
+    overflow: hidden;
+  }
+  #cameraFeed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+  .camera.live #cameraFeed { display: block; }
+  .camera-scene {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(40% 30% at 25% 25%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(35% 25% at 75% 70%, rgba(254,53,61,0.08), transparent);
+    filter: blur(2px);
+  }
+  .camera.live .camera-scene { display: none; }
+
+  /* Receipt viewfinder is portrait (taller) to match a receipt shape */
+  .viewfinder {
+    position: absolute; top: 50%; left: 50%;
+    width: 196px; height: 252px;
+    transform: translate(-50%, -56%);
+    border-radius: 18px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  }
+  .corner { position: absolute; width: 32px; height: 32px; border: 4px solid #fff; }
+  .corner.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; border-radius: 18px 0 0 0; }
+  .corner.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; border-radius: 0 18px 0 0; }
+  .corner.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-radius: 0 0 0 18px; }
+  .corner.br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-radius: 0 0 18px 0; }
+  .scan-line {
+    position: absolute; left: 10px; right: 10px; top: 12px; height: 3px; border-radius: 3px;
+    background: linear-gradient(90deg, transparent, #FE353D, transparent);
+    box-shadow: 0 0 14px 2px rgba(254,53,61,0.7);
+    animation: scanMove 2.2s ease-in-out infinite;
+  }
+  @keyframes scanMove {
+    0% { transform: translateY(0); opacity: 0.4; }
+    50% { transform: translateY(224px); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0.4; }
+  }
+
+  .cam-top {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
+  }
+  .cam-time { color: #fff; font-size: 14px; font-weight: 600; font-family: 'Switzer', sans-serif; }
+  .cam-icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.16); backdrop-filter: blur(6px);
+    border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+  }
+  .cam-icon-btn:hover { background: rgba(255,255,255,0.28); }
+  .cam-icon-btn.active { background: #FE353D; }
+  .cam-icon-btn svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2; fill: none; }
+  .cam-title {
+    position: absolute; top: 64px; left: 0; right: 0; text-align: center; z-index: 5;
+    color: #fff; font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 600;
+  }
+  .cam-hint {
+    position: absolute; left: 0; right: 0; bottom: 150px; z-index: 5; text-align: center;
+    color: rgba(255,255,255,0.85); font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 400; padding: 0 38px; line-height: 1.5;
+  }
+
+  .cam-bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; padding: 22px 28px 30px; display: flex; align-items: center; justify-content: center; gap: 36px; }
+  .cam-action { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+  .cam-action .ic { width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,0.14); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .cam-action:hover .ic { background: rgba(255,255,255,0.26); }
+  .cam-action .ic svg { width: 22px; height: 22px; stroke: #fff; stroke-width: 2; fill: none; }
+  .cam-action span { color: rgba(255,255,255,0.9); font-family: 'Switzer', sans-serif; font-size: 11px; font-weight: 500; }
+
+  /* Manual entry sheet */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 20; background: #fff; border-radius: 24px 24px 30px 30px; padding: 14px 20px 26px; transform: translateY(110%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 -8px 32px rgba(0,0,0,0.25); }
+  .sheet.show { transform: translateY(0); }
+  .sheet .grip { width: 40px; height: 4px; background: #D8D8DD; border-radius: 2px; margin: 0 auto 16px; }
+  .sheet-title { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .sheet-sub { color: var(--On-Surface-Low); font-size: 12px; margin-bottom: 16px; }
+  .code-input { width: 100%; height: 52px; border: 1.5px solid var(--Border, #E8E8EC); border-radius: 14px; padding: 0 16px; font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 600; color: var(--On-Surface); letter-spacing: 1px; outline: none; text-transform: uppercase; transition: all 0.2s; }
+  .code-input:focus { border-color: var(--Primary); box-shadow: 0 0 0 3px rgba(254,53,61,0.08); }
+  .code-input::placeholder { color: #C2C2CB; letter-spacing: 0.5px; text-transform: none; }
+  .full-btn { width: 100%; height: 52px; margin-top: 16px; border-radius: 14px; border: none; background: var(--Primary); color: #fff; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; box-shadow: 0 4px 12px rgba(254,53,61,0.3); transition: all 0.2s; }
+  .full-btn:hover { background: #E5303A; }
+
+  /* Verification RESULT overlay */
+  .result { position: absolute; inset: 0; z-index: 30; background: #F5F5F5; display: none; flex-direction: column; overflow-y: auto; }
+  .result.show { display: flex; }
+  .result::-webkit-scrollbar { width: 0; }
+  .result-head { background: linear-gradient(180deg, #1FC83B 0%, #19a832 100%); padding: 24px 20px 38px; text-align: center; position: relative; }
+  .result-close { position: absolute; top: 14px; left: 16px; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.18); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .result-close svg { width: 20px; height: 20px; stroke: #fff; stroke-width: 2; fill: none; }
+  .check-circle { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin: 8px auto 12px; }
+  .check-circle .inner { width: 52px; height: 52px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .check-circle .inner svg { width: 28px; height: 28px; stroke: var(--Success); stroke-width: 3; fill: none; }
+  .result-head h2 { color: #fff; font-family: 'Switzer', sans-serif; font-size: 19px; font-weight: 700; }
+  .result-head p { color: rgba(255,255,255,0.9); font-size: 12.5px; margin-top: 4px; }
+
+  .receipt-card { margin: -18px 20px 0; background: #fff; border-radius: 18px; padding: 18px; box-shadow: 0 8px 28px rgba(0,0,0,0.1); position: relative; }
+  .receipt-amount { text-align: center; padding-bottom: 14px; border-bottom: 1px dashed var(--Border, #E8E8EC); margin-bottom: 14px; }
+  .receipt-amount .lbl { color: var(--On-Surface-Low); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
+  .receipt-amount .val { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .receipt-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; }
+  .receipt-row .k { color: var(--On-Surface-Low); font-size: 13px; }
+  .receipt-row .v { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 600; }
+  .stamp { position: absolute; right: 14px; bottom: 64px; width: 100px; opacity: 0.9; transform: rotate(-12deg); }
+  .stamp img { width: 100%; }
+  .result-note { display: flex; align-items: center; gap: 8px; margin: 16px 20px 0; background: #E8F9EC; border-radius: 12px; padding: 12px 14px; }
+  .result-note svg { width: 18px; height: 18px; stroke: var(--Success); stroke-width: 2.5; fill: none; flex-shrink: 0; }
+  .result-note span { color: #168a2c; font-family: 'Switzer', sans-serif; font-size: 12px; font-weight: 500; line-height: 1.4; }
+  .result-foot { padding: 18px 20px 26px; margin-top: auto; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="camera" id="camera">
+    <video id="cameraFeed" autoplay playsinline muted></video>
+    <div class="camera-scene"></div>
+
+    <div class="cam-top">
+      <button class="cam-icon-btn" onclick="goBack()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <span class="cam-time">10:00</span>
+      <button class="cam-icon-btn" id="flashBtn" onclick="toggleFlash()" aria-label="Flash">
+        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </button>
+    </div>
+
+    <div class="cam-title">Verify Receipt</div>
+
+    <div class="viewfinder">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="scan-line"></div>
+    </div>
+
+    <div class="cam-hint" id="camHint">Scan the QR or transaction code on an M-PESA receipt to confirm it's genuine.</div>
+
+    <div class="cam-bottom">
+      <div class="cam-action" onclick="simulateScan()">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <span>Gallery</span>
+      </div>
+      <div class="cam-action" onclick="openManual()">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="9" x2="6" y2="9.01"/><line x1="10" y1="9" x2="10" y2="9.01"/><line x1="14" y1="9" x2="14" y2="9.01"/><line x1="18" y1="9" x2="18" y2="9.01"/><line x1="6" y1="14" x2="18" y2="14"/></svg></div>
+        <span>Enter Code</span>
+      </div>
+    </div>
+
+    <!-- Manual entry sheet -->
+    <div class="sheet" id="manualSheet">
+      <div class="grip"></div>
+      <div class="sheet-title">Enter Receipt Code</div>
+      <div class="sheet-sub">Type the transaction ID printed on the receipt (e.g. PP-2104XYZ).</div>
+      <input class="code-input" id="codeInput" placeholder="e.g. PP-2104XYZ" value="PP-2104XYZ">
+      <button class="full-btn" onclick="verifyCode()">Verify Receipt</button>
+    </div>
+  </div>
+
+  <!-- Verification result -->
+  <div class="result" id="result">
+    <div class="result-head">
+      <button class="result-close" onclick="closeResult()" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="check-circle"><div class="inner"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+      <h2>Receipt Verified</h2>
+      <p>This is a genuine M-PESA transaction</p>
+    </div>
+
+    <div class="receipt-card">
+      <div class="receipt-amount">
+        <div class="lbl">Amount</div>
+        <div class="val">500.00 Birr</div>
+      </div>
+      <div class="receipt-row"><span class="k">Transaction ID</span><span class="v" id="resCode">PP-2104XYZ</span></div>
+      <div class="receipt-row"><span class="k">From</span><span class="v">Aster Mequanent</span></div>
+      <div class="receipt-row"><span class="k">To</span><span class="v">Mom · 2517****78</span></div>
+      <div class="receipt-row"><span class="k">Type</span><span class="v">P2P Send Money</span></div>
+      <div class="receipt-row"><span class="k">Date</span><span class="v">08 May 2026, 10:15 AM</span></div>
+      <div class="receipt-row"><span class="k">Status</span><span class="v" style="color:var(--Success)">Successful</span></div>
+      <div class="stamp"><img src="assets/M-PESA-official_stamp.png" alt="Official" onerror="this.parentElement.style.display='none'"></div>
+    </div>
+
+    <div class="result-note">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      <span>We checked this code against M-PESA's records. The amount, parties and timestamp all match.</span>
+    </div>
+
+    <div class="result-foot">
+      <button class="full-btn" onclick="goBack()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      const v = document.getElementById('cameraFeed');
+      v.srcObject = stream;
+      document.getElementById('camera').classList.add('live');
+      window._camStream = stream;
+    } catch (e) {}
+  }
+  function stopCamera() { if (window._camStream) window._camStream.getTracks().forEach(t => t.stop()); }
+
+  function toggleFlash() { document.getElementById('flashBtn').classList.toggle('active'); }
+
+  function openManual() { document.getElementById('manualSheet').classList.add('show'); }
+  function closeManual() { document.getElementById('manualSheet').classList.remove('show'); }
+
+  function showResult(code) {
+    document.getElementById('resCode').textContent = code || 'PP-2104XYZ';
+    document.getElementById('result').classList.add('show');
+  }
+  function closeResult() {
+    document.getElementById('result').classList.remove('show');
+    document.getElementById('camHint').textContent = "Scan the QR or transaction code on an M-PESA receipt to confirm it's genuine.";
+  }
+
+  function simulateScan() {
+    document.getElementById('camHint').textContent = 'Code detected — verifying…';
+    setTimeout(() => showResult('MP-9988ABC'), 700);
+  }
+
+  function verifyCode() {
+    const code = (document.getElementById('codeInput').value || 'PP-2104XYZ').trim().toUpperCase();
+    closeManual();
+    showResult(code);
+  }
+
+  function goBack() { stopCamera(); window.location.href = 'Lehulum Home.html'; }
+
+  startCamera();
+</script>
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

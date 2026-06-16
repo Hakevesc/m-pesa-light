@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Favorites – Empty</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Border: #E8E8EC;
+    --Danger: #FE353D;
+    --Danger-Light: #FFF1F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* ── Header Navigation ── */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px 0;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+
+  .back-btn:hover {
+    background: rgba(0,0,0,0.05);
+    transform: scale(1.05);
+  }
+
+  .back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Main Content ── */
+  .main-content {
+    padding: 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px 20px;
+    text-align: center;
+  }
+
+  /* Illustration wrapper */
+  .empty-illustration {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin-bottom: 28px;
+  }
+
+  /* Soft background circle */
+  .empty-illustration .bg-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFF1F2 0%, #FFE5E6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Main icon */
+  .empty-illustration svg.main-icon {
+    width: 100px;
+    height: 100px;
+    display: block;
+  }
+
+  /* Plus badge — top-center, overlaid inside the heart */
+  .plus-badge {
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #FE353D;
+    border: 2.5px solid #FFF1F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(254,53,61,0.35);
+  }
+
+  .plus-badge svg {
+    width: 14px;
+    height: 14px;
+    stroke: #FFF;
+    stroke-width: 2.8px;
+    fill: none;
+  }
+
+  /* Floating accent dot – removed */
+
+
+  .empty-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: 0.2px;
+  }
+
+  .empty-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1.65;
+    max-width: 260px;
+  }
+
+  /* ── CTA Button ── */
+  .cta-wrapper {
+    padding: 0 0 24px;
+    width: 100%;
+  }
+
+  .btn-add-favourite {
+    width: 100%;
+    height: 54px;
+    border-radius: 16px;
+    border: none;
+    background: var(--Primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFF;
+    letter-spacing: 0.2px;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.28);
+  }
+
+  .btn-add-favourite:hover {
+    background: var(--Primary-Dark);
+    box-shadow: 0 8px 24px rgba(254, 53, 61, 0.38);
+    transform: translateY(-2px);
+  }
+
+  .btn-add-favourite:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 4px 14px rgba(254, 53, 61, 0.25);
+  }
+
+  .btn-add-favourite svg {
+    width: 20px;
+    height: 20px;
+    stroke: #FFF;
+    stroke-width: 2.2px;
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  /* ── Tip card ── */
+  .tip-card {
+    background: #FFF;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+  }
+
+  .tip-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--Danger-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .tip-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--Primary);
+    stroke-width: 2px;
+    fill: none;
+  }
+
+  .tip-text {
+    flex: 1;
+  }
+
+  .tip-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+
+  .tip-desc {
+    color: var(--On-Surface-Low);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.55;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Manage Favorites</span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Empty State -->
+      <div class="empty-state">
+
+        <!-- Illustration -->
+        <div class="empty-illustration">
+          <div class="bg-circle">
+            <!-- Heart / Favourites icon -->
+            <svg class="main-icon" viewBox="0 0 72 72" fill="none">
+              <path
+                d="M36 57C36 57 12 43.2 12 26.4C12 19.56 17.16 14 23.52 14C27.36 14 30.72 16.08 33.12 19.32L36 22.8L38.88 19.32C41.28 16.08 44.64 14 48.48 14C54.84 14 60 19.56 60 26.4C60 43.2 36 57 36 57Z"
+                stroke="#FE353D"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="#FFE0E1"
+              />
+            </svg>
+            <!-- Plus badge — top-center, overlaid inside the heart -->
+            <div class="plus-badge">
+              <svg viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="empty-title">No Favorites Yet</h2>
+        <p class="empty-subtitle">
+          Save your frequent contacts and payees here for quick, one-tap transfers.
+        </p>
+
+      </div>
+
+      <!-- Tip Card -->
+      <div class="tip-card">
+        <div class="tip-icon">
+          <!-- Lightbulb icon -->
+          <svg viewBox="0 0 24 24">
+            <path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 3.2-1.6 5.6-4 7H9C6.6 14.6 5 12.2 5 9a7 7 0 0 1 7-7z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="tip-text">
+          <p class="tip-title">How to add a favorite</p>
+          <p class="tip-desc">After sending money, tap the heart icon on any contact to save them as a favorite.</p>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <div class="cta-wrapper">
+        <button class="btn-add-favourite" onclick="addFavourite()">
+          <!-- Plus icon -->
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add New Favourite
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function goBack() {
+    console.log('Navigate back');
+  }
+
+  function addFavourite() {
+    console.log('Navigate to Add Favourites');
+  }
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

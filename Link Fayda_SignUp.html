@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link Your Fayda ID</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+    @import url('https://api.fontshare.com/v2/css?f[]=switzer@400;500;600;700&display=swap');
+
+    :root {
+      --Primary: #FE353D;
+      --Primary-Dark: #C41520;
+      --Primary-Darker: #A41016;
+      --On-Surface: #1C1C21;
+      --On-Surface-Low: #7C7C87;
+      --Surface-Container: #FCFCFC;
+      --Gray-0: #FFF;
+      --On-Primary: #FFF1F2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .phone-frame {
+      width: 360px;
+      height: 780px;
+      background: #F5F5F5;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .app-content {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ===== HEADER / RED CARD ===== */
+    .header-section {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+      border-radius: 0 0 30px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Pattern Overlay */
+    .pattern-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.20;
+      z-index: 0;
+      background-image: url('assets/M-PESA-pattern.svg');
+      background-size: 490px;
+      background-position: right -270px top -270px;
+      background-repeat: no-repeat;
+      border-radius: 0 0 30px 30px;
+      mix-blend-mode: overlay;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 14px 24px 8px;
+    }
+
+    .status-bar .time {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFF;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Header Navigation */
+    .header-nav {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px 0;
+    }
+
+    .back-btn {
+      position: absolute;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: transparent;
+      transform: scale(1.05);
+    }
+
+    .back-btn i {
+      width: 24px !important;
+      height: 24px !important;
+      color: #FFF;
+      stroke-width: 2px;
+    }
+
+    .header-title {
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .header-subtitle {
+      position: relative;
+      z-index: 5;
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 30px;
+      padding: 0 24px;
+      text-align: left;
+      width: 100%;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      padding: 24px 20px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Fayda Card */
+    .fayda-card {
+      width: 100%;
+      max-width: 328px;
+      background: #FFF;
+      border-radius: 24px;
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin-top: 20px;
+    }
+
+    .fayda-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+    }
+
+    .fayda-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .fayda-title {
+      color: var(--On-Surface);
+      font-family: 'Switzer', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .fayda-description {
+      color: var(--On-Surface-Low);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    /* Action Buttons */
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 328px;
+      margin-top: auto;
+      margin-bottom: 8px;
+    }
+
+    .action-btn {
+      display: flex;
+      width: 100%;
+      height: 48px;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .action-btn.primary {
+      background: var(--Primary, #FE353D);
+      color: var(--On-Primary, #FFF1F2);
+      box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+    }
+
+    .action-btn.primary:hover {
+      background: #E5303A;
+      box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .action-btn.primary:active {
+      transform: scale(0.98) translateY(0);
+    }
+
+    .action-btn.primary i {
+      width: 18px !important;
+      height: 18px !important;
+      color: #FFF;
+      stroke-width: 2px;
+    }
+
+    .action-btn.secondary {
+      background: #F5F5F5;
+      color: var(--On-Surface-Low);
+    }
+
+    .action-btn.secondary:hover {
+      background: #ECECEC;
+      color: var(--On-Surface);
+    }
+
+    .action-btn.secondary:active {
+      background: #E0E0E0;
+    }
+
+    /* Footer Links */
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-bottom: 8px;
+      width: 100%;
+    }
+
+    .footer-links .divider {
+      width: 1px;
+      height: 12px;
+      background: #D0D0D0;
+    }
+
+    .footer-links .link {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--On-Surface-Low);
+      font-size: 11px;
+      font-weight: 400;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .footer-links .link:hover {
+      color: var(--On-Surface);
+    }
+
+    .footer-links .link i {
+      width: 11px !important;
+      height: 11px !important;
+      stroke-width: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="phone-frame">
+    <div class="app-content">
+
+      <!-- Header Section -->
+      <div class="header-section">
+
+        <!-- Pattern Overlay -->
+        <div class="pattern-overlay"></div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="time">10:00</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF" />
+              <path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF" />
+              <path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF" />
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF" />
+              <rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF" />
+              <rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF" />
+              <rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3" />
+            </svg>
+            <svg viewBox="0 0 28 14" fill="none">
+              <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5" />
+              <rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF" />
+              <rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <div class="header-nav">
+          <button class="back-btn" onclick="goBack()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <span class="header-title">Sign Up</span>
+        </div>
+
+        <!-- Header Subtitle -->
+        <div class="header-subtitle">Link Your Fayda ID</div>
+
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+
+        <!-- Fayda Card -->
+        <div class="fayda-card">
+          <div class="fayda-logo">
+            <img src="assets/fayda-logo-hq.png" alt="Fayda Logo">
+          </div>
+          <h2 class="fayda-title">Take a Few Steps!</h2>
+          <p class="fayda-description">
+            Link your account with Fayda to enjoy a more secure and seamless experience on the app.
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+          <button class="action-btn primary" onclick="linkNow()">
+            <i data-lucide="check-circle"></i>
+            Link Now
+          </button>
+          <button class="action-btn secondary" onclick="remindLater()">
+            Remind me later
+          </button>
+        </div>
+
+        <!-- Footer Links -->
+        <div class="footer-links">
+          <a class="link">
+            <i data-lucide="headphones"></i>
+            Contact Us
+          </a>
+          <div class="divider"></div>
+          <a class="link">
+            <i data-lucide="file-text"></i>
+            Terms and Conditions
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Link Now action → redirect to Fayda Steps
+    function linkNow() {
+      window.location.href = 'Fayda Steps.html';
+    }
+
+    // Remind me later action
+    function remindLater() {
+      alert('We\'ll remind you later. You can link your Fayda ID anytime from settings.');
+      // In real app, this would skip and proceed to dashboard
+    }
+
+    // Go back
+    function goBack() {
+      if (confirm('Go back to previous screen?')) {
+        // In real app, this would navigate back
+        alert('Navigating back...');
+      }
+    }
+  </script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+
+</html>

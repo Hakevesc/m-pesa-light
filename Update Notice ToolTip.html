@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Available Tooltip</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Tooltip-Bg:      #1A1A1F;
+    --Tooltip-Text:    #FFFFFF;
+    --Tooltip-Subtext: #A0A0A8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ═══════════════════════════
+     Tooltip wrapper + arrow
+  ═══════════════════════════ */
+  .update-tooltip-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: tooltipDrop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes tooltipDrop {
+    from { opacity: 0; transform: translateY(-16px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0)     scale(1);    }
+  }
+
+  /* Arrow pointing up */
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-left:   9px solid transparent;
+    border-right:  9px solid transparent;
+    border-bottom: 9px solid var(--Tooltip-Bg);
+    margin-bottom: -1px;
+  }
+
+  /* ═══════════════════════════
+     Tooltip Card
+  ═══════════════════════════ */
+  .update-tooltip {
+    background: var(--Tooltip-Bg);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.30);
+    min-width: 290px;
+    max-width: 340px;
+  }
+
+  .update-tooltip:hover {
+    background: #24242A;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.38);
+  }
+
+  .update-tooltip:active { transform: scale(0.97); }
+
+  /* Text block */
+  .tooltip-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tooltip-title {
+    color: var(--Tooltip-Text);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    line-height: 1.3;
+  }
+
+  .tooltip-title .version {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .tooltip-subtitle {
+    color: var(--Tooltip-Subtext);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    line-height: 1.5;
+  }
+
+  /* Info icon */
+  .tooltip-info-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .update-tooltip:hover .tooltip-info-icon {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .tooltip-info-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke: rgba(255, 255, 255, 0.75);
+    stroke-width: 2px;
+    fill: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="update-tooltip-wrapper">
+    <!-- Arrow pointing up (toward notification icon) -->
+    <div class="tooltip-arrow"></div>
+
+    <!-- Tooltip Card -->
+    <div class="update-tooltip" onclick="console.log('Open update modal')">
+      <div class="tooltip-text">
+        <span class="tooltip-title">Update Available! <span class="version">(v4.2.1)</span></span>
+        <span class="tooltip-subtitle">Tap to install new features &amp; fixes.</span>
+      </div>
+      <div class="tooltip-info-icon">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8"  x2="12.01" y2="8"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

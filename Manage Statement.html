@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Statement</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+    --Border: #E8E8EC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { background: rgba(0,0,0,0.05); }
+
+  .back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .header-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
+
+  .header-icon-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  /* Main Content */
+  .main-content {
+    padding: 0 16px 80px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Tab Buttons */
+  .tab-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  .tab-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 20px;
+    border: none;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.2px;
+  }
+
+  .tab-btn.active {
+    background: var(--Primary);
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25);
+  }
+
+  .tab-btn.inactive {
+    background: #E0E0E0;
+    color: var(--On-Surface-Low);
+  }
+
+  .tab-btn.inactive:hover { background: #D5D5D5; }
+  .tab-btn.active:hover { background: #E5303A; transform: translateY(-1px); }
+
+  /* Filter Card */
+  .filter-card {
+    width: 100%;
+    background: #FFF;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Section Header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-header i, .section-header svg {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--On-Surface);
+    stroke-width: 2px;
+  }
+
+  .section-header span {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* Custom Dropdown */
+  .custom-dropdown {
+    position: relative;
+    width: 100%;
+  }
+
+  .dropdown-trigger {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    background: #F8F8FA;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+
+  .dropdown-trigger:hover {
+    border-color: #D0D0D5;
+    background: #F5F5F8;
+  }
+
+  .dropdown-trigger.open {
+    border-color: #D0D0D5;
+    background: #FFF;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .dropdown-trigger .chevron {
+    width: 18px;
+    height: 18px;
+    color: var(--On-Surface-Low);
+    transition: transform 0.25s;
+  }
+
+  .dropdown-trigger.open .chevron {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #FFF;
+    border: 1.5px solid #D0D0D5;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+    z-index: 100;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .dropdown-menu.open {
+    max-height: 280px;
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .dropdown-option {
+    padding: 10px 16px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #F5F5F5;
+  }
+
+  .dropdown-option:last-child { border-bottom: none; }
+
+  .dropdown-option:hover {
+    background: #F4F4F6;
+    color: var(--On-Surface);
+  }
+
+  .dropdown-option.selected {
+    background: #EAEAEF;
+    color: var(--On-Surface);
+    font-weight: 600;
+  }
+
+  /* Merchant Number Field */
+  .merchant-field {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    background: #F8F8FA;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--On-Surface);
+    outline: none;
+    transition: all 0.2s;
+    display: none;
+    animation: slideDown 0.3s ease;
+    margin-top: 10px;
+  }
+
+  .merchant-field.visible {
+    display: block;
+  }
+
+  .merchant-field:focus {
+    border-color: var(--Primary);
+    background: #FFF;
+  }
+
+  .merchant-field::placeholder {
+    color: #B0B0B8;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Date Filter Section */
+  .date-filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* Radio Options */
+  .radio-options {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 8px 12px 0;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.15s;
+  }
+
+  .radio-option:hover {
+    background: #FAFAFA;
+  }
+
+  .radio-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 2px solid #D0D0D5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: #FFF;
+  }
+
+  .radio-option.selected .radio-circle {
+    border-color: var(--Success);
+    background: var(--Success-Light);
+  }
+
+  .radio-circle i, .radio-circle svg {
+    width: 16px !important;
+    height: 16px !important;
+    color: var(--Success);
+    stroke-width: 3px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .radio-option.selected .radio-circle i,
+  .radio-option.selected .radio-circle svg {
+    opacity: 1;
+  }
+
+  .radio-label {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  /* Date Range Picker (Collapsible) */
+  .date-range-picker {
+    display: none;
+    padding: 0;
+    margin-top: 8px;
+    animation: slideDown 0.3s ease;
+  }
+
+  .date-range-picker.visible {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .date-range-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .date-input-wrapper {
+    flex: 1;
+    height: 60px;
+    max-width: 125px;
+    padding: 0 10px;
+    background: #F8F8FA;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .date-input-wrapper:hover {
+    border-color: #D0D0D5;
+  }
+
+  .date-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .date-display svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+    flex-shrink: 0;
+  }
+
+  .date-display .date-text {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+
+  .date-input-wrapper input[type="date"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .date-to-label {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+
+  /* Generate PDF Button */
+  .generate-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 16px;
+    width: calc(100% - 32px);
+    height: 48px;
+    border-radius: 14px;
+    background: var(--Primary);
+    color: #FFF;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+    letter-spacing: 0.3px;
+  }
+
+  .generate-btn:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .generate-btn:active {
+    transform: scale(0.98) translateY(0);
+  }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--On-Surface);
+    color: #FFF;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== CUSTOM DATE PICKER POPUP ===== */
+  .date-picker-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .date-picker-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .date-picker {
+    width: 320px;
+    background: #FFF;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+  .date-picker-overlay.visible .date-picker {
+    transform: translateY(0);
+  }
+  .picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--Border);
+    margin-bottom: 16px;
+  }
+  .picker-nav-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--Border);
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .picker-nav-btn:hover {
+    border-color: var(--Primary);
+    background: var(--Primary-Light);
+  }
+  .picker-nav-btn:hover svg { stroke: var(--Primary); }
+  .picker-nav-btn:active { transform: scale(0.92); }
+  .picker-nav-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--On-Surface);
+    stroke-width: 2px;
+    transition: stroke 0.2s;
+  }
+  .view-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+  .view-selector:hover { background: var(--Primary-Light); }
+  .view-selector .view-text {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .view-selector .chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--On-Surface);
+    transition: transform 0.25s;
+  }
+  .picker-grid {
+    display: grid;
+    gap: 8px;
+    padding: 4px 0;
+  }
+  .month-grid, .year-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .day-grid {
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 8px;
+    column-gap: 4px;
+  }
+  .day-headers {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 8px;
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .grid-item {
+    border-radius: 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .month-grid .grid-item, .year-grid .grid-item { height: 48px; }
+  .day-grid .grid-item {
+    height: 36px;
+    width: 36px;
+    margin: 0 auto;
+  }
+  .grid-item.faded { color: #C0C0C8; }
+  .grid-item:hover:not(.empty) { background: #F5F5F5; }
+  .grid-item.selected {
+    background: var(--Primary);
+    color: #FFF;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.3);
+  }
+  .grid-item.selected:hover { background: #E5303A; }
+  .grid-item:active:not(.empty) { transform: scale(0.95); }
+  .picker-view { display: none; }
+  .picker-view.active { display: block; }
+
+  /* ===== BOTTOM SHEET MODAL ===== */
+  .modal-overlay-sheet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1500;
+    animation: fadeIn 0.25s ease-out;
+  }
+  .modal-overlay-sheet.hidden { display: none; }
+  .bottom-modal {
+    width: 100%;
+    background: #FFF;
+    border-radius: 24px 24px 0 0;
+    padding: 12px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+  }
+  .drag-handle {
+    width: 40px; height: 4px; background: #D0D0D5; border-radius: 2px; margin-bottom: 20px; flex-shrink: 0;
+  }
+  .modal-content-sheet { text-align: center; margin-bottom: 24px; width: 100%; }
+  .modal-title { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .modal-description { color: var(--On-Surface-Low); font-family: 'Switzer', sans-serif; font-size: 14px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 12px; width: 100%; }
+  .btn-cancel { flex: 1; height: 48px; border-radius: 14px; border: 1.5px solid var(--Border); background: #FFF; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; color: var(--On-Surface); transition: all 0.2s; }
+  .btn-cancel:hover { background: #F5F5F5; border-color: #D0D0D5; }
+  .btn-action-primary { flex: 1; height: 48px; border-radius: 14px; border: none; background: var(--Primary); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; color: #FFF; box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25); transition: all 0.2s; }
+  .btn-action-primary:hover { background: #E5303A; box-shadow: 0 6px 16px rgba(254, 53, 61, 0.35); transform: translateY(-1px); }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Manage Statement</span>
+      <button class="header-icon-btn" onclick="showToast('Statement history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Tab Buttons -->
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="pdf" onclick="switchTab('pdf', this)">Generate PDF</button>
+        <button class="tab-btn inactive" data-tab="email" onclick="switchTab('email', this)">Send Email</button>
+        <button class="tab-btn inactive" data-tab="schedule" onclick="switchTab('schedule', this)">Schedule</button>
+      </div>
+
+      <!-- Filter Card -->
+      <div class="filter-card">
+
+        <!-- Filter by Transaction Type -->
+        <div>
+          <div class="section-header">
+            <i data-lucide="arrow-left-right"></i>
+            <span>Filter by Transaction Type</span>
+          </div>
+          <div class="custom-dropdown" id="transactionDropdown" style="margin-top: 12px;">
+            <div class="dropdown-trigger" id="dropdownTrigger" onclick="toggleDropdown()">
+              <span id="selectedOption">All Transaction</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+              <div class="dropdown-option selected" data-value="All Transaction" onclick="selectOption(this)">All Transaction</div>
+              <div class="dropdown-option" data-value="Merchant Payment" onclick="selectOption(this)">Merchant Payment</div>
+              <div class="dropdown-option" data-value="Send Money" onclick="selectOption(this)">Send Money</div>
+              <div class="dropdown-option" data-value="Bank Transfer" onclick="selectOption(this)">Bank Transfer</div>
+              <div class="dropdown-option" data-value="Bill Payment" onclick="selectOption(this)">Bill Payment</div>
+              <div class="dropdown-option" data-value="Airtime TopUp" onclick="selectOption(this)">Airtime TopUp</div>
+            </div>
+          </div>
+          <input type="text" class="merchant-field" id="merchantField" placeholder="Enter Merchant Number">
+        </div>
+
+        <!-- Filter by Date -->
+        <div class="date-filter-section">
+          <div class="section-header">
+            <i data-lucide="calendar"></i>
+            <span>Filter by Date</span>
+          </div>
+          <div class="radio-options" style="margin-top: 8px;">
+            <div class="radio-option" data-value="this-month" onclick="selectRadio(this)">
+              <div class="radio-circle">
+                <i data-lucide="check"></i>
+              </div>
+              <span class="radio-label">This Month (May 26)</span>
+            </div>
+            <div class="radio-option" data-value="6-months" onclick="selectRadio(this)">
+              <div class="radio-circle">
+                <i data-lucide="check"></i>
+              </div>
+              <span class="radio-label">6 Months</span>
+            </div>
+            <div class="radio-option" data-value="date-range" onclick="selectRadio(this)">
+              <div class="radio-circle">
+                <i data-lucide="check"></i>
+              </div>
+              <span class="radio-label">Choose a Date Range</span>
+            </div>
+          </div>
+
+          <!-- Collapsible Date Range Picker -->
+          <div class="date-range-picker" id="dateRangePicker">
+            <div class="date-range-row">
+              <div class="date-input-wrapper" onclick="openDatePicker('start')">
+                <input type="hidden" value="2024-09-20" id="startDateInput">
+                <div class="date-display">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="date-text" id="startDateDisplay">20 Sep</span>
+                </div>
+              </div>
+              <span class="date-to-label">to</span>
+              <div class="date-input-wrapper" onclick="openDatePicker('end')">
+                <input type="hidden" value="2024-12-20" id="endDateInput">
+                <div class="date-display">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <span class="date-text" id="endDateDisplay">20 Dec</span>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <!-- Email Field Section -->
+        <div class="email-field-section" id="emailFieldSection" style="display: none; margin-top: 4px;">
+          <div class="section-header" style="margin-bottom: 12px;">
+            <i data-lucide="mail"></i>
+            <span>Send to</span>
+          </div>
+          <div class="date-input-wrapper" style="width: 100%; max-width: 100%; height: 50px;">
+            <div class="date-display" style="width: 100%;">
+              <i data-lucide="mail" style="color: var(--On-Surface-Low); width: 20px; height: 20px; flex-shrink: 0;"></i>
+              <input type="email" id="emailInput" value="zemedkun.k@gmail.com" readonly style="border: none; background: transparent; outline: none; flex: 1; font-family: 'Switzer', sans-serif; font-size: 15px; color: var(--On-Surface); font-weight: 500; min-width: 0;">
+              <button onclick="document.getElementById('emailInput').removeAttribute('readonly'); document.getElementById('emailInput').focus();" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 4px;">
+                <i data-lucide="pencil" style="width: 18px; height: 18px; color: var(--Primary);"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate PDF Button -->
+      <button class="generate-btn" onclick="generateStatement()">Generate PDF</button>
+
+    </div>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Date Picker Overlay -->
+  <div class="date-picker-overlay" id="datePickerOverlay">
+    <div class="date-picker">
+      <!-- Day View -->
+      <div class="picker-view" id="dayView">
+        <div class="picker-header">
+          <button class="picker-nav-btn" onclick="navigatePickerMonth(-1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="view-selector" onclick="switchPickerView('month')">
+            <span class="view-text" id="dayViewLabel">Sep 2024</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <button class="picker-nav-btn" onclick="navigatePickerMonth(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="day-headers">
+          <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+        </div>
+        <div class="picker-grid day-grid" id="dayGrid"></div>
+      </div>
+
+      <!-- Month View -->
+      <div class="picker-view active" id="monthView">
+        <div class="picker-header">
+          <button class="picker-nav-btn" onclick="navigatePickerYear(-1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="view-selector" onclick="switchPickerView('year')">
+            <span class="view-text" id="monthViewLabel">2024</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <button class="picker-nav-btn" onclick="navigatePickerYear(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="picker-grid month-grid" id="monthGrid"></div>
+      </div>
+
+      <!-- Year View -->
+      <div class="picker-view" id="yearView">
+        <div class="picker-header">
+          <button class="picker-nav-btn" onclick="navigatePickerYearRange(-9)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="view-selector" onclick="switchPickerView('month')">
+            <span class="view-text" id="yearViewLabel">2020 - 2028</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <button class="picker-nav-btn" onclick="navigatePickerYearRange(9)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="picker-grid year-grid" id="yearGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Modal Overlay for Actions -->
+  <div class="modal-overlay-sheet hidden" id="actionModal" onclick="closeActionModalOutside(event)">
+    <div class="bottom-modal" onclick="event.stopPropagation()">
+      <div class="drag-handle"></div>
+      <div class="modal-content-sheet">
+        <h2 class="modal-title" id="modalTitle">Are you Sure?</h2>
+        <p class="modal-description" id="modalDesc">You want to schedule your statement for 6 months</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeActionModal()">
+          <i data-lucide="x"></i>
+          Cancel
+        </button>
+        <button class="btn-action-primary" id="modalConfirmBtn" onclick="confirmAction()">
+          <i data-lucide="check" id="modalConfirmIcon"></i>
+          <span id="modalConfirmText">Confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // ===== Tab Switching =====
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+      btn.classList.add('inactive');
+    });
+    el.classList.remove('inactive');
+    el.classList.add('active');
+
+    const generateBtn = document.querySelector('.generate-btn');
+    const emailFieldSection = document.getElementById('emailFieldSection');
+
+    if (tab === 'pdf') {
+      generateBtn.textContent = 'Generate PDF';
+      if (emailFieldSection) emailFieldSection.style.display = 'none';
+    } else if (tab === 'email') {
+      generateBtn.textContent = 'Send Email';
+      if (emailFieldSection) emailFieldSection.style.display = 'block';
+    } else if (tab === 'schedule') {
+      generateBtn.textContent = 'Schedule Now';
+      if (emailFieldSection) emailFieldSection.style.display = 'block';
+    }
+  }
+
+  // ===== Dropdown =====
+  let dropdownOpen = false;
+
+  function toggleDropdown() {
+    const trigger = document.getElementById('dropdownTrigger');
+    const menu = document.getElementById('dropdownMenu');
+    dropdownOpen = !dropdownOpen;
+    trigger.classList.toggle('open', dropdownOpen);
+    menu.classList.toggle('open', dropdownOpen);
+  }
+
+  function selectOption(el) {
+    const value = el.getAttribute('data-value');
+    document.getElementById('selectedOption').textContent = value;
+
+    document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // Toggle merchant field visibility
+    const merchantField = document.getElementById('merchantField');
+    if (value === 'Merchant Payment') {
+      merchantField.classList.add('visible');
+      setTimeout(() => merchantField.focus(), 100);
+    } else {
+      merchantField.classList.remove('visible');
+      merchantField.value = '';
+    }
+
+    // Close dropdown
+    toggleDropdown();
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('transactionDropdown');
+    if (!dropdown.contains(e.target) && dropdownOpen) {
+      toggleDropdown();
+    }
+  });
+
+  // ===== Radio Selection =====
+  function selectRadio(el) {
+    document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+
+    const value = el.getAttribute('data-value');
+    const dateRangePicker = document.getElementById('dateRangePicker');
+
+    if (value === 'date-range') {
+      dateRangePicker.classList.add('visible');
+    } else {
+      dateRangePicker.classList.remove('visible');
+    }
+  }
+
+  // Format date to "DD Mon" format (e.g. "20 Sep")
+  function formatDateShort(dateStr) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.getDate() + ' ' + months[d.getMonth()];
+  }
+
+  // ===== CUSTOM DATE PICKER LOGIC =====
+  const pickerMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const pickerMonthFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  let pickerState = {
+    viewDate: new Date(), 
+    selectedDate: new Date(),
+    yearRangeStart: Math.floor(new Date().getFullYear() / 9) * 9,
+    targetInput: 'start' // 'start' or 'end'
+  };
+
+  function openDatePicker(target) {
+    pickerState.targetInput = target;
+    let inputId = target === 'start' ? 'startDateInput' : 'endDateInput';
+    let val = document.getElementById(inputId).value;
+    if(val) {
+      // Create date robustly (handle timezone issues by replacing - with / or parsing parts)
+      const parts = val.split('-');
+      if (parts.length === 3) {
+        pickerState.selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        pickerState.viewDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      } else {
+        pickerState.selectedDate = new Date();
+        pickerState.viewDate = new Date();
+      }
+    } else {
+      pickerState.selectedDate = new Date();
+      pickerState.viewDate = new Date();
+    }
+    document.getElementById('datePickerOverlay').classList.add('visible');
+    switchPickerView('month');
+  }
+
+  function closeDatePicker() {
+    document.getElementById('datePickerOverlay').classList.remove('visible');
+  }
+
+  // Close on outside click
+  document.getElementById('datePickerOverlay').addEventListener('click', function(e) {
+    if(e.target === this) closeDatePicker();
+  });
+
+  function renderDayView() {
+    const grid = document.getElementById('dayGrid');
+    grid.innerHTML = '';
+    const year = pickerState.viewDate.getFullYear();
+    const month = pickerState.viewDate.getMonth();
+    document.getElementById('dayViewLabel').textContent = pickerMonthFull[month] + ' ' + year;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+    
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const btn = document.createElement('button');
+      btn.className = 'grid-item faded';
+      btn.textContent = daysInPrevMonth - i;
+      btn.onclick = () => { navigatePickerMonth(-1); selectPickerDate(new Date(year, month - 1, daysInPrevMonth - i)); };
+      grid.appendChild(btn);
+    }
+    
+    for (let i = 1; i <= daysInMonth; i++) {
+      const btn = document.createElement('button');
+      let isSelected = pickerState.selectedDate.getDate() === i && 
+                       pickerState.selectedDate.getMonth() === month && 
+                       pickerState.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = i;
+      btn.onclick = () => selectPickerDate(new Date(year, month, i));
+      grid.appendChild(btn);
+    }
+    
+    const totalCells = startOffset + daysInMonth;
+    const remainingCells = 42 - totalCells;
+    for (let i = 1; i <= remainingCells; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'grid-item faded';
+      btn.textContent = i;
+      btn.onclick = () => { navigatePickerMonth(1); selectPickerDate(new Date(year, month + 1, i)); };
+      grid.appendChild(btn);
+    }
+  }
+
+  function renderMonthView() {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    const year = pickerState.viewDate.getFullYear();
+    document.getElementById('monthViewLabel').textContent = year;
+    
+    pickerMonths.forEach((m, index) => {
+      const btn = document.createElement('button');
+      let isSelected = pickerState.selectedDate.getMonth() === index && pickerState.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = m;
+      btn.onclick = () => {
+        pickerState.viewDate.setMonth(index);
+        switchPickerView('day');
+      };
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderYearView() {
+    const grid = document.getElementById('yearGrid');
+    grid.innerHTML = '';
+    const start = pickerState.yearRangeStart;
+    document.getElementById('yearViewLabel').textContent = start + ' - ' + (start + 8);
+    
+    for (let i = 0; i < 9; i++) {
+      const year = start + i;
+      const btn = document.createElement('button');
+      let isSelected = pickerState.selectedDate.getFullYear() === year;
+      btn.className = 'grid-item' + (isSelected ? ' selected' : '');
+      btn.textContent = year;
+      btn.onclick = () => {
+        pickerState.viewDate.setFullYear(year);
+        switchPickerView('month');
+      };
+      grid.appendChild(btn);
+    }
+  }
+
+  function selectPickerDate(date) {
+    pickerState.selectedDate = date;
+    pickerState.viewDate = new Date(date);
+    
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    
+    let inputId = pickerState.targetInput === 'start' ? 'startDateInput' : 'endDateInput';
+    let displayId = pickerState.targetInput === 'start' ? 'startDateDisplay' : 'endDateDisplay';
+    
+    document.getElementById(inputId).value = dateStr;
+    document.getElementById(displayId).textContent = date.getDate() + ' ' + pickerMonths[date.getMonth()];
+    
+    closeDatePicker();
+  }
+
+  function navigatePickerMonth(delta) {
+    pickerState.viewDate.setMonth(pickerState.viewDate.getMonth() + delta);
+    renderDayView();
+  }
+  function navigatePickerYear(delta) {
+    pickerState.viewDate.setFullYear(pickerState.viewDate.getFullYear() + delta);
+    renderMonthView();
+  }
+  function navigatePickerYearRange(delta) {
+    pickerState.yearRangeStart += delta;
+    renderYearView();
+  }
+
+  function switchPickerView(view) {
+    document.querySelectorAll('.picker-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(view + 'View').classList.add('active');
+    if (view === 'day') renderDayView();
+    if (view === 'month') renderMonthView();
+    if (view === 'year') renderYearView();
+  }
+
+  // ===== Actions =====
+  function goBack() {
+    showToast('Navigating back...');
+  }
+
+  function generateStatement() {
+    const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+    if (activeTab === 'pdf') {
+      showToast('Opening statement...');
+      setTimeout(() => {
+        window.location.href = 'Statement PDF.html';
+      }, 500);
+    } else if (activeTab === 'email') {
+      openActionModal('Confirm Email', 'Are you sure you want to send the statement to your email?', 'Send', 'send');
+    } else if (activeTab === 'schedule') {
+      openActionModal('Are you Sure?', 'You want to schedule your statement to be sent to your email?', 'Schedule', 'calendar');
+    }
+  }
+
+  // ===== Action Modal =====
+  function openActionModal(title, desc, confirmText, iconName) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDesc').textContent = desc;
+    document.getElementById('modalConfirmText').textContent = confirmText;
+    
+    // Update icon
+    const iconWrapper = document.getElementById('modalConfirmIcon');
+    iconWrapper.setAttribute('data-lucide', iconName);
+    lucide.createIcons();
+
+    document.getElementById('actionModal').classList.remove('hidden');
+  }
+
+  function closeActionModal() {
+    document.getElementById('actionModal').classList.add('hidden');
+  }
+
+  function closeActionModalOutside(event) {
+    if (event.target === event.currentTarget) {
+      closeActionModal();
+    }
+  }
+
+  function confirmAction() {
+    closeActionModal();
+    const activeTab = document.querySelector('.tab-btn.active').getAttribute('data-tab');
+    if (activeTab === 'email') {
+      showToast('Statement sent to your email successfully!');
+    } else if (activeTab === 'schedule') {
+      showToast('Statement scheduled successfully!');
+    }
+  }
+
+  // ===== Toast =====
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

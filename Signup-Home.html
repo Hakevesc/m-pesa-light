@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA App</title>
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-status-bar.css">
+<link rel="stylesheet" href="styles/component-welcome-bar.css">
+<link rel="stylesheet" href="styles/component-balance-card.css">
+<link rel="stylesheet" href="styles/component-actions.css">
+<link rel="stylesheet" href="styles/component-banner-slider.css">
+<link rel="stylesheet" href="styles/component-transactions.css">
+<link rel="stylesheet" href="styles/component-qr-popup.css">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  /* ===== POPUP OVERLAY ===== */
+  .signup-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    animation: overlayFadeIn 0.25s ease;
+  }
+  @keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .signup-modal {
+    background: #FFF; border-radius: 24px;
+    padding: 32px 24px 28px;
+    width: 320px; max-width: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.30);
+    position: relative;
+    animation: modalPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPopIn {
+    from { opacity: 0; transform: scale(0.88) translateY(16px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);     }
+  }
+
+  /* Close button (fingerprint popup only) */
+  .popup-close-btn {
+    position: absolute; top: 14px; right: 14px;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .popup-close-btn:hover { background: #F0F0F0; }
+  .popup-close-btn svg { width: 20px; height: 20px; stroke: #7C7C87; stroke-width: 2; }
+
+  /* Progress bar */
+  .popup-progress { width: 80px; height: 6px; background: #E8E8EC; border-radius: 3px; margin-bottom: 24px; overflow: hidden; }
+  .popup-progress-fill { height: 100%; width: 0; background: #1FC83B; border-radius: 3px; animation: progressFill 0.9s ease-out 0.2s forwards; }
+  @keyframes progressFill { to { width: 65%; } }
+
+  /* Success icon (fingerprint popup) */
+  .popup-success-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: #E8F9EC; border: 2px solid #1FC83B;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .popup-success-icon svg { width: 32px; height: 32px; stroke: #1FC83B; stroke-width: 2.5px; fill: none; }
+
+  /* Title & subtitle */
+  .popup-title {
+    color: #1C1C21; font-family: 'Switzer', sans-serif;
+    font-size: 22px; font-weight: 700; margin-bottom: 10px; line-height: 1.3;
+  }
+  .popup-subtitle {
+    color: #7C7C87; font-family: 'Switzer', sans-serif;
+    font-size: 14px; font-weight: 400; line-height: 1.6;
+    margin-bottom: 22px; padding: 0 4px;
+  }
+
+  /* User card (PIN popup) */
+  .popup-user-card {
+    width: 100%; background: #F8F8FA; border-radius: 16px;
+    padding: 14px 16px; display: flex; align-items: center;
+    gap: 12px; margin-bottom: 22px; text-align: left;
+  }
+  .popup-user-avatar {
+    width: 46px; height: 46px; border-radius: 50%; overflow: hidden;
+    flex-shrink: 0; border: 2px solid #FFF;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #DDD; display: flex; align-items: center; justify-content: center;
+    font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 700; color: #FFF;
+  }
+  .popup-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .popup-user-info { flex: 1; }
+  .popup-user-name { font-family: 'Switzer', sans-serif; font-size: 14px; font-weight: 600; color: #1C1C21; }
+  .popup-user-status { font-family: 'Switzer', sans-serif; font-size: 12px; color: #7C7C87; margin-top: 2px; }
+  .popup-user-status .confirmed { color: #1FC83B; font-weight: 600; }
+  .popup-fayda-logo {
+    width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    background: #FFF; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .popup-fayda-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+
+  /* Popup buttons */
+  .popup-btn-primary {
+    width: 100%; height: 48px; border-radius: 14px; border: none;
+    background: #FE353D; color: #FFF1F2; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25);
+    transition: all 0.2s; margin-bottom: 0;
+  }
+  .popup-btn-primary:hover { background: #E5303A; transform: translateY(-1px); }
+  .popup-btn-primary:active { transform: scale(0.98); }
+  .popup-btn-primary.dark {
+    background: #1C1C21; box-shadow: 0 4px 12px rgba(28,28,33,0.2);
+  }
+  .popup-btn-primary.dark:hover { background: #2C2C31; }
+
+  .popup-btn-secondary {
+    width: 100%; height: 48px; border-radius: 14px; border: none;
+    background: #F0F0F2; color: #7C7C87; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500;
+    transition: all 0.2s; margin-top: 10px;
+  }
+  .popup-btn-secondary:hover { background: #E5E5E8; color: #1C1C21; }
+
+  .popup-actions { width: 100%; display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'showTestPopup') {
+      const existing = document.getElementById('testPopupInline');
+      if (existing) existing.remove();
+      const container = document.createElement('div');
+      container.id = 'testPopupInline';
+      container.innerHTML = (event.data.css ? `<style>${event.data.css}</style>` : '') + event.data.html;
+      document.body.appendChild(container);
+    }
+  });
+</script>
+
+<script>
+  const componentTemplates = {
+    phone: `
+      <div class="phone-frame">
+        <div id="statusBarContainer"></div>
+        <div class="app-content">
+          <div id="welcomeAppBarContainer"></div>
+          <div id="balanceCardContainer"></div>
+          <div id="actionsContainer"></div>
+          <div id="bannerSliderContainer"></div>
+          <div id="recentTransactionsContainer"></div>
+        </div>
+        <div id="qrPopupContainer"></div>
+      </div>
+    `,
+
+    statusBar: `
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/></svg>
+        </div>
+      </div>
+    `,
+
+    welcomeAppBar: `
+      <div class="welcome-app-bar">
+        <div class="leading-icon">
+          <div class="avatar"><span>AM</span></div>
+        </div>
+        <div class="title"><span>Good Morning, Aster 👋</span></div>
+        <div class="trailing-icon" onclick="window.location.href='Notification Center.html'" style="cursor:pointer">
+          <div class="icon-button">
+            <div class="container">
+              <div class="state-layer">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    balanceCard: `
+      <div class="balance-card-wrapper">
+        <div class="balance-card" id="balanceCard">
+          <div class="balance-card-top">
+            <div class="main-balance">
+              <div class="header"><span class="label">Main Balance (Birr)</span></div>
+              <div class="amount" id="mainBalance" data-value="12,580.00">* * * * * * * *</div>
+            </div>
+            <button class="add-money-btn">
+              <div class="plus-icon">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <span>Add Money</span>
+            </button>
+          </div>
+          <div class="balance-card-bottom">
+            <div class="other-balance">
+              <span class="header-label">Reward Balance</span>
+              <span class="amount" id="rewardBalance" data-value="1,250.00">****</span>
+            </div>
+            <div class="other-balance">
+              <span class="header-label">Errif Balance</span>
+              <span class="amount" id="errifBalance" data-value="3,450.00">****</span>
+            </div>
+            <div class="hide-unhide">
+              <button class="eye-btn" id="eyeBtn" title="Toggle balance visibility">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    actions: `
+      <div class="actions">
+        <div class="primary-action" onclick="window.location.href='Pay Merchant.html'" style="cursor:pointer">
+          <div class="icon-container"><img src="assets/Merchant Payemnt.svg" alt="Merchant Payment" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">Merchant<br>Payment</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Pay Bill.html'" style="cursor:pointer">
+          <div class="icon-container"><img src="assets/Bill Payment.svg" alt="Bill Payment" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">Bill<br>Payment</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Credit & Saving.html'" style="cursor:pointer">
+          <div class="icon-container"><img src="assets/Credit Saving.svg" alt="Credit & Saving" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">Credit &<br>Saving</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Send Money Menu.html'" style="cursor:pointer">
+          <div class="icon-container"><img src="assets/Transfer Money.svg" alt="Transfer Money" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">Transfer<br>Money</span>
+        </div>
+        <div class="primary-action">
+          <div class="icon-container"><img src="assets/Airtime Package.svg" alt="Airtime/Package" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">Airtime/<br>Package</span>
+        </div>
+        <div class="primary-action">
+          <div class="icon-container"><img src="assets/More Services.svg" alt="More Services" style="width:40px;height:40px;object-fit:contain;"></div>
+          <span class="label">More<br>Services</span>
+        </div>
+      </div>
+    `,
+
+    bannerSlider: `
+      <div class="banner-slider">
+        <div class="banner-slides-container" id="bannerSlidesContainer">
+          <div class="banner-slide active" data-index="0">
+            <div class="banner-image"><img src="assets/banner-ads-1.png" alt="Banner 1"><div class="banner-overlay"></div></div>
+            <div class="banner-content"><h3 class="banner-title">Do it all with M-PESA</h3><p class="banner-subtitle">Make payments quickly and conveniently.</p></div>
+          </div>
+          <div class="banner-slide" data-index="1">
+            <div class="banner-image"><img src="assets/banner-ads-2.png" alt="Banner 2"><div class="banner-overlay"></div></div>
+            <div class="banner-content"><h3 class="banner-title">Send Money Anywhere</h3><p class="banner-subtitle">Transfer to any M-PESA user instantly.</p></div>
+          </div>
+          <div class="banner-slide" data-index="2">
+            <div class="banner-image"><img src="assets/banner-ads-3.png" alt="Banner 3"><div class="banner-overlay"></div></div>
+            <div class="banner-content"><h3 class="banner-title">Pay Bills Easily</h3><p class="banner-subtitle">Settle your utilities and services in seconds.</p></div>
+          </div>
+        </div>
+        <div class="banner-dots" id="bannerDots">
+          <span class="dot active" data-index="0"></span>
+          <span class="dot" data-index="1"></span>
+          <span class="dot" data-index="2"></span>
+        </div>
+      </div>
+    `,
+
+    recentTransactions: `
+      <div class="recent-transactions">
+        <div class="header">
+          <span class="transactions-title">Transactions</span>
+          <span class="see-all" onclick="window.location.href='Transaction History.html'" style="cursor:pointer">See all</span>
+        </div>
+        <div class="transactions-list">
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/cbe-logo.png" alt="CBE" onerror="this.style.display='none'"></div>
+              <div class="name-type"><span class="name">Aster Mequanent</span><span class="type">Bank</span></div>
+            </div>
+            <div class="right"><span class="amount positive">+220.00</span><span class="date">Today</span></div>
+          </div>
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div>
+              <div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div>
+            </div>
+            <div class="right"><span class="amount negative">-1,020.00</span><span class="date">Today</span></div>
+          </div>
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div>
+              <div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div>
+            </div>
+            <div class="right"><span class="amount negative">-50.00</span><span class="date">Today</span></div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    qrPopup: `
+      <div class="qr-fab-wrapper" id="qrFabWrapper">
+        <div class="qr-fab-backdrop" id="qrFabBackdrop"></div>
+        <div class="qr-fab-menu" id="qrFabMenu">
+          <div class="qr-fab-item" id="qrActionMyQR" role="button" tabindex="0" aria-label="My QR Code">
+            <span class="qr-fab-label">My QR Code</span>
+            <div class="qr-fab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/></svg></div>
+          </div>
+          <div class="qr-fab-item" id="qrActionScan" role="button" tabindex="0" aria-label="Scan QR Code">
+            <span class="qr-fab-label">Scan QR Code</span>
+            <div class="qr-fab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg></div>
+          </div>
+          <div class="qr-fab-item" id="qrActionVerify" role="button" tabindex="0" aria-label="Verify Receipt">
+            <span class="qr-fab-label">Verify Receipt</span>
+            <div class="qr-fab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg></div>
+          </div>
+        </div>
+        <button class="qr-popup" id="qrFabBtn" title="QR Actions" aria-label="Open QR actions" aria-expanded="false">
+          <div class="frame-2061">
+            <img src="assets/qr-scan.svg" alt="QR">
+          </div>
+        </button>
+      </div>
+    `
+  };
+
+  const componentMap = [
+    { container: 'statusBarContainer',        template: 'statusBar' },
+    { container: 'welcomeAppBarContainer',    template: 'welcomeAppBar' },
+    { container: 'balanceCardContainer',      template: 'balanceCard' },
+    { container: 'actionsContainer',          template: 'actions' },
+    { container: 'bannerSliderContainer',     template: 'bannerSlider' },
+    { container: 'recentTransactionsContainer', template: 'recentTransactions' },
+    { container: 'qrPopupContainer',          template: 'qrPopup' }
+  ];
+
+  function renderApp() {
+    document.getElementById('app').innerHTML = componentTemplates.phone;
+    componentMap.forEach(({ container, template }) => {
+      const el = document.getElementById(container);
+      if (el) el.innerHTML = componentTemplates[template];
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Eye toggle
+    const eyeBtn = document.getElementById('eyeBtn');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const balanceCard = document.getElementById('balanceCard');
+    const mainBalance = document.getElementById('mainBalance');
+    const rewardBalance = document.getElementById('rewardBalance');
+    const errifBalance = document.getElementById('errifBalance');
+    if (eyeBtn) {
+      let isVisible = false;
+      const eyeOffSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19.5C7 19.5 2.73 16.39 1 12C2.73 7.61 7 4.5 12 4.5C14.12 4.5 16.07 5.2 17.62 6.38" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      const eyeOnSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      eyeBtn.addEventListener('click', function() {
+        isVisible = !isVisible;
+        if (isVisible) {
+          mainBalance.textContent = mainBalance.dataset.value;
+          rewardBalance.textContent = rewardBalance.dataset.value;
+          errifBalance.textContent = errifBalance.dataset.value;
+          balanceCard.classList.add('balance-visible');
+          eyeIcon.innerHTML = eyeOffSvg;
+        } else {
+          mainBalance.textContent = '* * * * * * * *';
+          rewardBalance.textContent = '****';
+          errifBalance.textContent = '****';
+          balanceCard.classList.remove('balance-visible');
+          eyeIcon.innerHTML = eyeOnSvg;
+        }
+      });
+    }
+
+    initBannerSlider();
+    initQrFab();
+  }
+
+  function initBannerSlider() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dot, .dot');
+    let currentSlide = 0, slideInterval;
+    function goToSlide(index) {
+      slides.forEach((s, i) => { s.classList.remove('active'); if (dots[i]) dots[i].classList.remove('active'); });
+      slides[index].classList.add('active');
+      if (dots[index]) dots[index].classList.add('active');
+      currentSlide = index;
+    }
+    function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
+    function start() { slideInterval = setInterval(nextSlide, 4000); }
+    function stop() { clearInterval(slideInterval); }
+    dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); stop(); start(); }));
+    let tx = 0, te = 0;
+    const sc = document.getElementById('bannerSlidesContainer');
+    if (sc) {
+      sc.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; stop(); }, { passive: true });
+      sc.addEventListener('touchend', e => { te = e.changedTouches[0].screenX; if (Math.abs(tx - te) > 50) { tx - te > 0 ? nextSlide() : goToSlide((currentSlide - 1 + slides.length) % slides.length); } start(); }, { passive: true });
+    }
+    start();
+    const bs = document.querySelector('.banner-slider');
+    if (bs) { bs.addEventListener('mouseenter', stop); bs.addEventListener('mouseleave', start); }
+  }
+
+  function initQrFab() {
+    const wrapper = document.getElementById('qrFabWrapper');
+    const btn = document.getElementById('qrFabBtn');
+    const backdrop = document.getElementById('qrFabBackdrop');
+    if (!wrapper || !btn) return;
+    let isOpen = false;
+    function openMenu() { isOpen = true; wrapper.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+    function closeMenu() { isOpen = false; wrapper.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    btn.addEventListener('click', e => { e.stopPropagation(); isOpen ? closeMenu() : openMenu(); });
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+    document.getElementById('qrActionMyQR')?.addEventListener('click', () => { closeMenu(); window.location.href = 'My QR Code.html'; });
+    document.getElementById('qrActionScan')?.addEventListener('click', () => { closeMenu(); window.location.href = 'Scan QR.html'; });
+    document.getElementById('qrActionVerify')?.addEventListener('click', () => { closeMenu(); window.location.href = 'Verify Receipt.html'; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen) closeMenu(); });
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    renderApp();
+    initSignupFlow();
+  } else {
+    document.addEventListener('DOMContentLoaded', () => { renderApp(); initSignupFlow(); });
+  }
+</script>
+
+<!-- ===== SIGNUP FLOW POPUP LOGIC ===== -->
+<script>
+  function initSignupFlow() {
+    const pinDone = sessionStorage.getItem('signupPinDone');
+    if (pinDone === 'true') {
+      showFingerprintPopup();
+    } else {
+      showPinSetupPopup();
+    }
+  }
+
+  function removePopup() {
+    const el = document.getElementById('signupPopup');
+    if (el) {
+      el.style.animation = 'overlayFadeIn 0.2s ease reverse';
+      setTimeout(() => el.remove(), 180);
+    }
+  }
+
+  /* ─── PIN Setup Popup ─── */
+  function showPinSetupPopup() {
+    const overlay = document.createElement('div');
+    overlay.id = 'signupPopup';
+    overlay.className = 'signup-overlay';
+    overlay.innerHTML = `
+      <div class="signup-modal">
+
+        <div class="popup-progress">
+          <div class="popup-progress-fill"></div>
+        </div>
+
+        <h2 class="popup-title">Almost There!</h2>
+        <p class="popup-subtitle">
+          Registration is confirmed and linked with<br>your Fayda ID.
+        </p>
+
+        <div class="popup-user-card">
+          <div class="popup-user-avatar">
+            <img src="assets/avatars/avatar-1.png" alt="User"
+              onerror="this.style.display='none';this.parentElement.textContent='ZK'">
+          </div>
+          <div class="popup-user-info">
+            <div class="popup-user-name">Zemedkun Kidane</div>
+            <div class="popup-user-status">Status: <span class="confirmed">Confirmed</span></div>
+          </div>
+          <div class="popup-fayda-logo">
+            <img src="assets/fayda-logo-hq.png" alt="Fayda">
+          </div>
+        </div>
+
+        <div class="popup-actions">
+          <button class="popup-btn-primary" onclick="goToCreatePin()">Set Your PIN</button>
+        </div>
+
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  function goToCreatePin() {
+    sessionStorage.setItem('signupPinSource', 'signup-home');
+    window.location.href = 'Create PIN.html';
+  }
+
+  /* ─── Enable Fingerprint Popup ─── */
+  function showFingerprintPopup() {
+    sessionStorage.removeItem('signupPinDone');
+    sessionStorage.removeItem('signupPinSource');
+
+    const overlay = document.createElement('div');
+    overlay.id = 'signupPopup';
+    overlay.className = 'signup-overlay';
+    overlay.innerHTML = `
+      <div class="signup-modal">
+
+        <button class="popup-close-btn" onclick="goToHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div class="popup-success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+
+        <h2 class="popup-title">You're All Set!</h2>
+        <p class="popup-subtitle">
+          Your M-PESA account has been successfully activated.
+          Welcome to convenient payments.
+        </p>
+
+        <div class="popup-actions">
+          <button class="popup-btn-primary dark" onclick="enableFingerprint()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;">
+              <path d="M12 2a10 10 0 0 0-7.07 2.93"/>
+              <path d="M17.07 4.93A10 10 0 0 1 22 12"/>
+              <path d="M12 7a5 5 0 0 0-3.54 1.46"/>
+              <path d="M15.54 8.46A5 5 0 0 1 17 12"/>
+              <path d="M12 12a2 2 0 0 0-1.41.59"/>
+              <path d="M13.41 13.41A2 2 0 0 1 14 15"/>
+              <path d="M5 12a7 7 0 0 1 7-7"/>
+              <path d="M19 12a7 7 0 0 0-7-7"/>
+              <path d="M5 12c0 1.93.78 3.68 2.05 4.95"/>
+              <path d="M16.95 16.95A7 7 0 0 1 12 19"/>
+              <path d="M12 19v-4"/>
+            </svg>
+            Enable Fingerprint Sign-In
+          </button>
+          <button class="popup-btn-secondary" onclick="goToHome()">Remind me later</button>
+        </div>
+
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+
+  function enableFingerprint() {
+    removePopup();
+    window.location.href = 'FingerPrint Login Setup.html';
+  }
+
+  function goToHome() {
+    removePopup();
+    window.location.href = 'Lehulum Home.html';
+  }
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

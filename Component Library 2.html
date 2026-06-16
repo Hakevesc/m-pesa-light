@@ -1,0 +1,3403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Component Library</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --Primary-Light: #FFF1F2;
+    --Primary-Soft: #FFE4E6;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Success: #1FC83B;
+    --Success-Light: #E8F9EC;
+    --Warning: #FF9800;
+    --Warning-Light: #FFF8E1;
+    --Info: #1976D2;
+    --Info-Light: #E3F2FD;
+    --Border: #E8E8EC;
+    --Background: #F5F5F5;
+    --Danger: #FE353D;
+    --Danger-Light: #FFF1F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f4f5f7;
+    color: var(--On-Surface, #1C1C21);
+    min-height: 100vh;
+  }
+
+  /* ===== CATALOG LAYOUT ===== */
+  .lib-head {
+    background: linear-gradient(135deg, #1C1C21 0%, #3A3A43 100%);
+    padding: 34px 40px; color: #fff;
+    position: relative;
+  }
+  .lib-head h1 { font-size: 26px; font-weight: 700; letter-spacing: -.4px; display: flex; align-items: center; gap: 12px; }
+  .lib-head p { font-size: 13.5px; opacity: .9; margin-top: 6px; font-weight: 500; }
+  .lib-counts { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .lib-counts span { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 600; }
+
+  .lib-wrap { max-width: 1320px; margin: 0 auto; padding: 36px 40px 90px; display: flex; flex-direction: column; gap: 40px; }
+
+  .lib-canvas {
+    background: #ffffff; border: 1px solid #ececf0; border-radius: 18px;
+    padding: 26px; width: 100%; box-shadow: 0 2px 14px rgba(0,0,0,.04);
+  }
+  .pp-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .canvas-sub { font-size: 12px; color: var(--On-Surface-Low, #7C7C87); margin-bottom: 22px; font-weight: 500; }
+
+  .comp-grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .comp {
+    width: 372px; max-width: 100%;
+    border: 1px solid #eef0f3; border-radius: 14px; padding: 14px;
+    display: flex; flex-direction: column; gap: 12px; background: #fcfcfd;
+  }
+  .comp.wide { width: 100%; }
+  .comp-label { font-size: 9.5px; font-weight: 700; color: var(--On-Surface-Low, #7C7C87); text-transform: uppercase; letter-spacing: .8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0px !important; }
+  .comp-label code { font-size: 9px; background: #f4f5f7; border: 1px solid #e7e9ee; border-radius: 5px; padding: 2px 6px; color: #5b6470; font-family: Consolas, monospace; text-transform: none; letter-spacing: 0; }
+
+  .comp-stage {
+    background: var(--Background); border-radius: 12px; padding: 16px;
+    display: flex; justify-content: center; align-items: flex-start; overflow: hidden;
+  }
+  .comp-stage > * { width: 100%; }
+  .comp-stage.fit > * { width: auto; max-width: 100%; }
+
+  .lib-index { max-width: 1320px; margin: 0 auto; padding: 26px 40px 0; }
+  .lib-index h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--On-Surface-Low, #7C7C87); margin-bottom: 12px; }
+  .lib-index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .lib-index-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: #fff; border: 1px solid #ececf0; border-radius: 10px; padding: 9px 12px;
+    font-size: 12.5px; font-weight: 600; color: var(--On-Surface, #1C1C21);
+    text-decoration: none; cursor: pointer; transition: border-color .15s, transform .1s, box-shadow .15s;
+  }
+  .lib-index-item:hover { border-color: var(--Primary, #FE353D); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(254,53,61,.10); }
+  .lib-index-item .n { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .lib-index-item .num { width: 20px; height: 20px; border-radius: 6px; background: var(--Primary-Light); color: var(--Primary-Darker); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .lib-index-item code { font-size: 9px; background: #f4f5f7; border: 1px solid #e7e9ee; border-radius: 5px; padding: 2px 6px; color: #5b6470; font-family: Consolas, monospace; flex-shrink: 0; }
+
+  /* Scoped stage overrides */
+  .comp-stage .status-bar {
+    position: relative;
+    top: auto;
+    padding: 10px 14px;
+    border-radius: 12px 12px 0 0;
+  }
+  .comp-stage .bottom-nav {
+    position: relative;
+    bottom: auto;
+    width: 100%;
+    border-radius: 0 0 12px 12px;
+  }
+  .comp-stage .bottom-sheet {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    border-radius: 12px;
+    width: 100%;
+  }
+
+  /* ===== STATUS BAR ===== */
+  .status-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: var(--Background);
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    padding: 20px 20px 12px;
+    background: var(--Background);
+    position: sticky;
+    top: 44px;
+    z-index: 40;
+    border-bottom: 1px solid var(--Border);
+  }
+
+  .section-header h2 {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--Primary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .section-header p {
+    font-size: 11px;
+    color: var(--On-Surface-Low);
+    margin-top: 2px;
+  }
+
+  /* ===== COMPONENT SHOWCASE ===== */
+  .component-showcase {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .component-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--On-Surface-Low);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: -8px;
+  }
+
+  /* ===== 1. BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: var(--Primary);
+    color: #FFF;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.25);
+  }
+  .btn-primary:hover { background: #E5303A; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: #F0F0F2;
+    color: var(--On-Surface);
+  }
+  .btn-secondary:hover { background: #E5E5E8; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--Primary);
+    border: 1.5px solid var(--Primary);
+  }
+  .btn-ghost:hover { background: var(--Primary-Light); }
+
+  .btn-danger {
+    background: var(--Danger);
+    color: #FFF;
+  }
+  .btn-danger:hover { background: #E5303A; }
+
+  .btn-text {
+    background: transparent;
+    color: var(--Primary);
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .btn-text:hover { background: var(--Primary-Light); }
+
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--Surface-Container);
+    color: var(--On-Surface);
+  }
+  .btn-icon:hover { background: #F0F0F2; }
+
+  .btn-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2px; }
+
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--Primary-Light);
+    color: var(--Primary);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-copy:hover { background: #FFE0E2; }
+  .btn-copy svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2px; }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* ===== 2. INPUTS ===== */
+  .input-field {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    outline: none;
+    transition: all 0.2s;
+  }
+  .input-field:focus {
+    border-color: var(--Primary);
+    box-shadow: 0 0 0 3px rgba(254, 53, 61, 0.1);
+  }
+  .input-field::placeholder { color: var(--On-Surface-Low); font-weight: 400; }
+
+  .input-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface-Low);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+
+  /* Amount Input */
+  .amount-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 52px;
+    transition: all 0.2s;
+  }
+  .amount-input-wrapper:focus-within {
+    border-color: var(--Primary);
+    box-shadow: 0 0 0 3px rgba(254, 53, 61, 0.1);
+  }
+  .amount-input-wrapper .currency {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface-Low);
+  }
+  .amount-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    outline: none;
+    text-align: right;
+  }
+
+  /* Phone Input */
+  .phone-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 48px;
+  }
+  .country-code {
+    padding: 0 12px;
+    background: #F5F5F7;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    border-right: 1px solid var(--Border);
+    cursor: pointer;
+  }
+  .country-code svg { width: 14px; height: 14px; stroke: var(--On-Surface-Low); stroke-width: 2px; }
+  .phone-input-wrapper input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0 14px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    outline: none;
+  }
+
+  /* Search Box */
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    padding: 0 14px;
+    height: 44px;
+    transition: all 0.2s;
+  }
+  .search-box:focus-within {
+    border-color: var(--Primary);
+  }
+  .search-box svg { width: 18px; height: 18px; stroke: var(--On-Surface-Low); stroke-width: 2px; flex-shrink: 0; }
+  .search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    color: var(--On-Surface);
+    outline: none;
+  }
+
+  /* Dropdown */
+  .dropdown {
+    position: relative;
+    width: 100%;
+  }
+  .dropdown-trigger {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    transition: all 0.2s;
+  }
+  .dropdown-trigger:hover { border-color: #D0D0D5; }
+  .dropdown-trigger svg { width: 16px; height: 16px; stroke: var(--On-Surface-Low); stroke-width: 2px; }
+
+  /* PIN Dots */
+  .pin-container {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+  .pin-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #FFF;
+    border: 2px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .pin-box.filled { border-color: transparent; }
+  .pin-box.filled .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--On-Surface); }
+  .pin-box.active { border-color: var(--Primary); background: var(--Primary-Light); }
+  .pin-box.active::after {
+    content: '';
+    width: 2px;
+    height: 20px;
+    background: var(--Primary);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* OTP Boxes */
+  .otp-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .otp-box {
+    width: 44px;
+    height: 52px;
+    border-radius: 10px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .otp-box.filled { border-color: var(--Primary); background: var(--Primary-Light); color: var(--Primary); }
+  .resend-timer {
+    text-align: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    margin-top: 8px;
+  }
+  .resend-timer .time { color: var(--Primary); font-weight: 600; }
+  .resend-timer .link { color: var(--Primary); font-weight: 600; cursor: pointer; }
+
+  /* Checkbox */
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .checkbox-item input[type="checkbox"] { display: none; }
+  .checkbox-box {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .checkbox-item input:checked + .checkbox-box {
+    background: var(--Primary);
+    border-color: var(--Primary);
+  }
+  .checkbox-box svg { width: 14px; height: 14px; stroke: #FFF; stroke-width: 2.5px; opacity: 0; transition: opacity 0.2s; }
+  .checkbox-item input:checked + .checkbox-box svg { opacity: 1; }
+  .checkbox-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    color: var(--On-Surface);
+  }
+
+  /* Radio */
+  .radio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .radio-item input[type="radio"] { display: none; }
+  .radio-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .radio-item input:checked + .radio-circle {
+    border-color: var(--Primary);
+  }
+  .radio-circle::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--Primary);
+    transform: scale(0);
+    transition: transform 0.2s;
+  }
+  .radio-item input:checked + .radio-circle::after { transform: scale(1); }
+  .radio-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    color: var(--On-Surface);
+  }
+
+  /* Toggle */
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+  }
+  .toggle-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+  }
+  .toggle-switch input { display: none; }
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #D0D0D5;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 2px;
+    bottom: 2px;
+    background: #FFF;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--Primary); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ===== 3. DISPLAY COMPONENTS ===== */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .status-pill.success { background: var(--Success-Light); color: var(--Success); }
+  .status-pill.pending { background: var(--Warning-Light); color: var(--Warning); }
+  .status-pill.failed { background: var(--Danger-Light); color: var(--Danger); }
+  .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #F0F0F2;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip.active { background: var(--Primary-Light); color: var(--Primary); }
+  .chip:hover { background: #E5E5E8; }
+
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--Primary);
+    color: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tier-badge svg { width: 14px; height: 14px; stroke: #FFF; stroke-width: 2px; }
+
+  .amount-display {
+    font-family: 'Switzer', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .amount-display.positive { color: var(--Success); }
+  .amount-display.negative { color: var(--Primary); }
+  .amount-display .currency { font-size: 16px; font-weight: 500; color: var(--On-Surface-Low); margin-left: 4px; }
+
+  /* Money Amount Component (from Transfer_Enter Amount) */
+  .amount-section { text-align: center; padding: 8px 0; width: 100%; }
+  .amount-section .amount-display { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 8px; font-size: unset; font-weight: unset; letter-spacing: unset; }
+  .amount-section .amount-value { font-family: 'Switzer', sans-serif; font-size: 56px; font-weight: 700; letter-spacing: -2px; line-height: 1; color: var(--On-Surface); transition: color 0.2s; }
+  .amount-section .amount-value.insufficient { color: var(--Primary); }
+  .amount-section .amount-currency { font-family: 'Switzer', sans-serif; font-size: 20px; font-weight: 500; color: var(--On-Surface-Low); padding-left: 4px; border-left: 2px solid var(--Border); }
+  .balance-info { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 12px; }
+  .balance-item { display: flex; align-items: center; gap: 6px; color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 400; }
+  .balance-item .label { color: var(--On-Surface-Low); }
+  .balance-item .amount { font-weight: 600; color: var(--On-Surface); }
+  .balance-divider { width: 1px; height: 14px; background: var(--Border); }
+  .insufficient-warning { display: none; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; }
+  .insufficient-warning.show { display: flex; }
+  .warning-icon { width: 16px; height: 16px; color: var(--Primary); flex-shrink: 0; }
+  .warning-text { color: var(--Primary); font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 500; }
+  .fee-display { display: none; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+  .fee-display.show { display: flex; }
+  .fee-label { color: var(--On-Surface); font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 400; }
+  .fee-info-icon { width: 14px; height: 14px; color: var(--On-Surface-Low); cursor: pointer; }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--Border);
+  }
+  .divider.dashed {
+    background: none;
+    border-top: 1px dashed var(--Border);
+  }
+
+  .qr-display {
+    width: 120px;
+    height: 120px;
+    background: #FFF;
+    border: 3px solid var(--Primary);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-display svg { width: 100%; height: 100%; }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F0F0F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--On-Surface-Low);
+  }
+  .step.active { background: var(--Primary); color: #FFF; }
+  .step.done { background: var(--Success); color: #FFF; }
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: #F0F0F2;
+  }
+  .step-line.active { background: var(--Primary); }
+
+  /* ===== 4. LIST ITEMS ===== */
+  .list-card {
+    background: #FFF;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .transaction-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .transaction-row:last-child { border-bottom: none; }
+  .tx-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .tx-icon.success { background: var(--Success-Light); }
+  .tx-icon.success svg { stroke: var(--Success); }
+  .tx-icon.danger { background: var(--Danger-Light); }
+  .tx-icon.danger svg { stroke: var(--Danger); }
+  .tx-icon svg { width: 20px; height: 20px; stroke-width: 2px; }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tx-type {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+  .tx-amount-col { text-align: right; flex-shrink: 0; }
+  .tx-amount-val {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .tx-amount-val.positive { color: var(--Success); }
+  .tx-amount-val.negative { color: var(--On-Surface); }
+  .tx-date {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    color: var(--On-Surface-Low);
+  }
+
+  .notification-card {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: #FFF;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .notif-icon svg { width: 20px; height: 20px; stroke-width: 2px; }
+  .notif-body { flex: 1; }
+  .notif-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    margin-bottom: 3px;
+  }
+  .notif-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    line-height: 1.5;
+  }
+
+  .bank-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #FFF;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .bank-list-item:hover { background: #FAFAFA; }
+  .bank-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #F5F5F7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .bank-logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+  .bank-info { flex: 1; }
+  .bank-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .bank-acc {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+
+  .favourite-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #FFF;
+    border-radius: 12px;
+  }
+  .fav-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #E8E8EC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    flex-shrink: 0;
+  }
+  .fav-info { flex: 1; }
+  .fav-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .fav-detail {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+
+  .frequent-chips {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 4px 0;
+    scrollbar-width: none;
+  }
+  .frequent-chips::-webkit-scrollbar { display: none; }
+  .freq-chip {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .freq-chip-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #FFF;
+    border: 2px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  .freq-chip-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .account-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid #F0F0F0;
+    cursor: pointer;
+  }
+  .account-menu-item:last-child { border-bottom: none; }
+  .menu-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--Primary-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .menu-icon svg { width: 18px; height: 18px; stroke: var(--Primary); stroke-width: 2px; }
+  .menu-info { flex: 1; }
+  .menu-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .menu-subtitle {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+  .menu-arrow {
+    width: 18px;
+    height: 18px;
+    stroke: var(--On-Surface-Low);
+    stroke-width: 2px;
+  }
+
+  .tier-card {
+    background: linear-gradient(135deg, #C41520 0%, #FE353D 100%);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #FFF;
+  }
+  .tier-card-info .tier-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    opacity: 0.85;
+    margin-bottom: 2px;
+  }
+  .tier-card-info .tier-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tier-card-info .tier-value svg { width: 20px; height: 20px; stroke: #FFF; stroke-width: 2px; }
+  .tier-upgrade-btn {
+    padding: 8px 14px;
+    background: #FFF;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--Primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .send-money-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  .send-type-btn {
+    flex: 1;
+    height: 72px;
+    background: #FFF;
+    border: 2px solid var(--Border);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .send-type-btn.selected { border-color: var(--Primary); box-shadow: 0 4px 12px rgba(254,53,61,0.15); }
+  .send-type-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--Primary-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .send-type-icon svg { width: 18px; height: 18px; stroke: var(--Primary); stroke-width: 2px; }
+  .send-type-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    line-height: 1.3;
+  }
+
+  /* ===== 5. STATES ===== */
+  .skeleton {
+    background: linear-gradient(90deg, #F0F0F2 25%, #E5E5E8 50%, #F0F0F2 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skeleton-circle { width: 44px; height: 44px; border-radius: 50%; }
+  .skeleton-line { height: 14px; margin-bottom: 8px; }
+  .skeleton-line.short { width: 60%; }
+  .skeleton-line.medium { width: 80%; }
+
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 32px 20px;
+  }
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--Danger-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .error-icon svg { width: 40px; height: 40px; stroke: var(--Danger); stroke-width: 2px; }
+  .error-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--On-Surface);
+    margin-bottom: 8px;
+  }
+  .error-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--On-Surface-Low);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+
+  .offline-banner {
+    background: var(--Warning-Light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .offline-banner svg { width: 20px; height: 20px; stroke: var(--Warning); stroke-width: 2px; flex-shrink: 0; }
+  .offline-banner .text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+
+  /* ===== 6. NAVIGATION ===== */
+  .bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: #FFF;
+    border-top: 1px solid var(--Border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 12px;
+    z-index: 50;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 4px 12px;
+  }
+  .nav-item svg { width: 22px; height: 22px; stroke: var(--On-Surface-Low); stroke-width: 2px; }
+  .nav-item.active svg { stroke: var(--Primary); }
+  .nav-item span {
+    font-family: 'Switzer', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--On-Surface-Low);
+  }
+  .nav-item.active span { color: var(--Primary); font-weight: 600; }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    background: #F0F0F2;
+    padding: 4px;
+    border-radius: 12px;
+  }
+  .tab-item {
+    flex: 1;
+    padding: 8px 12px;
+    text-align: center;
+    border-radius: 10px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface-Low);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-item.active { background: #FFF; color: var(--On-Surface); font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+  }
+  .breadcrumb .crumb { color: var(--On-Surface-Low); }
+  .breadcrumb .crumb.active { color: var(--On-Surface); font-weight: 600; }
+  .breadcrumb .sep { color: var(--On-Surface-Low); }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+  }
+  .page-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--Border);
+    background: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .page-btn.active { background: var(--Primary); color: #FFF; border-color: var(--Primary); }
+
+  .infinite-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--Border);
+    border-top-color: var(--Primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pull-refresh {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+  .pull-refresh svg { width: 18px; height: 18px; stroke: var(--Primary); stroke-width: 2px; animation: spin 1s linear infinite; margin-right: 6px; }
+
+  /* ===== 7. MODALS ===== */
+  .bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FFF;
+    border-radius: 20px 20px 0 0;
+    padding: 12px 20px 24px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    z-index: 100;
+  }
+  .sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: #D0D0D5;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .sheet-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--On-Surface);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .sheet-desc {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    color: var(--On-Surface-Low);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .sheet-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-dialog {
+    background: #FFF;
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .alert-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--Warning-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .alert-icon svg { width: 28px; height: 28px; stroke: var(--Warning); stroke-width: 2px; }
+
+  /* ===== 8. ADVANCED FORMS ===== */
+  .password-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .strength-bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #F0F0F2;
+  }
+  .strength-bar.weak { background: var(--Danger); }
+  .strength-bar.medium { background: var(--Warning); }
+  .strength-bar.strong { background: var(--Success); }
+  .strength-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .strength-label.weak { color: var(--Danger); }
+  .strength-label.medium { color: var(--Warning); }
+  .strength-label.strong { color: var(--Success); }
+
+  .char-counter {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    color: var(--On-Surface-Low);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  .file-upload {
+    border: 2px dashed var(--Border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .file-upload:hover { border-color: var(--Primary); background: var(--Primary-Light); }
+  .file-upload svg { width: 32px; height: 32px; stroke: var(--On-Surface-Low); stroke-width: 1.5px; margin-bottom: 8px; }
+  .file-upload .title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    margin-bottom: 2px;
+  }
+  .file-upload .subtitle {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    color: var(--On-Surface-Low);
+  }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .image-thumb {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: #F0F0F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .image-thumb .remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--Danger);
+    color: #FFF;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .signature-pad {
+    border: 1.5px solid var(--Border);
+    border-radius: 12px;
+    height: 120px;
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    cursor: crosshair;
+  }
+
+  .counter-stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .counter-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--Border);
+    background: #FFF;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .counter-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    min-width: 40px;
+    text-align: center;
+  }
+
+  /* ===== 9. VISUALIZATION ===== */
+  .circular-progress {
+    width: 80px;
+    height: 80px;
+    position: relative;
+  }
+  .circular-progress svg { transform: rotate(-90deg); }
+  .circular-progress .value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--On-Surface);
+  }
+
+  .linear-progress {
+    width: 100%;
+    height: 6px;
+    background: #F0F0F2;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .linear-progress .fill {
+    height: 100%;
+    background: var(--Primary);
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--Border);
+  }
+  .timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--Primary);
+    border: 2px solid #FFF;
+    box-shadow: 0 0 0 2px var(--Primary);
+  }
+  .timeline-item .time {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    color: var(--On-Surface-Low);
+    margin-bottom: 2px;
+  }
+  .timeline-item .event {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+
+  .countdown {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .countdown-block {
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+    min-width: 56px;
+  }
+  .countdown-block .num {
+    font-family: 'Switzer', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--On-Surface);
+  }
+  .countdown-block .label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 9px;
+    color: var(--On-Surface-Low);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .progress-bar-visual {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar-visual .bar {
+    flex: 1;
+    height: 8px;
+    background: #F0F0F2;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-visual .bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--Primary), #FF6B7A);
+    border-radius: 4px;
+  }
+  .progress-bar-visual .label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* ===== 10. SPECIAL CARDS ===== */
+  .feature-card {
+    background: #FFF;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    gap: 12px;
+  }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--Primary-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .feature-icon svg { width: 22px; height: 22px; stroke: var(--Primary); stroke-width: 2px; }
+  .feature-content { flex: 1; }
+  .feature-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    margin-bottom: 3px;
+  }
+  .feature-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    line-height: 1.5;
+  }
+
+  .promo-banner {
+    background: linear-gradient(135deg, #C41520 0%, #FE353D 100%);
+    border-radius: 14px;
+    padding: 16px;
+    color: #FFF;
+    position: relative;
+    overflow: hidden;
+  }
+  .promo-banner::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+  }
+  .promo-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .promo-desc {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    opacity: 0.9;
+    margin-bottom: 12px;
+  }
+  .promo-btn {
+    padding: 8px 16px;
+    background: #FFF;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--Primary);
+    cursor: pointer;
+  }
+
+  .achievement-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .badge-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .badge-icon svg { width: 24px; height: 24px; stroke: #FFF; stroke-width: 2px; }
+
+  .referral-card {
+    background: linear-gradient(135deg, #1FC83B 0%, #4ADE80 100%);
+    border-radius: 14px;
+    padding: 16px;
+    color: #FFF;
+  }
+  .referral-code {
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-align: center;
+    margin: 12px 0;
+  }
+
+  .bill-reminder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--Warning-Light);
+    border-radius: 12px;
+    border-left: 3px solid var(--Warning);
+  }
+  .bill-reminder .info { flex: 1; }
+  .bill-reminder .name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .bill-reminder .due {
+    font-family: 'Switzer', sans-serif;
+    font-size: 11px;
+    color: var(--Warning);
+    font-weight: 500;
+  }
+  .bill-reminder .amount {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--On-Surface);
+  }
+
+  .credit-score {
+    background: #FFF;
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .score-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--Success);
+  }
+  .score-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    margin-top: 4px;
+  }
+
+  /* ===== 11. COMMUNICATION ===== */
+  .chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .chat-bubble.received {
+    background: #FFF;
+    color: var(--On-Surface);
+    border-bottom-left-radius: 4px;
+  }
+  .chat-bubble.sent {
+    background: var(--Primary);
+    color: #FFF;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+  }
+
+  .message-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFF;
+    border: 1.5px solid var(--Border);
+    border-radius: 24px;
+    padding: 8px 14px;
+  }
+  .message-input input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--On-Surface);
+    outline: none;
+  }
+  .message-input button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--Primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .message-input button svg { width: 16px; height: 16px; stroke: #FFF; stroke-width: 2px; }
+
+  .notif-bell {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--Surface-Container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .notif-bell svg { width: 20px; height: 20px; stroke: var(--On-Surface); stroke-width: 2px; }
+  .notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--Primary);
+    color: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--Background);
+  }
+
+  /* ===== 12. SECURITY ===== */
+  .trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--Success-Light);
+    border-radius: 10px;
+  }
+  .trust-badge svg { width: 18px; height: 18px; stroke: var(--Success); stroke-width: 2px; }
+  .trust-badge .text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--Success);
+  }
+
+  .limit-indicator {
+    padding: 12px;
+    background: #FFF;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .limit-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .limit-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .limit-value {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+
+  .risk-banner {
+    background: var(--Danger-Light);
+    border-left: 3px solid var(--Danger);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .risk-banner svg { width: 20px; height: 20px; stroke: var(--Danger); stroke-width: 2px; flex-shrink: 0; }
+  .risk-banner .text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+
+  /* ===== 13. ONBOARDING ===== */
+  .welcome-carousel {
+    background: linear-gradient(135deg, #C41520 0%, #FE353D 100%);
+    border-radius: 14px;
+    padding: 24px 20px;
+    color: #FFF;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-carousel::after {
+    content: '';
+    position: absolute;
+    right: -30px;
+    bottom: -30px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+  }
+  .welcome-carousel .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .welcome-carousel .icon svg { width: 32px; height: 32px; stroke: #FFF; stroke-width: 2px; }
+  .welcome-carousel h3 {
+    font-family: 'Switzer', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .welcome-carousel p {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    opacity: 0.9;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .carousel-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+  .carousel-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+  }
+  .carousel-dots .dot.active {
+    width: 20px;
+    border-radius: 3px;
+    background: #FFF;
+  }
+
+  .faq-accordion {
+    background: #FFF;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .faq-item {
+    border-bottom: 1px solid #F0F0F0;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-question {
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .faq-question svg { width: 16px; height: 16px; stroke: var(--On-Surface-Low); stroke-width: 2px; transition: transform 0.2s; }
+  .faq-item.open .faq-question svg { transform: rotate(180deg); }
+  .faq-answer {
+    padding: 0 14px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    line-height: 1.6;
+    display: none;
+  }
+  .faq-item.open .faq-answer { display: block; }
+
+  .tip-card {
+    background: var(--Info-Light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .tip-card svg { width: 20px; height: 20px; stroke: var(--Info); stroke-width: 2px; flex-shrink: 0; margin-top: 2px; }
+  .tip-card .text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface);
+    line-height: 1.5;
+  }
+  .tip-card .text strong { font-weight: 700; }
+
+  .milestone {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border-radius: 14px;
+    padding: 16px;
+    color: #FFF;
+    text-align: center;
+  }
+  .milestone .icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .milestone .icon svg { width: 28px; height: 28px; stroke: #FFF; stroke-width: 2px; }
+  .milestone h4 {
+    font-family: 'Switzer', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .milestone p {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  /* ===== 14. EDGE CASES ===== */
+  .locked-state {
+    background: var(--Danger-Light);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .locked-state .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--Danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .locked-state .icon svg { width: 24px; height: 24px; stroke: #FFF; stroke-width: 2px; }
+  .locked-state .title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--On-Surface);
+    margin-bottom: 4px;
+  }
+  .locked-state .desc {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+
+  .maintenance-banner {
+    background: var(--Warning-Light);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .maintenance-banner .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--Warning);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .maintenance-banner .icon svg { width: 20px; height: 20px; stroke: #FFF; stroke-width: 2px; }
+
+  .kyc-required {
+    background: #FFF;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .kyc-required .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--Warning-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .kyc-required .icon svg { width: 32px; height: 32px; stroke: var(--Warning); stroke-width: 2px; }
+
+  .duplicate-warning {
+    background: var(--Warning-Light);
+    border: 1px solid var(--Warning);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .duplicate-warning svg { width: 20px; height: 20px; stroke: var(--Warning); stroke-width: 2px; flex-shrink: 0; }
+  .duplicate-warning .text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--On-Surface);
+  }
+
+  .rate-limit {
+    background: var(--Danger-Light);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .rate-limit .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--Danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  .rate-limit .icon svg { width: 22px; height: 22px; stroke: #FFF; stroke-width: 2px; }
+  .rate-limit .title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--On-Surface);
+    margin-bottom: 4px;
+  }
+  .rate-limit .desc {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+  }
+
+  /* ===== UTILITY ===== */
+  .flex-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .flex-col { display: flex; flex-direction: column; gap: 10px; }
+  .w-full { width: 100%; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .mb-8 { margin-bottom: 8px; }
+
+  /* ── Dropdown on Top Right Corner ── */
+  .page-dropdown {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+  }
+  .page-dropdown-btn {
+    background: #FFFFFF;
+    border: 1px solid var(--Border, #E8E8EC);
+    color: var(--On-Surface, #1C1C21);
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  .page-dropdown-btn:hover {
+    background: #FAFAFA;
+    border-color: #D0D0D5;
+  }
+  .page-dropdown-btn svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+    stroke: var(--On-Surface-Low, #7C7C87);
+    stroke-width: 2.5px;
+  }
+  .page-dropdown.open .page-dropdown-btn svg {
+    transform: rotate(180deg);
+  }
+  .page-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid var(--Border, #E8E8EC);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    min-width: 220px;
+    display: none;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .page-dropdown.open .page-dropdown-menu {
+    display: block;
+  }
+  .page-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--On-Surface, #1C1C21);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+    border-bottom: 1px solid #f4f5f7;
+    font-family: 'Inter', sans-serif;
+  }
+  .page-dropdown-item:last-child {
+    border-bottom: none;
+  }
+  .page-dropdown-item:hover {
+    background: #f4f5f7;
+  }
+  .page-dropdown-item.active {
+    color: var(--Primary, #FE353D);
+    background: var(--Primary-Light, #FFF1F2);
+  }
+  .page-dropdown-item svg {
+    stroke-width: 2.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Dropdown Selector -->
+<div class="page-dropdown" id="pageDropdown">
+  <button class="page-dropdown-btn" id="pageDropdownBtn">
+    <span>Component Libraries</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+  <div class="page-dropdown-menu" id="pageDropdownMenu">
+    <a href="component-library.html" class="page-dropdown-item">
+      <div style="width: 16px; height: 16px; display: inline-block;"></div>
+      Component Library 1
+    </a>
+    <a href="Component Library 2.html" class="page-dropdown-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+      Component Library 2
+    </a>
+  </div>
+</div>
+
+<div class="lib-head">
+  <h1>M-PESA Lehulum — Component Library 2</h1>
+  <p>Live catalog of extended UI patterns, visualization elements, onboarding screens, and compliance states.</p>
+  <div class="lib-counts">
+    <span>55 components</span>
+    <span>14 frames</span>
+    <span>Inter · Slate Theme</span>
+  </div>
+</div>
+
+<!-- Component index (click to jump to a card) -->
+<div class="lib-index">
+  <h2>Components in this library · 55</h2>
+  <div class="lib-index-grid">
+    <a class="lib-index-item" data-target="Primary Button"><span class="n"><span class="num">1</span>Primary Button</span><code>.btn-primary</code></a>
+    <a class="lib-index-item" data-target="Secondary Button"><span class="n"><span class="num">2</span>Secondary Button</span><code>.btn-secondary</code></a>
+    <a class="lib-index-item" data-target="Ghost Button"><span class="n"><span class="num">3</span>Ghost Button</span><code>.btn-ghost</code></a>
+    <a class="lib-index-item" data-target="Danger Button"><span class="n"><span class="num">4</span>Danger Button</span><code>.btn-danger</code></a>
+    <a class="lib-index-item" data-target="Text Button"><span class="n"><span class="num">5</span>Text Button</span><code>.btn-text</code></a>
+    <a class="lib-index-item" data-target="Icon Buttons"><span class="n"><span class="num">6</span>Icon Buttons</span><code>.btn-icon</code></a>
+    <a class="lib-index-item" data-target="Copy Button"><span class="n"><span class="num">7</span>Copy Button</span><code>.btn-copy</code></a>
+    <a class="lib-index-item" data-target="Text Field"><span class="n"><span class="num">8</span>Text Field</span><code>.input-field</code></a>
+    <a class="lib-index-item" data-target="Amount Input"><span class="n"><span class="num">9</span>Amount Input</span><code>.amount-input</code></a>
+    <a class="lib-index-item" data-target="Phone Input"><span class="n"><span class="num">10</span>Phone Input</span><code>.phone-input</code></a>
+    <a class="lib-index-item" data-target="Search Box"><span class="n"><span class="num">11</span>Search Box</span><code>.search-box</code></a>
+    <a class="lib-index-item" data-target="Dropdown Selector"><span class="n"><span class="num">12</span>Dropdown Selector</span><code>.dropdown</code></a>
+    <a class="lib-index-item" data-target="PIN Dots"><span class="n"><span class="num">13</span>PIN Dots</span><code>.pin-container</code></a>
+    <a class="lib-index-item" data-target="OTP Code Boxes"><span class="n"><span class="num">14</span>OTP Code Boxes</span><code>.otp-container</code></a>
+    <a class="lib-index-item" data-target="Checkbox Items"><span class="n"><span class="num">15</span>Checkbox Items</span><code>.checkbox-item</code></a>
+    <a class="lib-index-item" data-target="Radio Options"><span class="n"><span class="num">16</span>Radio Options</span><code>.radio-item</code></a>
+    <a class="lib-index-item" data-target="Toggle Switch"><span class="n"><span class="num">17</span>Toggle Switch</span><code>.toggle-item</code></a>
+    <a class="lib-index-item" data-target="Status Pills"><span class="n"><span class="num">18</span>Status Pills</span><code>.status-pill</code></a>
+    <a class="lib-index-item" data-target="Filter Chips"><span class="n"><span class="num">19</span>Filter Chips</span><code>.chip</code></a>
+    <a class="lib-index-item" data-target="Tier Badge"><span class="n"><span class="num">20</span>Tier Badge</span><code>.tier-badge</code></a>
+    <a class="lib-index-item" data-target="Formatted Amount"><span class="n"><span class="num">21</span>Formatted Amount</span><code>.amount-display</code></a>
+    <a class="lib-index-item" data-target="Money Amount Section"><span class="n"><span class="num">22</span>Money Amount Section</span><code>.amount-section</code></a>
+    <a class="lib-index-item" data-target="Dividers"><span class="n"><span class="num">22</span>Dividers</span><code>.divider</code></a>
+    <a class="lib-index-item" data-target="QR Display"><span class="n"><span class="num">23</span>QR Display</span><code>.qr-display</code></a>
+    <a class="lib-index-item" data-target="Stepper (3 steps)"><span class="n"><span class="num">24</span>Stepper (3 steps)</span><code>.stepper</code></a>
+    <a class="lib-index-item" data-target="Transaction Rows"><span class="n"><span class="num">25</span>Transaction Rows</span><code>.transaction-row</code></a>
+    <a class="lib-index-item" data-target="Notification Card"><span class="n"><span class="num">26</span>Notification Card</span><code>.notification-card</code></a>
+    <a class="lib-index-item" data-target="Bank Item"><span class="n"><span class="num">27</span>Bank Item</span><code>.bank-list-item</code></a>
+    <a class="lib-index-item" data-target="Favourite Contact"><span class="n"><span class="num">28</span>Favourite Contact</span><code>.favourite-item</code></a>
+    <a class="lib-index-item" data-target="Frequent Contacts"><span class="n"><span class="num">29</span>Frequent Contacts</span><code>.frequent-chips</code></a>
+    <a class="lib-index-item" data-target="Account Menu Item"><span class="n"><span class="num">30</span>Account Menu Item</span><code>.account-menu-item</code></a>
+    <a class="lib-index-item" data-target="Tier Selection Card"><span class="n"><span class="num">31</span>Tier Selection Card</span><code>.tier-card</code></a>
+    <a class="lib-index-item" data-target="Wallet/Bank Select"><span class="n"><span class="num">32</span>Wallet/Bank Select</span><code>.send-money-buttons</code></a>
+    <a class="lib-index-item" data-target="Skeleton Row"><span class="n"><span class="num">33</span>Skeleton Row</span><code>.skeleton</code></a>
+    <a class="lib-index-item" data-target="Error State View"><span class="n"><span class="num">34</span>Error State View</span><code>.error-state</code></a>
+    <a class="lib-index-item" data-target="Offline Notice"><span class="n"><span class="num">35</span>Offline Notice</span><code>.offline-banner</code></a>
+    <a class="lib-index-item" data-target="Bottom Navigation"><span class="n"><span class="num">36</span>Bottom Navigation</span><code>.bottom-nav</code></a>
+    <a class="lib-index-item" data-target="Segmented Tab Bar"><span class="n"><span class="num">37</span>Segmented Tab Bar</span><code>.tab-bar</code></a>
+    <a class="lib-index-item" data-target="Breadcrumb Track"><span class="n"><span class="num">38</span>Breadcrumb Track</span><code>.breadcrumb</code></a>
+    <a class="lib-index-item" data-target="Pagination Controls"><span class="n"><span class="num">39</span>Pagination Controls</span><code>.pagination</code></a>
+    <a class="lib-index-item" data-target="Loading Indicators"><span class="n"><span class="num">40</span>Loading Indicators</span><code>.infinite-loader</code></a>
+    <a class="lib-index-item" data-target="Bottom Sheet"><span class="n"><span class="num">41</span>Bottom Sheet</span><code>.bottom-sheet</code></a>
+    <a class="lib-index-item" data-target="Alert Dialog"><span class="n"><span class="num">42</span>Alert Dialog</span><code>.alert-dialog</code></a>
+    <a class="lib-index-item" data-target="Password Strength Meter"><span class="n"><span class="num">43</span>Password Strength Meter</span><code>.password-strength</code></a>
+    <a class="lib-index-item" data-target="TextArea Counter"><span class="n"><span class="num">44</span>TextArea Counter</span><code>.char-counter</code></a>
+    <a class="lib-index-item" data-target="Upload Dropzone"><span class="n"><span class="num">45</span>Upload Dropzone</span><code>.file-upload</code></a>
+    <a class="lib-index-item" data-target="Image Previews Grid"><span class="n"><span class="num">46</span>Image Previews Grid</span><code>.image-grid</code></a>
+    <a class="lib-index-item" data-target="Signature Pad"><span class="n"><span class="num">47</span>Signature Pad</span><code>.signature-pad</code></a>
+    <a class="lib-index-item" data-target="Quantity Stepper"><span class="n"><span class="num">48</span>Quantity Stepper</span><code>.counter-stepper</code></a>
+    <a class="lib-index-item" data-target="Circular Loader"><span class="n"><span class="num">49</span>Circular Loader</span><code>.circular-progress</code></a>
+    <a class="lib-index-item" data-target="Linear Progress Bar"><span class="n"><span class="num">50</span>Linear Progress Bar</span><code>.linear-progress</code></a>
+    <a class="lib-index-item" data-target="Timeline Track"><span class="n"><span class="num">51</span>Timeline Track</span><code>.timeline</code></a>
+    <a class="lib-index-item" data-target="Countdown Timer"><span class="n"><span class="num">52</span>Countdown Timer</span><code>.countdown</code></a>
+    <a class="lib-index-item" data-target="Goal Progress"><span class="n"><span class="num">53</span>Goal Progress</span><code>.progress-bar-visual</code></a>
+    <a class="lib-index-item" data-target="Feature Card"><span class="n"><span class="num">54</span>Feature Card</span><code>.feature-card</code></a>
+    <a class="lib-index-item" data-target="Promo Gradient Card"><span class="n"><span class="num">55</span>Promo Gradient Card</span><code>.promo-banner</code></a>
+  </div>
+</div>
+
+<div class="lib-wrap">
+
+  <!-- Frame 1: Buttons & Actions -->
+  <section class="lib-canvas" id="frame-1">
+    <div class="pp-title">Frame 1 — Buttons & Actions</div>
+    <div class="canvas-sub">Component Library 2 buttons and trigger items</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-primary">
+        <div class="comp-label">Primary Button <code>.btn-primary</code></div>
+        <div class="comp-stage"><button class="btn btn-primary">Primary</button></div>
+      </div>
+      <div class="comp" id="comp-secondary">
+        <div class="comp-label">Secondary Button <code>.btn-secondary</code></div>
+        <div class="comp-stage"><button class="btn btn-secondary">Secondary</button></div>
+      </div>
+      <div class="comp" id="comp-ghost">
+        <div class="comp-label">Ghost Button <code>.btn-ghost</code></div>
+        <div class="comp-stage"><button class="btn btn-ghost">Ghost</button></div>
+      </div>
+      <div class="comp" id="comp-danger">
+        <div class="comp-label">Danger Button <code>.btn-danger</code></div>
+        <div class="comp-stage"><button class="btn btn-danger">Danger</button></div>
+      </div>
+      <div class="comp" id="comp-text">
+        <div class="comp-label">Text Button <code>.btn-text</code></div>
+        <div class="comp-stage"><button class="btn btn-text">See all →</button></div>
+      </div>
+      <div class="comp" id="comp-icon">
+        <div class="comp-label">Icon Buttons <code>.btn-icon</code></div>
+        <div class="comp-stage fit" style="gap:10px">
+          <button class="btn btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/><path d="M18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z"/></svg>
+          </button>
+          <button class="btn btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="comp" id="comp-copy">
+        <div class="comp-label">Copy Button <code>.btn-copy</code></div>
+        <div class="comp-stage fit">
+          <button class="btn-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy ID
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 2: Inputs & Controls -->
+  <section class="lib-canvas" id="frame-2">
+    <div class="pp-title">Frame 2 — Inputs & Controls</div>
+    <div class="canvas-sub">Extended text inputs, checkbox controls, PIN code displays</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-textfield">
+        <div class="comp-label">Text Field <code>.input-field</code></div>
+        <div class="comp-stage">
+          <div class="input-group">
+            <label class="input-label">Full Name</label>
+            <input type="text" class="input-field" placeholder="Enter your name">
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-amount-input">
+        <div class="comp-label">Amount Input <code>.amount-input-wrapper</code></div>
+        <div class="comp-stage">
+          <div class="amount-input-wrapper" style="width:100%">
+            <span class="currency">ETB</span>
+            <input type="text" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-phone-input">
+        <div class="comp-label">Phone Input <code>.phone-input-wrapper</code></div>
+        <div class="comp-stage">
+          <div class="phone-input-wrapper" style="width:100%">
+            <div class="country-code">
+              +251
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <input type="tel" placeholder="9XX XXX XXX">
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-searchbox">
+        <div class="comp-label">Search Box <code>.search-box</code></div>
+        <div class="comp-stage">
+          <div class="search-box" style="width:100%">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="Search transactions...">
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-dropdown">
+        <div class="comp-label">Dropdown Selector <code>.dropdown</code></div>
+        <div class="comp-stage">
+          <div class="dropdown" style="width:100%">
+            <div class="dropdown-trigger">
+              <span>Select Bank</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-pindots">
+        <div class="comp-label">PIN Dots <code>.pin-container</code></div>
+        <div class="comp-stage">
+          <div class="pin-container">
+            <div class="pin-box filled"><div class="dot"></div></div>
+            <div class="pin-box filled"><div class="dot"></div></div>
+            <div class="pin-box filled"><div class="dot"></div></div>
+            <div class="pin-box active"></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-otp">
+        <div class="comp-label">OTP Code Boxes <code>.otp-container</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <div class="otp-container">
+              <div class="otp-box filled">4</div>
+              <div class="otp-box filled">8</div>
+              <div class="otp-box filled">2</div>
+              <div class="otp-box"></div>
+              <div class="otp-box"></div>
+              <div class="otp-box"></div>
+            </div>
+            <div class="resend-timer">Resend code in <span class="time">0:45</span> · <span class="link">Resend now</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-checkbox">
+        <div class="comp-label">Checkbox Items <code>.checkbox-item</code></div>
+        <div class="comp-stage">
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%">
+            <label class="checkbox-item">
+              <input type="checkbox" checked>
+              <div class="checkbox-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <span class="checkbox-label">I accept Terms & Conditions</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox">
+              <div class="checkbox-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <span class="checkbox-label">Enable biometric login</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-radios">
+        <div class="comp-label">Radio Options <code>.radio-item</code></div>
+        <div class="comp-stage">
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%">
+            <label class="radio-item">
+              <input type="radio" name="demo2" checked>
+              <div class="radio-circle"></div>
+              <span class="radio-label">This Month</span>
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="demo2">
+              <div class="radio-circle"></div>
+              <span class="radio-label">Last 6 Months</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-toggle">
+        <div class="comp-label">Toggle Switch <code>.toggle-item</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <div class="toggle-item">
+              <span class="toggle-label">Notifications</span>
+              <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-item">
+              <span class="toggle-label">Fingerprint Sign-in</span>
+              <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 3: Display Components -->
+  <section class="lib-canvas" id="frame-3">
+    <div class="pp-title">Frame 3 — Display Components</div>
+    <div class="canvas-sub">Pills, badges, amounts, dividers, and QR components</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-statuspills">
+        <div class="comp-label">Status Pills <code>.status-pill</code></div>
+        <div class="comp-stage fit">
+          <div class="flex-row">
+            <span class="status-pill success"><span class="dot"></span>Success</span>
+            <span class="status-pill pending"><span class="dot"></span>Pending</span>
+            <span class="status-pill failed"><span class="dot"></span>Failed</span>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-chips">
+        <div class="comp-label">Filter Chips <code>.chip</code></div>
+        <div class="comp-stage fit">
+          <div class="flex-row">
+            <span class="chip active">All</span>
+            <span class="chip">Send Money</span>
+            <span class="chip">Bill Payment</span>
+            <span class="chip">Airtime</span>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-tierbadge">
+        <div class="comp-label">Tier Badge <code>.tier-badge</code></div>
+        <div class="comp-stage fit">
+          <span class="tier-badge">
+            Tier 2
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="comp" id="comp-amount-display">
+        <div class="comp-label">Formatted Amount <code>.amount-display</code></div>
+        <div class="comp-stage fit">
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <span class="amount-display positive">+1,250.00<span class="currency">Birr</span></span>
+            <span class="amount-display negative">-3,500.00<span class="currency">Birr</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="comp wide" id="comp-money-amount-section">
+        <div class="comp-label">Money Amount Section <code>.amount-section</code></div>
+        <div class="comp-stage">
+          <div class="amount-section">
+            <div class="amount-display">
+              <span class="amount-value" id="amountValue">4,500.00</span>
+              <span class="amount-currency">ETB</span>
+            </div>
+
+            <!-- Balance Info - Main Balance & Available on one line -->
+            <div class="balance-info">
+              <div class="balance-item">
+                <span class="label">Main:</span>
+                <span class="amount">12,580.00 Birr</span>
+              </div>
+              <div class="balance-divider"></div>
+              <div class="balance-item">
+                <span class="label">Available:</span>
+                <span class="amount">800.00 Birr</span>
+              </div>
+            </div>
+
+            <!-- Insufficient Balance Warning -->
+            <div class="insufficient-warning show" id="insufficientWarning">
+              <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span class="warning-text">Insufficient Balance: 800.00 Birr</span>
+            </div>
+
+            <!-- Fee Display -->
+            <div class="fee-display show" id="feeDisplay">
+              <span class="fee-label">Fee 5.00 ETB</span>
+              <svg class="fee-info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-dividers">
+        <div class="comp-label">Dividers <code>.divider</code></div>
+        <div class="comp-stage">
+          <div style="width:100%; display:flex; flex-direction:column; gap:15px">
+            <div class="divider"></div>
+            <div class="divider dashed"></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-qrdisplay">
+        <div class="comp-label">QR Display <code>.qr-display</code></div>
+        <div class="comp-stage fit">
+          <div class="qr-display">
+            <svg viewBox="0 0 100 100" fill="none"><rect x="10" y="10" width="25" height="25" fill="#1C1C21"/><rect x="65" y="10" width="25" height="25" fill="#1C1C21"/><rect x="10" y="65" width="25" height="25" fill="#1C1C21"/><rect x="65" y="65" width="25" height="25" fill="#1C1C21"/><rect x="40" y="40" width="20" height="20" fill="#1C1C21"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-stepper">
+        <div class="comp-label">Stepper (3 steps) <code>.stepper</code></div>
+        <div class="comp-stage">
+          <div class="stepper">
+            <div class="step done">✓</div>
+            <div class="step-line active"></div>
+            <div class="step done">✓</div>
+            <div class="step-line active"></div>
+            <div class="step active">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 4: List Items -->
+  <section class="lib-canvas" id="frame-4">
+    <div class="pp-title">Frame 4 — List Items</div>
+    <div class="canvas-sub">App activity rows, notification layout cards, and payment source selectors</div>
+    <div class="comp-grid">
+      <div class="comp wide" id="comp-txrows">
+        <div class="comp-label">Transaction Rows <code>.transaction-row</code></div>
+        <div class="comp-stage" style="padding:0">
+          <div class="list-card" style="width:100%; border-radius:0; box-shadow:none">
+            <div class="transaction-row">
+              <div class="tx-icon success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="tx-info">
+                <div class="tx-name">From Mikias Dereje</div>
+                <div class="tx-type">Transfer Money</div>
+              </div>
+              <div class="tx-amount-col">
+                <div class="tx-amount-val positive">+1,000.00</div>
+                <div class="tx-date">Today</div>
+              </div>
+            </div>
+            <div class="transaction-row">
+              <div class="tx-icon danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div class="tx-info">
+                <div class="tx-name">London Cafe</div>
+                <div class="tx-type">Merchant Payment</div>
+              </div>
+              <div class="tx-amount-col">
+                <div class="tx-amount-val negative">-350.00</div>
+                <div class="tx-date">Today</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-notifcard">
+        <div class="comp-label">Notification Card <code>.notification-card</code></div>
+        <div class="comp-stage">
+          <div class="notification-card">
+            <div class="notif-icon" style="background: var(--Warning-Light);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="notif-body">
+              <div class="notif-title">Low Balance Alert</div>
+              <div class="notif-desc">Your M-PESA balance is below 500 Birr. Top up to continue.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-bankitem">
+        <div class="comp-label">Bank Item <code>.bank-list-item</code></div>
+        <div class="comp-stage">
+          <div class="bank-list-item">
+            <div class="bank-logo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 21 21 21 21 10"/><polyline points="3 10 3 21"/><line x1="9" y1="10" x2="9" y2="16"/><line x1="13" y1="10" x2="13" y2="16"/><line x1="17" y1="10" x2="17" y2="16"/><polygon points="3 6 21 6 12 1 3 6"/></svg>
+            </div>
+            <div class="bank-info">
+              <div class="bank-name">Awash Bank</div>
+              <div class="bank-acc">****56436</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-favitem">
+        <div class="comp-label">Favourite Contact <code>.favourite-item</code></div>
+        <div class="comp-stage">
+          <div class="favourite-item">
+            <div class="fav-avatar">KB</div>
+            <div class="fav-info">
+              <div class="fav-name">Kidist Birhanu</div>
+              <div class="fav-detail">Awash Bank · ****56436</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-frequent">
+        <div class="comp-label">Frequent Contacts <code>.frequent-chips</code></div>
+        <div class="comp-stage">
+          <div class="frequent-chips">
+            <div class="freq-chip"><div class="freq-chip-avatar">AM</div><span class="freq-chip-name">Aster</span></div>
+            <div class="freq-chip"><div class="freq-chip-avatar">HC</div><span class="freq-chip-name">Henok</span></div>
+            <div class="freq-chip"><div class="freq-chip-avatar">KB</div><span class="freq-chip-name">Kidist</span></div>
+            <div class="freq-chip"><div class="freq-chip-avatar">MD</div><span class="freq-chip-name">Mikias</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-menuitem">
+        <div class="comp-label">Account Menu Item <code>.account-menu-item</code></div>
+        <div class="comp-stage">
+          <div class="list-card" style="width:100%">
+            <div class="account-menu-item">
+              <div class="menu-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div class="menu-info">
+                <div class="menu-title">Account Security</div>
+                <div class="menu-subtitle">Update PIN & Biometrics</div>
+              </div>
+              <svg class="menu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-tiercard">
+        <div class="comp-label">Tier Selection Card <code>.tier-card</code></div>
+        <div class="comp-stage">
+          <div class="tier-card">
+            <div class="tier-card-info">
+              <div class="tier-label">Account Tier</div>
+              <div class="tier-value">
+                Tier 2
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+            </div>
+            <button class="tier-upgrade-btn">Upgrade →</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-sendmoney-buttons">
+        <div class="comp-label">Wallet/Bank Select <code>.send-money-buttons</code></div>
+        <div class="comp-stage">
+          <div class="send-money-buttons">
+            <div class="send-type-btn selected">
+              <div class="send-type-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              </div>
+              <div class="send-type-label">M-PESA<br>Wallet</div>
+            </div>
+            <div class="send-type-btn">
+              <div class="send-type-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 21 21 21 21 10"/><polyline points="3 10 3 21"/><line x1="9" y1="10" x2="9" y2="16"/><line x1="13" y1="10" x2="13" y2="16"/><line x1="17" y1="10" x2="17" y2="16"/><polygon points="3 6 21 6 12 1 3 6"/></svg>
+              </div>
+              <div class="send-type-label">Bank<br>Account</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 5: States & Feedback -->
+  <section class="lib-canvas" id="frame-5">
+    <div class="pp-title">Frame 5 — States & Feedback</div>
+    <div class="canvas-sub">Skeleton elements, errors, network loss UI banners</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-skeleton">
+        <div class="comp-label">Skeleton Row <code>.skeleton</code></div>
+        <div class="comp-stage">
+          <div class="list-card" style="display: flex; gap: 12px; align-items: center; padding: 14px; width: 100%">
+            <div class="skeleton skeleton-circle"></div>
+            <div style="flex: 1;">
+              <div class="skeleton skeleton-line medium"></div>
+              <div class="skeleton skeleton-line short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-errorstate">
+        <div class="comp-label">Error State View <code>.error-state</code></div>
+        <div class="comp-stage">
+          <div class="error-state">
+            <div class="error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="error-title">No Internet Connection</div>
+            <div class="error-desc">Please check your network settings and try again.</div>
+            <button class="btn btn-primary">Retry</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-offline">
+        <div class="comp-label">Offline Notice <code>.offline-banner</code></div>
+        <div class="comp-stage">
+          <div class="offline-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            <span class="text">You're offline. Showing cached data.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 6: Navigation -->
+  <section class="lib-canvas" id="frame-6">
+    <div class="pp-title">Frame 6 — Navigation</div>
+    <div class="canvas-sub">Tab controls, paginators, bottom bars, and load-more controls</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-bottomnav">
+        <div class="comp-label">Bottom Navigation <code>.bottom-nav</code></div>
+        <div class="comp-stage" style="padding:0">
+          <div class="bottom-nav">
+            <div class="nav-item active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <span>Activity</span>
+            </div>
+            <div class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>Pay</span>
+            </div>
+            <div class="nav-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-tabbar">
+        <div class="comp-label">Segmented Tab Bar <code>.tab-bar</code></div>
+        <div class="comp-stage">
+          <div class="tab-bar">
+            <div class="tab-item active">Transactions</div>
+            <div class="tab-item">Alerts</div>
+            <div class="tab-item">Rewards</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-breadcrumb">
+        <div class="comp-label">Breadcrumb Track <code>.breadcrumb</code></div>
+        <div class="comp-stage">
+          <div class="breadcrumb">
+            <span class="crumb">Home</span>
+            <span class="sep">›</span>
+            <span class="crumb">Transfer</span>
+            <span class="sep">›</span>
+            <span class="crumb active">Confirm</span>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-pagination">
+        <div class="comp-label">Pagination Controls <code>.pagination</code></div>
+        <div class="comp-stage">
+          <div class="pagination">
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-refresh">
+        <div class="comp-label">Loading Indicators <code>.infinite-loader</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <div class="infinite-loader">
+              <div class="spinner"></div>
+              Loading more transactions...
+            </div>
+            <div class="pull-refresh">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Pull to refresh
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 7: Modals & Dialogs -->
+  <section class="lib-canvas" id="frame-7">
+    <div class="pp-title">Frame 7 — Modals & Dialogs</div>
+    <div class="canvas-sub">Critical alert popups and contextual bottom action lists</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-bottomsheet">
+        <div class="comp-label">Bottom Sheet <code>.bottom-sheet</code></div>
+        <div class="comp-stage">
+          <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-title">Remove from favorites?</div>
+            <div class="sheet-desc">"Rent Payment" will be removed from your shortcuts.</div>
+            <div class="sheet-actions">
+              <button class="btn btn-danger w-full">Remove</button>
+              <button class="btn btn-secondary w-full">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-alertdialog">
+        <div class="comp-label">Alert Dialog <code>.alert-dialog</code></div>
+        <div class="comp-stage">
+          <div class="alert-dialog">
+            <div class="alert-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="sheet-title" style="font-size: 16px;">Are you sure?</div>
+            <div class="sheet-desc" style="margin-bottom: 16px;">This action cannot be undone.</div>
+            <div class="sheet-actions" style="flex-direction: row;">
+              <button class="btn btn-secondary" style="flex: 1;">Cancel</button>
+              <button class="btn btn-danger" style="flex: 1;">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 8: Advanced Forms -->
+  <section class="lib-canvas" id="frame-8">
+    <div class="pp-title">Frame 8 — Advanced Forms</div>
+    <div class="canvas-sub">Signature draws, dropzone inputs, password indicators, and counter steppers</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-pwdstrength">
+        <div class="comp-label">Password Strength Meter <code>.password-strength</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <input type="password" class="input-field" value="MyP@ss123" style="width: 100%;">
+            <div class="password-strength">
+              <div class="strength-bar strong"></div>
+              <div class="strength-bar strong"></div>
+              <div class="strength-bar strong"></div>
+              <div class="strength-bar medium"></div>
+            </div>
+            <div class="strength-label strong">Strong password</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-charcounter">
+        <div class="comp-label">TextArea Counter <code>.char-counter</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <textarea class="input-field" style="height: 80px; padding: 12px 14px; resize: none; font-family: 'Inter';" placeholder="Enter description...">This is a sample text with 45 characters</textarea>
+            <div class="char-counter">45 / 100 characters</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-fileupload">
+        <div class="comp-label">Upload Dropzone <code>.file-upload</code></div>
+        <div class="comp-stage">
+          <div class="file-upload">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="title">Upload KYC Document</div>
+            <div class="subtitle">Tap to browse · PDF, JPG, PNG</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-imagegrid">
+        <div class="comp-label">Image Previews Grid <code>.image-grid</code></div>
+        <div class="comp-stage">
+          <div class="image-grid">
+            <div class="image-thumb" style="background: #E8E8EC;">
+              <button class="remove">×</button>
+            </div>
+            <div class="image-thumb" style="background: #D0D0D5;">
+              <button class="remove">×</button>
+            </div>
+            <div class="image-thumb" style="border: 2px dashed var(--Border); background: transparent;">
+              <span style="font-size: 20px; color: var(--On-Surface-Low);">+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-signature">
+        <div class="comp-label">Signature Pad <code>.signature-pad</code></div>
+        <div class="comp-stage">
+          <div class="signature-pad">
+            ✍️ Tap here to sign
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-counter-stepper">
+        <div class="comp-label">Quantity Stepper <code>.counter-stepper</code></div>
+        <div class="comp-stage fit">
+          <div class="counter-stepper">
+            <button class="counter-btn">−</button>
+            <span class="counter-value">3</span>
+            <button class="counter-btn">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 9: Display & Visualization -->
+  <section class="lib-canvas" id="frame-9">
+    <div class="pp-title">Frame 9 — Display & Visualization</div>
+    <div class="canvas-sub">Goal trackers, linear indicators, vertical timelines, and countdown items</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-circular">
+        <div class="comp-label">Circular Loader <code>.circular-progress</code></div>
+        <div class="comp-stage fit">
+          <div class="circular-progress">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#F0F0F2" stroke-width="6"/>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#FE353D" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="64" stroke-linecap="round"/>
+            </svg>
+            <div class="value">70%</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-linear">
+        <div class="comp-label">Linear Progress Bar <code>.linear-progress</code></div>
+        <div class="comp-stage">
+          <div class="linear-progress">
+            <div class="fill" style="width: 65%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-timeline">
+        <div class="comp-label">Timeline Track <code>.timeline</code></div>
+        <div class="comp-stage">
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="time" style="font-size:12px; font-weight:600; color:var(--On-Surface)">10:30 AM</div>
+              <div class="event" style="font-size:12px; color:var(--On-Surface-Low)">Payment initiated</div>
+            </div>
+            <div class="timeline-item">
+              <div class="time" style="font-size:12px; font-weight:600; color:var(--On-Surface)">10:31 AM</div>
+              <div class="event" style="font-size:12px; color:var(--On-Surface-Low)">Processing at bank</div>
+            </div>
+            <div class="timeline-item">
+              <div class="time" style="font-size:12px; font-weight:600; color:var(--On-Surface)">10:32 AM</div>
+              <div class="event" style="font-size:12px; color:var(--On-Surface-Low)">Transaction completed ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-countdown">
+        <div class="comp-label">Countdown Timer <code>.countdown</code></div>
+        <div class="comp-stage fit">
+          <div style="display:flex; justify-content:center; gap:12px; width:100%">
+            <div class="pin-box filled" style="flex-direction:column; gap:2px; height:auto; padding:6px 10px"><span style="font-size:18px; font-weight:700">02</span><span style="font-size:9px; color:var(--On-Surface-Low)">Min</span></div>
+            <div class="pin-box filled" style="flex-direction:column; gap:2px; height:auto; padding:6px 10px"><span style="font-size:18px; font-weight:700">45</span><span style="font-size:9px; color:var(--On-Surface-Low)">Sec</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-goal">
+        <div class="comp-label">Goal Progress <code>.progress-bar-visual</code></div>
+        <div class="comp-stage">
+          <div style="width:100%">
+            <div class="linear-progress" style="height:10px; border-radius:5px"><div class="fill" style="width: 60%; background:var(--Primary)"></div></div>
+            <div style="font-size:12px; font-weight:600; text-align:right; margin-top:6px">60% Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 10: Special Cards -->
+  <section class="lib-canvas" id="frame-10">
+    <div class="pp-title">Frame 10 — Lists & Cards</div>
+    <div class="canvas-sub">Dashboard visual panels, achievement blocks, and due bills</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-featurecard">
+        <div class="comp-label">Feature Card <code>.feature-card</code></div>
+        <div class="comp-stage">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="feature-content">
+              <div class="feature-title">Instant Transfers</div>
+              <div class="feature-desc">Send money to any bank in seconds with zero fees.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-promobanner">
+        <div class="comp-label">Promo Gradient Card <code>.promo-banner</code></div>
+        <div class="comp-stage">
+          <div class="promo-banner">
+            <div class="promo-title">Earn 500 Birr Cashback!</div>
+            <div class="promo-desc">Complete 5 transactions this week</div>
+            <button class="promo-btn">Learn More</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-achievement">
+        <div class="comp-label">Achievement Item <code>.achievement-badge</code></div>
+        <div class="comp-stage">
+          <div class="achievement-badge">
+            <div class="badge-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+            </div>
+            <div class="fav-info">
+              <div class="fav-name">First Transaction</div>
+              <div class="fav-detail">Unlocked · 2 days ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-referral">
+        <div class="comp-label">Referral Sharing Card <code>.referral-card</code></div>
+        <div class="comp-stage">
+          <div class="referral-card">
+            <div class="promo-title" style="font-size: 14px;">Invite Friends, Earn Rewards</div>
+            <div class="referral-code">MPESA-2024</div>
+            <button class="promo-btn" style="width: 100%;">Share Code</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-billreminder">
+        <div class="comp-label">Bill Due Reminder <code>.bill-reminder</code></div>
+        <div class="comp-stage">
+          <div class="bill-reminder">
+            <div class="info">
+              <div class="name">Electricity Bill</div>
+              <div class="due">Due in 3 days</div>
+            </div>
+            <div class="amount" style="font-weight:700">1,200 BR</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-creditscore">
+        <div class="comp-label">Credit Score Card <code>.credit-score</code></div>
+        <div class="comp-stage">
+          <div class="credit-score">
+            <div class="score-value">720</div>
+            <div class="score-label">Good Credit Score</div>
+            <div class="linear-progress mt-8"><div class="fill" style="width: 72%; background: var(--Success);"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 11: Communication -->
+  <section class="lib-canvas" id="frame-11">
+    <div class="pp-title">Frame 11 — Communication</div>
+    <div class="canvas-sub">Inline chat interfaces, feedback textboxes, and notification alert indicators</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-chat">
+        <div class="comp-label">Chat History <code>.chat-bubble</code></div>
+        <div class="comp-stage">
+          <div style="display: flex; flex-direction: column; gap: 4px; width:100%">
+            <div class="chat-bubble received">Hello! How can I help you today?</div>
+            <div class="chat-bubble sent">I need help with my transaction</div>
+            <div class="chat-bubble received">Sure! Please share your transaction ID.</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-msginput">
+        <div class="comp-label">Message Input Row <code>.message-input</code></div>
+        <div class="comp-stage">
+          <div class="message-input" style="width:100%">
+            <input type="text" placeholder="Type a message...">
+            <button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-notifbell">
+        <div class="comp-label">Indicator Bell <code>.notif-bell</code></div>
+        <div class="comp-stage fit">
+          <div class="notif-bell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <div class="notif-badge">3</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 12: Security & Compliance -->
+  <section class="lib-canvas" id="frame-12">
+    <div class="pp-title">Frame 12 — Security & Compliance</div>
+    <div class="canvas-sub">Trust seals, threat alerts, and compliance metrics</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-trust">
+        <div class="comp-label">Security Device Badge <code>.trust-badge</code></div>
+        <div class="comp-stage">
+          <div class="trust-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="text">Recognized Device</span>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-limit">
+        <div class="comp-label">Usage Limit progress <code>.limit-indicator</code></div>
+        <div class="comp-stage">
+          <div class="limit-indicator">
+            <div class="limit-header">
+              <span class="limit-label">Daily Transfer Limit</span>
+              <span class="limit-value">45,000 / 50,000 BR</span>
+            </div>
+            <div class="linear-progress"><div class="fill" style="width: 90%; background: var(--Warning);"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-risk">
+        <div class="comp-label">Security Alert flag <code>.risk-banner</code></div>
+        <div class="comp-stage">
+          <div class="risk-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="text">Suspicious activity detected. Please verify your identity.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 13: Onboarding & Education -->
+  <section class="lib-canvas" id="frame-13">
+    <div class="pp-title">Frame 13 — Onboarding & Education</div>
+    <div class="canvas-sub">Feature explanations, accordion FAQ lists, reward updates, and tutorials</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-carousel">
+        <div class="comp-label">Feature Carousel Box <code>.welcome-carousel</code></div>
+        <div class="comp-stage">
+          <div class="welcome-carousel">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <h3>Fast & Secure</h3>
+            <p>Send money instantly to anyone, anywhere in Ethiopia.</p>
+            <div class="carousel-dots">
+              <div class="dot active"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-faq">
+        <div class="comp-label">FAQ Accordions <code>.faq-accordion</code></div>
+        <div class="comp-stage">
+          <div class="faq-accordion" style="width:100%">
+            <div class="faq-item open">
+              <div class="faq-question">
+                How do I send money?
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="faq-answer">Open the app, tap "Send Money", enter the recipient's phone number, and confirm with your PIN.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-question">
+                What are the transfer limits?
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="faq-answer">Tier 1: 10,000 BR/day · Tier 2: 50,000 BR/day · Tier 3: 200,000 BR/day</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-tip">
+        <div class="comp-label">Helper Tip Card <code>.tip-card</code></div>
+        <div class="comp-stage">
+          <div class="tip-card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div class="text"><strong>Pro Tip:</strong> Add frequent contacts to favorites for faster transfers next time.</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-milestone">
+        <div class="comp-label">Badge Achievement popup <code>.milestone</code></div>
+        <div class="comp-stage">
+          <div class="milestone">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+            <h4>🎉 100th Transaction!</h4>
+            <p>You've earned 500 Birr cashback reward</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Frame 14: Error & Edge Cases -->
+  <section class="lib-canvas" id="frame-14">
+    <div class="pp-title">Frame 14 — Error & Edge Cases</div>
+    <div class="canvas-sub">KYC block overlays, lockout indicators, duplicate request warnings, and server maintenance states</div>
+    <div class="comp-grid">
+      <div class="comp" id="comp-locked">
+        <div class="comp-label">Locked Screen warning <code>.locked-state</code></div>
+        <div class="comp-stage">
+          <div class="locked-state">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="title">Account Locked</div>
+            <div class="desc">Too many failed attempts. Try again in 30 minutes.</div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-maintenance">
+        <div class="comp-label">Scheduled Maintenance banner <code>.maintenance-banner</code></div>
+        <div class="comp-stage">
+          <div class="maintenance-banner" style="width: 100%">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div class="fav-info">
+              <div class="fav-name">Scheduled Maintenance</div>
+              <div class="fav-detail">Today 2:00 AM - 4:00 AM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-kycreq">
+        <div class="comp-label">KYC Missing prompt <code>.kyc-required</code></div>
+        <div class="comp-stage">
+          <div class="kyc-required" style="width: 100%">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="error-title" style="font-size: 16px;">Verification Required</div>
+            <div class="error-desc" style="margin-bottom: 8px;">Please complete KYC to unlock higher limits.</div>
+            <button class="btn btn-primary" style="width: 100%">Start Verification</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-duplicate">
+        <div class="comp-label">Duplicate Alert card <code>.duplicate-warning</code></div>
+        <div class="comp-stage">
+          <div class="duplicate-warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="text">You recently sent 500 BR to this number. Send again?</span>
+          </div>
+        </div>
+      </div>
+      <div class="comp" id="comp-ratelimit">
+        <div class="comp-label">Rate limit notification <code>.rate-limit</code></div>
+        <div class="comp-stage">
+          <div class="rate-limit">
+            <div class="icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="title">Too Many Requests</div>
+            <div class="desc">Please wait 60 seconds before trying again.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // FAQ Accordion toggle
+  document.querySelectorAll('.faq-question').forEach(q => {
+    q.addEventListener('click', () => {
+      q.parentElement.classList.toggle('open');
+    });
+  });
+
+  // Tab bar toggle
+  document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Send type button toggle
+  document.querySelectorAll('.send-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.send-type-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  // Chip toggle
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // Bottom nav toggle
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Index links jump to the matching component card.
+  document.querySelectorAll('.lib-index-item').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var target = a.getAttribute('data-target');
+      var labels = document.querySelectorAll('.comp-label');
+      for (var i = 0; i < labels.length; i++) {
+        if (labels[i].textContent.trim().indexOf(target) === 0) {
+          labels[i].closest('.comp').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          break;
+        }
+      }
+    });
+  });
+
+  // Dropdown toggle logic
+  var dropdownBtn = document.getElementById('pageDropdownBtn');
+  var dropdown = document.getElementById('pageDropdown');
+  if (dropdownBtn && dropdown) {
+    dropdownBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', function () {
+      dropdown.classList.remove('open');
+    });
+  }
+</script>
+
+</body>
+</html>

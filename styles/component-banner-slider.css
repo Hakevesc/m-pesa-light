@@ -1,0 +1,155 @@
+/* ===== BANNER SLIDER COMPONENT ===== */
+.banner-slider {
+  width: 100%;
+  max-width: 328px;
+  height: 110px;
+  margin: 12px auto;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: var(--Surface-Container);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.banner-slides-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+
+.banner-slide {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  pointer-events: none;
+}
+
+.banner-slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.banner-slide.active + .banner-slide {
+  opacity: 1;
+  transform: translateX(75%);
+  width: 25%;
+  z-index: 0;
+  pointer-events: none;
+  /* Clip the peeking slide so only its right edge shows 25% */
+  overflow: hidden;
+}
+
+.banner-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.banner-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(254, 53, 61, 0.85) 0%,
+    rgba(254, 53, 61, 0.5) 40%,
+    rgba(196, 21, 32, 0.15) 70%,
+    transparent 100%
+  );
+  z-index: 2;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 3;
+  padding: 14px 16px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.banner-title {
+  color: #FFF;
+  font-family: 'Switzer', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+  max-width: 70%;
+}
+
+.banner-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  max-width: 65%;
+}
+
+/* Navigation Dots */
+.banner-dots {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 4;
+}
+
+.banner-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.banner-dots .dot.active {
+  background: #FFF;
+  width: 18px;
+  border-radius: 3px;
+}
+
+.banner-dots .dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+  .banner-slider {
+    max-width: calc(100% - 32px);
+    height: 100px;
+  }
+  
+  .banner-title {
+    font-size: 13px;
+  }
+  
+  .banner-subtitle {
+    font-size: 10px;
+  }
+}

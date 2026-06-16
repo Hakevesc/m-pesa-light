@@ -1,0 +1,53 @@
+<!-- ===== BANNER SLIDER COMPONENT ===== -->
+<!--
+  This is the HTML template for the Banner Slider component.
+  The CSS lives in styles/component-banner-slider.css
+  JavaScript logic (auto-slide, dots, swipe) is in the main app JS.
+-->
+
+<div class="banner-slider">
+  <div class="banner-slides-container" id="bannerSlidesContainer">
+    <!-- Banner 1 (active by default) -->
+    <div class="banner-slide active" data-index="0">
+      <div class="banner-image">
+        <img src="assets/banner-ads-1.png" alt="M-PESA Banner 1">
+        <div class="banner-overlay"></div>
+      </div>
+      <div class="banner-content">
+        <h3 class="banner-title">Do it all with M-PESA</h3>
+        <p class="banner-subtitle">Make payments quickly and conveniently.</p>
+      </div>
+    </div>
+    
+    <!-- Banner 2 (peeks from right) -->
+    <div class="banner-slide" data-index="1">
+      <div class="banner-image">
+        <img src="assets/banner-ads-2.png" alt="M-PESA Banner 2">
+        <div class="banner-overlay"></div>
+      </div>
+      <div class="banner-content">
+        <h3 class="banner-title">Send Money Anywhere</h3>
+        <p class="banner-subtitle">Transfer to any M-PESA user instantly.</p>
+      </div>
+    </div>
+    
+    <!-- Banner 3 -->
+    <div class="banner-slide" data-index="2">
+      <div class="banner-image">
+        <img src="assets/banner-ads-3.png" alt="M-PESA Banner 3">
+        <div class="banner-overlay"></div>
+      </div>
+      <div class="banner-content">
+        <h3 class="banner-title">Pay Bills Easily</h3>
+        <p class="banner-subtitle">Settle your utilities and services in seconds.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Navigation Dots -->
+  <div class="banner-dots" id="bannerDots">
+    <span class="dot active" data-index="0"></span>
+    <span class="dot" data-index="1"></span>
+    <span class="dot" data-index="2"></span>
+  </div>
+</div>

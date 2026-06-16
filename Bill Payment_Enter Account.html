@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bill Payment - Enter Account</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Border: #E8E8EC;
+    --Background: #F5F5F5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px; height: 780px;
+    background: var(--Background); border-radius: 30px;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px 8px; background: var(--Background); flex-shrink: 0;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  .header-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px 12px; background: var(--Background); flex-shrink: 0;
+  }
+  .back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: transparent; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .back-btn:hover { background: rgba(0,0,0,0.05); }
+  .back-btn svg { width: 22px; height: 22px; stroke: var(--On-Surface); stroke-width: 1.8px; fill: none; }
+  .header-title {
+    color: var(--On-Surface); font-family: 'Switzer', sans-serif;
+    font-size: 17px; font-weight: 500; letter-spacing: 0.3px; flex: 1; text-align: center;
+  }
+
+  .main-content {
+    flex: 1; overflow-y: auto; padding: 8px 16px 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .main-content::-webkit-scrollbar { width: 0; }
+
+  /* Biller Card */
+  .biller-card {
+    background: #FFF; border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .biller-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 700;
+  }
+  .biller-info { flex: 1; }
+  .biller-name { font-family: 'Switzer', sans-serif; font-size: 16px; font-weight: 600; color: var(--On-Surface); }
+  .biller-desc { font-family: 'Switzer', sans-serif; font-size: 13px; color: var(--On-Surface-Low); margin-top: 3px; }
+  .biller-category {
+    display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 6px;
+    background: rgba(254,53,61,0.08); color: var(--Primary);
+    font-family: 'Switzer', sans-serif; font-size: 11px; font-weight: 600;
+    margin-top: 6px;
+  }
+
+  /* Form Fields */
+  .form-section {
+    background: #FFF; border-radius: 16px; padding: 18px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  .field-label {
+    font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--On-Surface-Low); letter-spacing: 0.2px;
+  }
+  .field-input-wrap { position: relative; display: flex; align-items: center; }
+  .field-input {
+    width: 100%; height: 50px; border-radius: 12px;
+    border: 1.5px solid var(--Border); background: #FAFAFA;
+    padding: 0 46px 0 14px;
+    font-family: 'Switzer', sans-serif; font-size: 15px; color: var(--On-Surface);
+    outline: none; transition: border-color 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .field-input:focus { border-color: var(--Primary); background: #FFF; }
+  .field-input::placeholder { color: var(--On-Surface-Low); font-size: 14px; letter-spacing: 0; }
+  .field-input-icon {
+    position: absolute; right: 14px; width: 20px; height: 20px;
+    stroke: var(--On-Surface-Low); fill: none; cursor: pointer; transition: stroke 0.2s;
+  }
+  .field-input-icon:hover { stroke: var(--Primary); }
+
+  /* Customer info (populated after account lookup) */
+  .customer-info {
+    display: none; align-items: center; gap: 10px;
+    background: rgba(31,200,59,0.06); border-radius: 10px; padding: 10px 12px;
+    border: 1px solid rgba(31,200,59,0.15);
+  }
+  .customer-info.show { display: flex; }
+  .customer-info svg { width: 18px; height: 18px; stroke: #1FC83B; flex-shrink: 0; }
+  .customer-info-text { flex: 1; }
+  .customer-info-name { font-family: 'Switzer', sans-serif; font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .customer-info-sub { font-family: 'Switzer', sans-serif; font-size: 12px; color: var(--On-Surface-Low); }
+
+  /* Bill info card */
+  .bill-info {
+    display: none; background: #FFF; border-radius: 16px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .bill-info.show { display: block; }
+  .bill-info-title { font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 600; color: var(--On-Surface-Low); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .bill-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .bill-row + .bill-row { border-top: 1px solid #F5F5F5; }
+  .bill-row .label { font-family: 'Switzer', sans-serif; font-size: 13px; color: var(--On-Surface-Low); }
+  .bill-row .value { font-family: 'Switzer', sans-serif; font-size: 13px; font-weight: 600; color: var(--On-Surface); }
+  .bill-row .value.amount { font-size: 16px; color: var(--Primary); }
+
+  /* Loading state */
+  .loading-indicator {
+    display: none; align-items: center; gap: 8px; padding: 10px 12px;
+    background: #F5F5F5; border-radius: 10px;
+  }
+  .loading-indicator.show { display: flex; }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--Border);
+    border-top-color: var(--Primary); border-radius: 50%;
+    animation: spin 0.7s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: 'Switzer', sans-serif; font-size: 13px; color: var(--On-Surface-Low); }
+
+  /* Continue Button */
+  .continue-btn {
+    height: 52px; border-radius: 14px; border: none;
+    background: #E0E0E0; color: var(--On-Surface-Low);
+    font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: not-allowed; transition: all 0.2s; flex-shrink: 0; width: 100%;
+    margin-top: auto;
+  }
+  .continue-btn.active {
+    background: var(--Primary); color: #FFF; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25);
+  }
+  .continue-btn.active:hover { background: #E5303A; transform: translateY(-1px); }
+  .continue-btn.active:active { transform: scale(0.98); }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <div class="status-bar">
+    <span class="time">10:00</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/></svg>
+      <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/></svg>
+    </div>
+  </div>
+
+  <div class="header-nav">
+    <button class="back-btn" onclick="goBack()">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <span class="header-title">Bill Payment</span>
+    <div style="width:36px;"></div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- Biller Card -->
+    <div class="biller-card">
+      <div class="biller-icon" id="billerIcon" style="background:#FFF3E0; color:#F57C00;">EP</div>
+      <div class="biller-info">
+        <div class="biller-name" id="billerName">EEPCO</div>
+        <div class="biller-desc" id="billerDesc">Ethiopian Electric Power Co.</div>
+        <div class="biller-category" id="billerCategory">Utility</div>
+      </div>
+    </div>
+
+    <!-- Form Fields -->
+    <div class="form-section">
+      <div class="field-group">
+        <label class="field-label" id="accountLabel">Meter / Account Number</label>
+        <div class="field-input-wrap">
+          <input class="field-input" id="accountInput" type="text"
+                 placeholder="e.g. 4523061"
+                 oninput="onAccountInput(this.value)"
+                 inputmode="numeric">
+          <svg class="field-input-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="clearAccount()">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-indicator" id="loadingIndicator">
+          <div class="spinner"></div>
+          <span class="loading-text">Looking up account...</span>
+        </div>
+
+        <!-- Customer info -->
+        <div class="customer-info" id="customerInfo">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <div class="customer-info-text">
+            <div class="customer-info-name" id="customerName">Abebe Girma</div>
+            <div class="customer-info-sub" id="customerSub">Account verified</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Reference / Note <span style="color:var(--On-Surface-Low);font-weight:400;">(Optional)</span></label>
+        <div class="field-input-wrap">
+          <input class="field-input" id="refInput" type="text" placeholder="e.g. Monthly bill">
+          <svg class="field-input-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bill Info (shown after account lookup) -->
+    <div class="bill-info" id="billInfo">
+      <div class="bill-info-title">Bill Details</div>
+      <div class="bill-row">
+        <span class="label">Billing Period</span>
+        <span class="value">June 2026</span>
+      </div>
+      <div class="bill-row">
+        <span class="label">Units Used</span>
+        <span class="value">320 kWh</span>
+      </div>
+      <div class="bill-row">
+        <span class="label">Due Date</span>
+        <span class="value" style="color:#F57C00;">Jun 30, 2026</span>
+      </div>
+      <div class="bill-row">
+        <span class="label">Amount Due</span>
+        <span class="value amount">580.00 ETB</span>
+      </div>
+    </div>
+
+    <!-- Continue Button -->
+    <button class="continue-btn" id="continueBtn" onclick="proceed()" disabled>Continue</button>
+
+  </div>
+
+</div>
+
+<script>
+  let lookupTimer = null;
+  let accountVerified = false;
+
+  // Load biller info from session
+  const biller = JSON.parse(sessionStorage.getItem('selectedBiller') || '{"name":"EEPCO","fullName":"Ethiopian Electric Power Co.","desc":"Electricity provider","category":"Utility","abbr":"EP","bg":"#FFF3E0","color":"#F57C00"}');
+
+  document.getElementById('billerIcon').textContent = biller.abbr || 'EP';
+  document.getElementById('billerIcon').style.background = biller.bg || '#FFF3E0';
+  document.getElementById('billerIcon').style.color = biller.color || '#F57C00';
+  document.getElementById('billerName').textContent = biller.name || 'EEPCO';
+  document.getElementById('billerDesc').textContent = biller.fullName || biller.desc || 'Ethiopian Electric Power Co.';
+  document.getElementById('billerCategory').textContent = biller.category || 'Utility';
+
+  // Set appropriate label
+  const labelMap = {
+    Telecom: 'Phone / Account Number',
+    Water: 'Water Account Number',
+    Government: 'TIN / Reference Number',
+    Education: 'Student ID / Reference',
+    Insurance: 'Policy Number',
+  };
+  document.getElementById('accountLabel').textContent = labelMap[biller.category] || 'Meter / Account Number';
+
+  function onAccountInput(val) {
+    clearTimeout(lookupTimer);
+    accountVerified = false;
+    document.getElementById('customerInfo').classList.remove('show');
+    document.getElementById('billInfo').classList.remove('show');
+    document.getElementById('loadingIndicator').classList.remove('show');
+    updateBtn();
+
+    if (val.length >= 5) {
+      document.getElementById('loadingIndicator').classList.add('show');
+      lookupTimer = setTimeout(() => {
+        document.getElementById('loadingIndicator').classList.remove('show');
+        document.getElementById('customerInfo').classList.add('show');
+        document.getElementById('billInfo').classList.add('show');
+        accountVerified = true;
+        updateBtn();
+      }, 1400);
+    }
+  }
+
+  function clearAccount() {
+    document.getElementById('accountInput').value = '';
+    onAccountInput('');
+    document.getElementById('accountInput').focus();
+  }
+
+  function updateBtn() {
+    const btn = document.getElementById('continueBtn');
+    const hasAccount = document.getElementById('accountInput').value.length >= 5 && accountVerified;
+    btn.classList.toggle('active', hasAccount);
+    btn.disabled = !hasAccount;
+  }
+
+  function proceed() {
+    if (!accountVerified) return;
+    const data = {
+      biller,
+      account: document.getElementById('accountInput').value,
+      ref: document.getElementById('refInput').value,
+      billAmount: '580.00',
+      period: 'June 2026',
+      customerName: 'Abebe Girma',
+    };
+    sessionStorage.setItem('billPaymentData', JSON.stringify(data));
+    window.location.href = 'Bill Payment_Enter Amount.html';
+  }
+
+  function goBack() {
+    window.location.href = 'Bill Payment_Select Biller.html';
+  }
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

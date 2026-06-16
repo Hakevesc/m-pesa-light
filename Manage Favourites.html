@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Favorites</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --Border: #E8E8EC;
+    --Danger: #FE353D;
+    --Danger-Light: #FFF1F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* ── Header Navigation  (matches Manage Statement: space-between, 12px 16px) ── */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px 12px;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { background: rgba(0,0,0,0.05); }
+  .back-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.8px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Invisible spacer to keep title centred */
+  .header-spacer {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  /* ── Main Content ── */
+  .main-content {
+    padding: 16px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* ── Subtitle ── */
+  .subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  /* ── Favorites List ── */
+  .favorites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ── Favorite Card ── */
+  .favorite-card {
+    background: #FFF;
+    border-radius: 16px;
+    padding: 14px 12px 14px 10px;   /* less left, less right */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+    position: relative;
+  }
+  .favorite-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+  /* ── Drag Handle – smaller, lighter dots ── */
+  .drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    padding: 2px 2px 2px 0;
+    flex-shrink: 0;
+  }
+  .drag-handle:active { cursor: grabbing; }
+
+  .dots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5px;
+  }
+  .dot {
+    width: 3px;
+    height: 3px;
+    background: #C8C8CE;      /* lighter than before */
+    border-radius: 50%;
+  }
+
+  /* ── Avatar ── */
+  .favorite-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #FFF;
+    border: 1px solid var(--Border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+  .favorite-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* ── Info ── */
+  .favorite-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .favorite-name {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .favorite-details {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Menu Button  (right-aligned, compact) ── */
+  .menu-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;       /* push to very right */
+    transition: all 0.2s;
+  }
+  .menu-btn:hover { background: #F0F0F3; }
+
+  /* 3-dot state */
+  .menu-btn .icon-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .menu-btn .icon-dots svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--On-Surface-Low);
+    stroke-width: 2px;
+  }
+
+  /* minus state */
+  .menu-btn .icon-minus {
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .menu-btn .icon-minus svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--Danger);
+    stroke-width: 2.5px;
+  }
+
+  /* when card is in delete-mode */
+  .favorite-card.delete-mode .menu-btn {
+    background: var(--Danger-Light);
+  }
+  .favorite-card.delete-mode .menu-btn .icon-dots { display: none; }
+  .favorite-card.delete-mode .menu-btn .icon-minus { display: flex; }
+
+  /* ═══════════════════════════════════
+     BOTTOM SHEET MODAL  (like Manage Statement)
+  ═══════════════════════════════════ */
+  .modal-overlay-sheet {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1500;
+    animation: fadeInOverlay 0.25s ease-out;
+  }
+  .modal-overlay-sheet.hidden { display: none; }
+
+  .bottom-modal {
+    width: 100%;
+    background: #FFF;
+    border-radius: 24px 24px 0 0;
+    padding: 12px 20px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: slideUpSheet 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
+  }
+
+  .modal-drag-bar {
+    width: 40px;
+    height: 4px;
+    background: #D0D0D5;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Danger icon circle */
+  .modal-icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--Danger-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .modal-icon-circle svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--Danger);
+    stroke-width: 2px;
+    fill: none;
+  }
+
+  .modal-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+    text-align: center;
+  }
+  .modal-description {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 24px;
+    max-width: 280px;
+  }
+  .modal-description strong {
+    color: var(--On-Surface);
+    font-weight: 600;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+  }
+  .btn-cancel {
+    flex: 1;
+    height: 50px;
+    border-radius: 14px;
+    border: 1.5px solid var(--Border);
+    background: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: #F5F5F5; border-color: #D0D0D5; }
+  .btn-cancel:active { transform: scale(0.97); }
+
+  .btn-remove {
+    flex: 1;
+    height: 50px;
+    border-radius: 14px;
+    border: none;
+    background: var(--Danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FFF;
+    box-shadow: 0 4px 14px rgba(254,53,61,0.28);
+    transition: all 0.2s;
+  }
+  .btn-remove:hover { background: #E5303A; box-shadow: 0 6px 18px rgba(254,53,61,0.38); transform: translateY(-1px); }
+  .btn-remove:active { transform: scale(0.97) translateY(0); }
+  .btn-remove svg, .btn-cancel svg {
+    width: 17px; height: 17px;
+    stroke: currentColor; stroke-width: 2px; fill: none;
+  }
+
+  @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUpSheet  { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Manage Favorites</span>
+      <div class="header-spacer"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <p class="subtitle">Drag to reorder · tap ••• to remove</p>
+
+      <!-- Favorites List -->
+      <div class="favorites-list" id="favoritesList">
+
+        <!-- London Cafe -->
+        <div class="favorite-card" data-id="1" data-name="London Cafe">
+          <div class="drag-handle">
+            <div class="dots-grid">
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+          <div class="favorite-avatar">
+            <img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA">
+          </div>
+          <div class="favorite-info">
+            <span class="favorite-name">London Cafe</span>
+            <span class="favorite-details">M-PESA · 0712 338 293</span>
+          </div>
+          <button class="menu-btn" onclick="onMenuClick(this)">
+            <span class="icon-dots">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <circle cx="12" cy="5"  r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="icon-minus">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <!-- Kidi Sister -->
+        <div class="favorite-card" data-id="2" data-name="Kidi Sister">
+          <div class="drag-handle">
+            <div class="dots-grid">
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+          <div class="favorite-avatar">
+            <img src="assets/banks logo/abyssinya-bank.png" alt="Abyssinia Bank">
+          </div>
+          <div class="favorite-info">
+            <span class="favorite-name">Kidi Sister</span>
+            <span class="favorite-details">Abyssinia Bank · ••••56436</span>
+          </div>
+          <button class="menu-btn" onclick="onMenuClick(this)">
+            <span class="icon-dots">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <circle cx="12" cy="5"  r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="icon-minus">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <!-- Rent Payment -->
+        <div class="favorite-card" data-id="3" data-name="Rent Payment">
+          <div class="drag-handle">
+            <div class="dots-grid">
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+          <div class="favorite-avatar">
+            <img src="assets/banks logo/dashen-bank.png" alt="Dashen Bank">
+          </div>
+          <div class="favorite-info">
+            <span class="favorite-name">Rent Payment</span>
+            <span class="favorite-details">Dashen Bank · ••••56436</span>
+          </div>
+          <button class="menu-btn" onclick="onMenuClick(this)">
+            <span class="icon-dots">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <circle cx="12" cy="5"  r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="icon-minus">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+        <!-- Mom M-PESA -->
+        <div class="favorite-card" data-id="4" data-name="Mom M-PESA">
+          <div class="drag-handle">
+            <div class="dots-grid">
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+          <div class="favorite-avatar">
+            <img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA">
+          </div>
+          <div class="favorite-info">
+            <span class="favorite-name">Mom M-PESA</span>
+            <span class="favorite-details">M-PESA · 0912 338 293</span>
+          </div>
+          <button class="menu-btn" onclick="onMenuClick(this)">
+            <span class="icon-dots">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <circle cx="12" cy="5"  r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.1" fill="currentColor"/>
+                <circle cx="12" cy="19" r="1.1" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="icon-minus">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+
+      </div><!-- /favorites-list -->
+
+    </div><!-- /main-content -->
+
+  </div><!-- /app-content -->
+
+  <!-- ══ Bottom Sheet – Remove Confirmation ══ -->
+  <div class="modal-overlay-sheet hidden" id="removeSheet" onclick="onOverlayClick(event)">
+    <div class="bottom-modal" onclick="event.stopPropagation()">
+      <div class="modal-drag-bar"></div>
+
+      <!-- Icon -->
+      <div class="modal-icon-circle">
+        <svg viewBox="0 0 24 24">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </div>
+
+      <h2 class="modal-title">Remove from Favorites?</h2>
+      <p class="modal-description">
+        "<strong id="sheetItemName">Rent Payment</strong>" will be removed from your shortcuts.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSheet()">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Cancel
+        </button>
+        <button class="btn-remove" onclick="confirmRemove()">
+          <svg viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<script>
+  let activeCard    = null;   // card currently in delete-mode
+  let pendingRemove = null;   // card queued for removal
+
+  /* ── Step 1: 3-dot clicked → toggle delete-mode (minus icon) ── */
+  function onMenuClick(btn) {
+    const card = btn.closest('.favorite-card');
+
+    if (card.classList.contains('delete-mode')) {
+      // Step 2: minus clicked → open bottom sheet
+      pendingRemove = card;
+      document.getElementById('sheetItemName').textContent = card.dataset.name;
+      document.getElementById('removeSheet').classList.remove('hidden');
+      return;
+    }
+
+    // Reset any previously active card first
+    if (activeCard && activeCard !== card) {
+      activeCard.classList.remove('delete-mode');
+    }
+
+    // Enter delete-mode
+    card.classList.add('delete-mode');
+    activeCard = card;
+  }
+
+  /* ── Close sheet without removing ── */
+  function closeSheet() {
+    document.getElementById('removeSheet').classList.add('hidden');
+    // Reset the card back to normal
+    if (pendingRemove) {
+      pendingRemove.classList.remove('delete-mode');
+    }
+    pendingRemove = null;
+    activeCard    = null;
+  }
+
+  /* ── Tap outside bottom sheet → close ── */
+  function onOverlayClick(e) {
+    if (e.target === e.currentTarget) closeSheet();
+  }
+
+  /* ── Confirm removal ── */
+  function confirmRemove() {
+    if (!pendingRemove) return;
+    const card = pendingRemove;
+
+    // Close sheet first
+    document.getElementById('removeSheet').classList.add('hidden');
+    pendingRemove = null;
+    activeCard    = null;
+
+    // Animate card out
+    card.style.transition = 'transform 0.28s ease, opacity 0.28s ease, max-height 0.3s ease 0.1s';
+    card.style.transform  = 'translateX(60px)';
+    card.style.opacity    = '0';
+    card.style.maxHeight  = card.offsetHeight + 'px';
+
+    setTimeout(() => {
+      card.style.maxHeight = '0';
+      card.style.marginBottom = '0';
+      card.style.padding = '0';
+      card.style.overflow = 'hidden';
+    }, 280);
+
+    setTimeout(() => card.remove(), 580);
+  }
+
+  /* ── Dismiss delete-mode when tapping elsewhere on the page ── */
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.menu-btn') && activeCard) {
+      activeCard.classList.remove('delete-mode');
+      activeCard = null;
+    }
+  });
+
+  /* ── Escape key ── */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSheet();
+  });
+
+  function goBack() { console.log('Navigate back'); }
+
+  /* ── Drag handles: visual only for demo ── */
+  document.querySelectorAll('.drag-handle').forEach(h => {
+    h.addEventListener('mousedown', e => { e.preventDefault(); console.log('Drag started'); });
+  });
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

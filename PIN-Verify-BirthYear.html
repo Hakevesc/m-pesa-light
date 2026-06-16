@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Identity</title>
+<style>
+  @import url("styles/component-keypad.css");
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif; background: transparent;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px; height: 780px; background: #F5F5F5;
+    border-radius: 30px; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+
+  .app-content { height: 100%; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+  /* ===== HEADER (160px — same as Create PIN) ===== */
+  .header-section {
+    position: relative; width: 100%; height: 160px; flex-shrink: 0;
+    background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+    border-radius: 0 0 30px 30px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .pattern-overlay {
+    position: absolute; inset: 0; opacity: 0.20; z-index: 0;
+    background-image: url('assets/M-PESA-pattern.svg');
+    background-size: 490px; background-position: right -270px top -270px;
+    background-repeat: no-repeat; border-radius: 0 0 30px 30px; mix-blend-mode: overlay;
+  }
+  .status-bar {
+    position: relative; z-index: 5;
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  .header-nav {
+    position: relative; z-index: 5;
+    width: 100%; display: flex; align-items: center; justify-content: center;
+    padding: 12px 20px 0;
+  }
+  .back-btn {
+    position: absolute; left: 20px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .back-btn:hover { transform: scale(1.1); }
+  .back-btn svg { width: 24px; height: 24px; stroke: #FFF; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .header-title { color: #FFF; font-family: 'Switzer', sans-serif; font-size: 18px; font-weight: 300; letter-spacing: 0.3px; }
+  .header-subtitle {
+    position: relative; z-index: 5;
+    color: #FFF; font-family: 'Switzer', sans-serif;
+    font-size: 22px; font-weight: 600; margin-top: 28px;
+    padding: 0 24px; text-align: left; width: 100%;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 24px 20px 16px;
+    display: flex; flex-direction: column; align-items: center;
+    flex: 1; width: 100%;
+  }
+
+  .instruction {
+    color: var(--On-Surface); font-family: 'Switzer', sans-serif;
+    font-size: 18px; font-weight: 600; text-align: center;
+    margin-top: 28px; line-height: 1.4;
+  }
+  .instruction .sub {
+    display: block; margin-top: 6px;
+    color: var(--On-Surface-Low); font-size: 13px; font-weight: 400;
+  }
+
+  /* PIN boxes (reuse exact same pattern as Create PIN) */
+  .pin-container { display: flex; gap: 20px; margin-top: 28px; }
+  .pin-box {
+    width: 64px; height: 64px; border-radius: 16px;
+    border: 2px solid #ECECEC; background: #FFF;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; transition: all 0.2s;
+  }
+  .pin-box.filled { border-color: var(--On-Surface); background: #FFF; }
+  .pin-box.filled .dot { display: block; }
+  .pin-box.active {
+    border-color: var(--Primary); background: #FFF5F5;
+    box-shadow: 0 0 0 3px rgba(254,53,61,0.12);
+  }
+  .pin-box.active::after {
+    content: ''; position: absolute;
+    width: 2px; height: 24px; background: var(--Primary);
+    border-radius: 1px; animation: cursor-blink 1s infinite;
+  }
+  .pin-box.error { border-color: var(--Primary); background: #FFF5F5; animation: shake 0.4s ease-in-out; }
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--On-Surface); display: none;
+  }
+  @keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+    40%{transform:translateX(6px)} 60%{transform:translateX(-4px)}
+    80%{transform:translateX(4px)}
+  }
+
+  /* Validation text — always reserves a line height */
+  .validation-text {
+    color: var(--Primary); font-family: 'Switzer', sans-serif;
+    font-size: 12px; font-weight: 500; text-align: center;
+    min-height: 18px; margin-top: 10px; margin-bottom: 4px;
+    visibility: hidden;
+  }
+  .validation-text.show { visibility: visible; }
+
+  /* Continue button */
+  .action-btn {
+    width: 328px; max-width: 100%; height: 48px; border-radius: 12px;
+    background: var(--Primary); color: #FFF1F2;
+    font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.25); margin-top: 8px;
+  }
+  .action-btn:hover { background: #E5303A; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(254,53,61,0.35); }
+  .action-btn:active { transform: scale(0.98); }
+  .action-btn:disabled { background: #E0E0E0; color: #7C7C87; box-shadow: none; cursor: default; pointer-events: none; }
+
+  .fayda-hint {
+    margin-top: 16px;
+    display: flex; align-items: center; gap: 6px;
+    background: #F0F8F0; border-radius: 10px; padding: 10px 14px;
+    width: 328px; max-width: 100%;
+  }
+  .fayda-hint svg { width: 16px; height: 16px; stroke: #1FC83B; stroke-width: 2; fill: none; flex-shrink: 0; }
+  .fayda-hint span { color: #1C5C24; font-family: 'Switzer', sans-serif; font-size: 11px; font-weight: 500; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <div class="header-section">
+      <div class="pattern-overlay"></div>
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+        </div>
+      </div>
+      <div class="header-nav">
+        <button class="back-btn" onclick="window.location.href='PIN-Locked.html'">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span class="header-title">Verify Identity</span>
+      </div>
+      <span class="header-subtitle">Enter Birth Year</span>
+    </div>
+
+    <div class="main-content">
+
+      <p class="instruction">
+        Enter your registered birth year
+        <span class="sub">This is used to verify your identity<br>before unlocking your PIN</span>
+      </p>
+
+      <div class="pin-container">
+        <div class="pin-box" id="box0"><div class="dot"></div></div>
+        <div class="pin-box" id="box1"><div class="dot"></div></div>
+        <div class="pin-box" id="box2"><div class="dot"></div></div>
+        <div class="pin-box" id="box3"><div class="dot"></div></div>
+      </div>
+
+      <div class="validation-text" id="validationText">Birth year doesn't match our records.</div>
+
+      <div class="keypad">
+        <button class="key" onclick="pressKey('1')">1</button>
+        <button class="key" onclick="pressKey('2')">2</button>
+        <button class="key" onclick="pressKey('3')">3</button>
+        <button class="key" onclick="pressKey('4')">4</button>
+        <button class="key" onclick="pressKey('5')">5</button>
+        <button class="key" onclick="pressKey('6')">6</button>
+        <button class="key" onclick="pressKey('7')">7</button>
+        <button class="key" onclick="pressKey('8')">8</button>
+        <button class="key" onclick="pressKey('9')">9</button>
+        <button class="key empty"></button>
+        <button class="key" onclick="pressKey('0')">0</button>
+        <button class="key backspace" onclick="pressBackspace()">
+          <i data-lucide="delete"></i>
+        </button>
+      </div>
+
+      <button class="action-btn" id="continueBtn" disabled onclick="verify()">Continue</button>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+
+  const DEMO_YEAR = '1995';
+  let year = '';
+
+  const boxes = [
+    document.getElementById('box0'),
+    document.getElementById('box1'),
+    document.getElementById('box2'),
+    document.getElementById('box3'),
+  ];
+  const validationText = document.getElementById('validationText');
+  const continueBtn    = document.getElementById('continueBtn');
+
+  function updateDisplay() {
+    boxes.forEach((box, i) => {
+      box.classList.remove('filled', 'active', 'error');
+      const dot = box.querySelector('.dot');
+      if (i < year.length) { box.classList.add('filled'); dot.style.display = 'block'; }
+      else { dot.style.display = 'none'; if (i === year.length) box.classList.add('active'); }
+    });
+    continueBtn.disabled = year.length < 4;
+  }
+
+  function pressKey(v) {
+    if (year.length < 4) { year += v; updateDisplay(); }
+  }
+
+  function pressBackspace() {
+    if (year.length > 0) { year = year.slice(0, -1); updateDisplay(); }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+    else if (e.key === 'Backspace') pressBackspace();
+    else if (e.key === 'Enter' && year.length === 4) verify();
+  });
+
+  function verify() {
+    if (year === DEMO_YEAR) {
+      sessionStorage.setItem('pinResetFlow', 'unlock');
+      window.location.href = 'Create PIN.html';
+    } else {
+      // Wrong year — shake and show error
+      boxes.forEach(b => { b.classList.remove('filled', 'active'); b.classList.add('error'); b.querySelector('.dot').style.display = 'none'; });
+      validationText.classList.add('show');
+      setTimeout(() => {
+        year = '';
+        boxes.forEach(b => b.classList.remove('error'));
+        validationText.classList.remove('show');
+        updateDisplay();
+      }, 1500);
+    }
+  }
+
+  updateDisplay();
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

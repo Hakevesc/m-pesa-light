@@ -1,0 +1,105 @@
+<!-- Header Navigation -->
+<div class="header-nav">
+  <button class="back-btn" onclick="goBack()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+  </button>
+  <span class="header-title">Transfer to Bank</span>
+  <div style="width: 36px;"></div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="receiver-card">
+    <div class="receiver-avatar">KB</div>
+    <div class="receiver-info">
+      <span class="receiver-name">Kidist Birhanu</span>
+      <span class="receiver-amount">-950.00 ETB</span>
+      <span class="receiver-account">Awash Bank • ****56436</span>
+    </div>
+    <div class="receiver-bank-icon">
+      <img src="assets/banks logo/awass-bank.png" alt="Awash Bank" onerror="this.style.display='none'">
+    </div>
+  </div>
+
+  <div class="pin-section">
+    <span class="pin-label">Enter Your M-PESA PIN</span>
+    <div class="pin-container" id="pinContainer">
+      <div class="pin-box" data-index="0"><div class="dot"></div></div>
+      <div class="pin-box" data-index="1"><div class="dot"></div></div>
+      <div class="pin-box" data-index="2"><div class="dot"></div></div>
+      <div class="pin-box" data-index="3"><div class="dot"></div></div>
+    </div>
+    <input type="password" class="pin-input" id="pinInput" maxlength="4" inputmode="numeric">
+  </div>
+
+  <div class="keypad">
+    <button class="key" onclick="pressKey('1')">1</button>
+    <button class="key" onclick="pressKey('2')">2</button>
+    <button class="key" onclick="pressKey('3')">3</button>
+    <button class="key" onclick="pressKey('4')">4</button>
+    <button class="key" onclick="pressKey('5')">5</button>
+    <button class="key" onclick="pressKey('6')">6</button>
+    <button class="key" onclick="pressKey('7')">7</button>
+    <button class="key" onclick="pressKey('8')">8</button>
+    <button class="key" onclick="pressKey('9')">9</button>
+    <button class="key empty"></button>
+    <button class="key" onclick="pressKey('0')">0</button>
+    <button class="key delete" onclick="pressBackspace()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+        <line x1="18" y1="9" x2="12" y2="15"></line>
+        <line x1="12" y1="9" x2="18" y2="15"></line>
+      </svg>
+    </button>
+  </div>
+
+  <button class="transfer-btn" id="transferBtn" onclick="confirmTransfer()" disabled>Transfer</button>
+</div>
+
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-modal">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h3 class="success-title">Transfer Successful!</h3>
+    <p class="success-subtitle">-950.00 ETB sent to Kidist Birhanu</p>
+    <button class="success-done-btn" onclick="closeSuccess()">Done</button>
+  </div>
+</div>
+
+<script>
+  let pin = '';
+  const pinInput = document.getElementById('pinInput');
+  const pinBoxes = document.querySelectorAll('.pin-box');
+  const transferBtn = document.getElementById('transferBtn');
+
+  function updatePinDisplay() {
+    pinBoxes.forEach((box, index) => {
+      box.classList.remove('filled', 'active', 'error');
+      if (index < pin.length) { box.classList.add('filled'); }
+      else if (index === pin.length) { box.classList.add('active'); }
+    });
+    if (pin.length === 4) { transferBtn.classList.add('active'); transferBtn.disabled = false; }
+    else { transferBtn.classList.remove('active'); transferBtn.disabled = true; }
+  }
+
+  function pressKey(value) { if (pin.length < 4) { pin += value; pinInput.value = pin; updatePinDisplay(); } }
+  function pressBackspace() { pin = pin.slice(0, -1); pinInput.value = pin; updatePinDisplay(); }
+  function confirmTransfer() { if (pin.length === 4) { document.getElementById('successOverlay').classList.add('show'); } }
+  function closeSuccess() { document.getElementById('successOverlay').classList.remove('show'); pin = ''; pinInput.value = ''; updatePinDisplay(); }
+  function goBack() { console.log('Navigate back'); }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key >= '0' && e.key <= '9') { pressKey(e.key); }
+    else if (e.key === 'Backspace') { pressBackspace(); }
+    else if (e.key === 'Enter' && pin.length === 4) { confirmTransfer(); }
+  });
+
+  document.querySelector('.keypad').addEventListener('click', function() { pinInput.focus(); });
+  updatePinDisplay();
+</script>

@@ -1,0 +1,78 @@
+/*
+ * component-keypad.css
+ * Shared numeric keypad — standardized with white background
+ * Used by: Create PIN, Transfer Enter Amount, Transfer Enter PIN,
+ *          Transfer Select Bank, OTP Verification, M-PESA No. Login
+ */
+
+/* ── Keypad grid ── */
+.keypad {
+  background: #FFF;
+  border-radius: 20px;
+  padding: 20px 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-top: auto;
+  width: 100%;
+}
+
+/* ── Individual key ── */
+.key {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--On-Surface, #1C1C21);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.12s ease;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ripple overlay */
+.key::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0,0,0,0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.key:hover                { background: rgba(0,0,0,0.03);  transform: scale(1.02); }
+.key:active               { background: rgba(0,0,0,0.06);  transform: scale(0.95); }
+.key:active::after        { opacity: 1; }
+
+/* Empty cell (bottom-left placeholder) */
+.key.empty                { background: transparent; cursor: default; pointer-events: none; }
+.key.empty:hover          { transform: none; background: transparent; }
+
+/* Backspace / delete key */
+.key.backspace            { background: transparent; }
+.key.backspace:hover      { background: rgba(254,53,61,0.05); }
+.key.backspace:active     { background: rgba(254,53,61,0.10); }
+.key.backspace svg,
+.key.backspace i,
+.key.delete svg,
+.key.delete i {
+  width: 26px !important;
+  height: 26px !important;
+  stroke: var(--On-Surface-Low, #7C7C87);
+  stroke-width: 1.8px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--On-Surface-Low, #7C7C87);
+}

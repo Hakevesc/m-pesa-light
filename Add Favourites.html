@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add to Favorites</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Border: #E8E8EC;
+    --Background: #F5F5F5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: var(--Background);
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* ===== HEADER / RED CARD ===== */
+  .header-section {
+    position: relative;
+    width: 100%;
+    height: 210px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+    border-radius: 0 0 30px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Pattern Overlay */
+  .pattern-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.20;
+    z-index: 0;
+    background-image: url('assets/M-PESA-pattern.svg');
+    background-size: 490px;
+    background-position: right -270px top -270px;
+    background-repeat: no-repeat;
+    border-radius: 0 0 30px 30px;
+    mix-blend-mode: overlay;
+  }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: #FFF; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px 0;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { transform: scale(1.05); }
+
+  .header-title {
+    color: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== REG-BADGE (Heart) ===== */
+  .badge-anchor {
+    position: absolute;
+    bottom: -52px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .reg-badge {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: var(--Primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(254, 53, 61, 0.38), 0 0 0 6px #F5F5F5;
+  }
+
+  /* Heart draw + blink animation */
+  .heart-path {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: drawHeart 1.1s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards,
+               heartBlink 2.2s ease-in-out infinite 1.4s;
+  }
+
+  @keyframes drawHeart {
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes heartBlink {
+    0%, 100% {
+      opacity: 1;
+      stroke-width: 2.2;
+      filter: drop-shadow(0 0 5px rgba(255,255,255,0.85));
+    }
+    50% {
+      opacity: 0.4;
+      stroke-width: 1.6;
+      filter: drop-shadow(0 0 0px rgba(255,255,255,0));
+    }
+  }
+
+  /* Badge pulse ring */
+  .reg-badge::after {
+    content: '';
+    position: absolute;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(254, 53, 61, 0.35);
+    animation: pulseBadge 2s ease-out infinite 1.2s;
+  }
+
+  @keyframes pulseBadge {
+    0%   { transform: scale(1);   opacity: 0.7; }
+    100% { transform: scale(1.45); opacity: 0; }
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 72px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    gap: 24px;
+  }
+
+  /* Badge label */
+  .badge-label {
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--On-Surface);
+    letter-spacing: 0.2px;
+    text-align: center;
+  }
+  .badge-sublabel {
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--On-Surface-Low);
+    text-align: center;
+    margin-top: -14px;
+  }
+
+  /* Form Fields */
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-field label {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    padding-left: 4px;
+  }
+
+  .form-field input {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    background: #F8F8FA;
+    border: 1.5px solid var(--Border);
+    border-radius: 14px;
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .form-field input:disabled,
+  .form-field input[readonly] {
+    background: #F0F0F2;
+    color: var(--On-Surface-Low);
+    cursor: not-allowed;
+    border-color: transparent;
+  }
+
+  .form-field input.editable {
+    background: #FFF;
+    border-color: var(--Border);
+  }
+
+  .form-field input.editable:focus {
+    border-color: var(--Primary);
+    box-shadow: 0 0 0 3px rgba(254, 53, 61, 0.1);
+  }
+
+  /* Save Button */
+  .save-btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--Primary);
+    color: #FFF;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+    margin-top: auto;
+    box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+  }
+
+  .save-btn:hover {
+    background: #E5303A;
+    box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .save-btn:active { transform: scale(0.98) translateY(0); }
+
+  .save-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: #FFF;
+    stroke-width: 2px;
+    fill: rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Header Section -->
+    <div class="header-section">
+
+      <!-- Pattern Overlay -->
+      <div class="pattern-overlay"></div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+        </div>
+      </div>
+
+      <!-- Header Navigation -->
+      <div class="header-nav">
+        <button class="back-btn" onclick="goBack()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <span class="header-title">Add to Favourites</span>
+      </div>
+
+      <!-- Heart Badge — anchored to bottom of red header -->
+      <div class="badge-anchor">
+        <div class="reg-badge" id="regBadge">
+          <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path class="heart-path" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Badge label -->
+      <span class="badge-label">Save to Favourites</span>
+      <span class="badge-sublabel">Confirm details and add a nickname</span>
+
+      <!-- Form Section -->
+      <div class="form-section">
+
+        <!-- Account Name (Disabled) -->
+        <div class="form-field">
+          <label>Account Name</label>
+          <input type="text" value="Abebe Zewdu" readonly disabled>
+        </div>
+
+        <!-- Phone Number (Disabled) -->
+        <div class="form-field">
+          <label>Phone Number</label>
+          <input type="tel" value="0739 322 829" readonly disabled>
+        </div>
+
+        <!-- Nick Name (Editable) -->
+        <div class="form-field">
+          <label>Enter Nick Name</label>
+          <input type="text" class="editable" id="nickName" value="Mom M-PESA" placeholder="Enter a nickname">
+        </div>
+
+      </div>
+
+      <!-- Save Button -->
+      <button class="save-btn" onclick="saveToFavorites()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        Save to Favourites
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function loadFavouriteData() {
+    const data = JSON.parse(sessionStorage.getItem('favouriteData'));
+    if (!data) return;
+    const inputs = document.querySelectorAll('.form-field input');
+    if (inputs[0] && data.accountName) inputs[0].value = data.accountName;
+    if (inputs[1] && data.transactionId) inputs[1].value = 'Ref: ' + data.transactionId;
+  }
+
+  function goBack() {
+    window.location.href = 'Transaction Confirmation.html';
+  }
+
+  function saveToFavorites() {
+    const nickName = document.getElementById('nickName').value;
+    if (nickName.trim() === '') {
+      alert('Please enter a nickname');
+      document.getElementById('nickName').focus();
+      return;
+    }
+    const inputs = document.querySelectorAll('.form-field input');
+    console.log('Saving to favourites:', {
+      accountName: inputs[0] ? inputs[0].value : 'Unknown',
+      phoneNumber: inputs[1] ? inputs[1].value : 'Unknown',
+      nickName: nickName
+    });
+    alert('Saved to favourites successfully!');
+    sessionStorage.removeItem('favouriteData');
+    window.location.href = 'Transaction Confirmation.html';
+  }
+
+  loadFavouriteData();
+  document.getElementById('nickName').focus();
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

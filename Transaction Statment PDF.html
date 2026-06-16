@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA Full Account Statement</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #E8E8E8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    color: #1C1C21;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #FFF;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    padding: 12mm 14mm 0;
+  }
+
+  /* ===== LARGE DIAGONAL M-PESA WATERMARK TEXT ===== */
+  .mpesa-watermark-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-family: 'Poppins', sans-serif;
+    font-size: 140px;
+    font-weight: 900;
+    color: rgba(180, 180, 180, 0.2);
+    letter-spacing: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 100;
+    mix-blend-mode: multiply;
+    user-select: none;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    position: relative;
+    z-index: 2;
+    padding-bottom: 2mm;
+  }
+
+  .mpesa-logo-header {
+    height: 15mm;
+    width: auto;
+    margin-bottom: 3mm;
+  }
+
+  .company-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1C1C21;
+    margin-bottom: 2mm;
+  }
+
+  .company-details {
+    font-size: 10pt;
+    color: #1C1C21;
+    line-height: 2.4;
+    font-weight: 400;
+  }
+
+  .company-details .label {
+    font-weight: 400;
+    color: #666;
+    letter-spacing: 0.3px;
+  }
+
+  .company-details .bold-val {
+    font-weight: 700;
+    color: #1C1C21;
+  }
+
+  /* ===== TITLE BOX ===== */
+  .title-box {
+    border: 2.5px solid #FE353D;
+    padding: 3mm 0;
+    text-align: center;
+    margin: 2mm 0 6mm;
+    position: relative;
+    z-index: 2;
+  }
+
+  .title-box h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14pt;
+    font-weight: 700;
+    color: #FE353D;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ===== CUSTOMER INFO ===== */
+  .customer-section {
+    position: relative;
+    z-index: 2;
+    padding: 0 0 6mm;
+  }
+
+  .customer-label {
+    font-size: 10pt;
+    color: #1C1C21;
+    font-weight: 500;
+    min-width: 70mm;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .customer-label .amharic {
+    font-weight: 400;
+    color: #555;
+  }
+
+  .customer-value {
+    font-size: 10pt;
+    color: #1C1C21;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .customer-row {
+    display: flex;
+    align-items: baseline;
+    padding: 2mm 0;
+    gap: 4mm;
+  }
+
+  /* ===== ACCOUNT SUMMARY ===== */
+  .summary-section {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 4mm;
+  }
+
+  .section-header-gray {
+    background: #9E9E9E;
+    padding: 2.5mm 4mm;
+    text-align: center;
+  }
+
+  .section-header-gray h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    color: #FFF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .summary-red-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    background: #FE353D;
+  }
+
+  .summary-red-box {
+    background: #FE353D;
+    padding: 3mm 2mm;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.3);
+  }
+
+  .summary-red-box:last-child {
+    border-right: none;
+  }
+
+  .summary-red-box .box-label {
+    font-size: 7pt;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1mm;
+  }
+
+  .summary-red-box .box-value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13pt;
+    font-weight: 800;
+    color: #FFF;
+    letter-spacing: 0.5px;
+  }
+
+  .summary-white-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: #FFF;
+    border: 1px solid #E0E0E0;
+    border-top: none;
+  }
+
+  .summary-white-box {
+    padding: 2.5mm 2mm;
+    text-align: center;
+    border-right: 1px solid #E0E0E0;
+    border-bottom: 1px solid #E0E0E0;
+  }
+
+  .summary-white-box:nth-child(4n) {
+    border-right: none;
+  }
+
+  .summary-white-box:nth-child(n+5) {
+    border-bottom: none;
+  }
+
+  .summary-white-box .box-label {
+    font-size: 6.5pt;
+    color: #1C1C21;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 1mm;
+  }
+
+  .summary-white-box .box-value {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11pt;
+    font-weight: 800;
+    color: #1C1C21;
+  }
+
+  /* ===== TRANSACTION DETAIL ===== */
+  .transaction-section {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 4mm;
+  }
+
+  .tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7pt;
+  }
+
+  .tx-table thead th {
+    background: #9E9E9E;
+    color: #FFF;
+    padding: 2mm 1.5mm;
+    text-align: left;
+    font-weight: 700;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #888;
+  }
+
+  .tx-table thead th:last-child {
+    text-align: right;
+  }
+
+  .tx-table tbody tr {
+    border-bottom: 1px solid #E8E8E8;
+  }
+
+  .tx-table tbody tr:nth-child(even) {
+    background: #FAFAFA;
+  }
+
+  .tx-table tbody td {
+    padding: 2mm 1.5mm;
+    vertical-align: middle;
+    color: #1C1C21;
+    border: 1px solid #E8E8E8;
+    font-size: 7pt;
+  }
+
+  .tx-table tbody td:last-child {
+    text-align: right;
+    font-weight: 700;
+  }
+
+  .tx-id {
+    font-weight: 800;
+    font-size: 7pt;
+    color: #1C1C21;
+    letter-spacing: 0.3px;
+  }
+
+  .tx-date {
+    font-weight: 600;
+    font-size: 7pt;
+  }
+
+  .tx-amount {
+    font-weight: 800;
+    font-family: 'Poppins', sans-serif;
+    font-size: 7.5pt;
+  }
+
+  .tx-amount.positive {
+    color: #2E7D32;
+  }
+
+  .tx-amount.negative {
+    color: #FE353D;
+  }
+
+  .tx-reason {
+    font-weight: 600;
+    font-size: 7pt;
+  }
+
+  .tx-details {
+    font-size: 6.5pt;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  .tx-balance {
+    font-weight: 700;
+    font-size: 7pt;
+  }
+
+  /* ===== STAMP WATERMARK ===== */
+  .stamp-watermark {
+    position: absolute;
+    top: 155mm;
+    right: 18mm;
+    width: 70mm;
+    height: 70mm;
+    opacity: 0.95;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 101;
+    transform: rotate(-12deg);
+  }
+
+  .stamp-watermark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-disclaimer {
+    position: relative;
+    z-index: 2;
+    padding: 4mm 0 3mm;
+    border-top: 1px solid #E0E0E0;
+    margin-top: 4mm;
+  }
+
+  .footer-disclaimer p {
+    font-size: 6.5pt;
+    color: #555;
+    line-height: 1.7;
+    text-align: center;
+    font-weight: 400;
+  }
+
+  .footer-disclaimer .email {
+    color: #FE353D;
+    font-weight: 600;
+  }
+
+  .footer-bar {
+    background: #FE353D;
+    padding: 4mm 6mm;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0 -14mm;
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-bar img {
+    height: 10mm;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  @media print {
+    body { background: #FFF; padding: 0; }
+    .page { box-shadow: none; width: 210mm; min-height: 297mm; }
+  }
+
+  @media screen and (max-width: 800px) {
+    .page { width: 100%; min-height: auto; }
+    body { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page" id="statementPage">
+
+  <!-- Large M-PESA Watermark Text -->
+  <div class="mpesa-watermark-text">M-PESA</div>
+
+  <!-- Stamp Watermark -->
+  <div class="stamp-watermark">
+    <img src="assets/M-PESA-official_stamp.png" alt="M-PESA Official Stamp">
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <img src="assets/M-PESA-red-logo.svg" alt="M-PESA" class="mpesa-logo-header">
+    <div class="company-name">Safaricom M-PESA Mobile Financial Services PLC</div>
+    <div class="company-details">
+      <span class="label">TIN NO :</span> <span class="bold-val">0084242753</span><br>
+      <span class="label">VAT REG NO :</span> <span class="bold-val">22371880003</span><br>
+      <span class="label">ADDRESS :</span> <span class="bold-val">ADDIS ABABA, KIRKOS WOREDA 1</span><br>
+      <span class="label">TEL :</span> <span class="bold-val">+251 756 765434</span>
+    </div>
+  </div>
+
+  <!-- ===== TITLE BOX ===== -->
+  <div class="title-box">
+    <h1>FULL ACCOUNT STATEMENT</h1>
+  </div>
+
+  <!-- ===== CUSTOMER INFO ===== -->
+  <div class="customer-section">
+    <div class="customer-row">
+      <span class="customer-label"><span class="amharic">የደንበው ስም /</span> CUSTOMER NAME</span>
+      <span class="customer-value">Abel Agegnehu</span>
+    </div>
+    <div class="customer-row">
+      <span class="customer-label"><span class="amharic">ስልክ ቁጥር /</span> PHONE NUMBER</span>
+      <span class="customer-value">251911223344</span>
+    </div>
+    <div class="customer-row">
+      <span class="customer-label"><span class="amharic">የስቴትመንቱ ቀን /</span> DATE OF STATEMENT</span>
+      <span class="customer-value">12/28/2025</span>
+    </div>
+    <div class="customer-row">
+      <span class="customer-label"><span class="amharic">የስትመንቱ ጊዜ /</span> PERIOD NAME</span>
+      <span class="customer-value">December 01 - December 28, 2025</span>
+    </div>
+  </div>
+
+  <!-- ===== ACCOUNT SUMMARY ===== -->
+  <div class="summary-section">
+    <div class="section-header-gray">
+      <h2>ACCOUNT SUMMARY</h2>
+    </div>
+    <div class="summary-red-row">
+      <div class="summary-red-box">
+        <div class="box-label">OPENING BALANCE</div>
+        <div class="box-value">30,200.00 BR</div>
+      </div>
+      <div class="summary-red-box">
+        <div class="box-label">TOTAL CREDIT</div>
+        <div class="box-value">30,500.00 BR</div>
+      </div>
+      <div class="summary-red-box">
+        <div class="box-label">TOTAL DEBIT</div>
+        <div class="box-value">14,820.00 BR</div>
+      </div>
+    </div>
+    <div class="summary-white-row">
+      <div class="summary-white-box">
+        <div class="box-label">TRANSACTIONS</div>
+        <div class="box-value">10</div>
+      </div>
+      <div class="summary-white-box">
+        <div class="box-label">CREDIT COUNT</div>
+        <div class="box-value">3</div>
+      </div>
+      <div class="summary-white-box">
+        <div class="box-label">DEBIT COUNT</div>
+        <div class="box-value">7</div>
+      </div>
+      <div class="summary-white-box">
+        <div class="box-label">CLOSING BALANCE</div>
+        <div class="box-value">45,880.00 BR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TRANSACTION DETAIL ===== -->
+  <div class="transaction-section">
+    <div class="section-header-gray">
+      <h2>TRANSACTION DETAIL</h2>
+    </div>
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th style="width: 14%;">TRANSACTION ID</th>
+          <th style="width: 10%;">DATE</th>
+          <th style="width: 14%;">SETTLED AMOUNT</th>
+          <th style="width: 14%;">REASON TYPE</th>
+          <th style="width: 28%;">DETAILS</th>
+          <th style="width: 12%;">BALANCE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tx-id">TXR9K2LMP4</span></td>
+          <td><span class="tx-date">12/01/2025 08:15</span></td>
+          <td><span class="tx-amount positive">+15,000.00 BR</span></td>
+          <td><span class="tx-reason">Salary Payment</span></td>
+          <td><span class="tx-details">ABC Trading PLC - Monthly Salary Deposit</span></td>
+          <td><span class="tx-balance">45,200.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR7D3NMB1</span></td>
+          <td><span class="tx-date">12/03/2025 11:42</span></td>
+          <td><span class="tx-amount negative">-3,500.00 BR</span></td>
+          <td><span class="tx-reason">Send Money</span></td>
+          <td><span class="tx-details">To: Hana Mekonnen - Rent Payment December</span></td>
+          <td><span class="tx-balance">41,700.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR5F8HQW2</span></td>
+          <td><span class="tx-date">12/05/2025 14:30</span></td>
+          <td><span class="tx-amount negative">-2,450.00 BR</span></td>
+          <td><span class="tx-reason">Merchant Payment</span></td>
+          <td><span class="tx-details">London Cafe - Invoice INV-2024-8912</span></td>
+          <td><span class="tx-balance">39,250.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR3M2LKN8</span></td>
+          <td><span class="tx-date">12/08/2025 09:05</span></td>
+          <td><span class="tx-amount negative">-1,200.00 BR</span></td>
+          <td><span class="tx-reason">Bill Payment</span></td>
+          <td><span class="tx-details">Ethiopian Electric Utility - ACC No. 2023-4567-8912</span></td>
+          <td><span class="tx-balance">38,050.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR1P6JHY9</span></td>
+          <td><span class="tx-date">12/12/2025 16:50</span></td>
+          <td><span class="tx-amount negative">-500.00 BR</span></td>
+          <td><span class="tx-reason">Airtime TopUp</span></td>
+          <td><span class="tx-details">251-911-223344 - Airtime Bundle 10GB + 300 Min</span></td>
+          <td><span class="tx-balance">37,550.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR4W7KGD3</span></td>
+          <td><span class="tx-date">12/15/2025 07:22</span></td>
+          <td><span class="tx-amount positive">+8,000.00 BR</span></td>
+          <td><span class="tx-reason">Bank Transfer</span></td>
+          <td><span class="tx-details">From: Dashen Bank A/C 100023456789 - Freelance Payment</span></td>
+          <td><span class="tx-balance">45,550.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR8T2FVB5</span></td>
+          <td><span class="tx-date">12/18/2025 20:14</span></td>
+          <td><span class="tx-amount negative">-850.00 BR</span></td>
+          <td><span class="tx-reason">Merchant Payment</span></td>
+          <td><span class="tx-details">Fresh Basket Supermarket - Grocery Purchase</span></td>
+          <td><span class="tx-balance">44,700.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR6H9LQN7</span></td>
+          <td><span class="tx-date">12/22/2025 10:38</span></td>
+          <td><span class="tx-amount negative">-6,000.00 BR</span></td>
+          <td><span class="tx-reason">Bank Transfer</span></td>
+          <td><span class="tx-details">To: Hibret Bank A/C 3000987654 - Tuition Fee Payment</span></td>
+          <td><span class="tx-balance">38,700.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR2F5MVK1</span></td>
+          <td><span class="tx-date">12/26/2025 12:00</span></td>
+          <td><span class="tx-amount negative">-320.00 BR</span></td>
+          <td><span class="tx-reason">Send Money</span></td>
+          <td><span class="tx-details">To: Abebe Kebede - Transport Fare Reimbursement</span></td>
+          <td><span class="tx-balance">38,380.00 BR</span></td>
+        </tr>
+        <tr>
+          <td><span class="tx-id">TXR0J3KPD7</span></td>
+          <td><span class="tx-date">12/28/2025 15:45</span></td>
+          <td><span class="tx-amount positive">+7,500.00 BR</span></td>
+          <td><span class="tx-reason">Salary Payment</span></td>
+          <td><span class="tx-details">ABC Trading PLC - December Bonus & Salary</span></td>
+          <td><span class="tx-balance">45,880.00 BR</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer-disclaimer">
+    <p>
+      This Record is Produced For Your Personal Use And It Is Not Transferable. If This Record Is Sought To Be Produced In Court, Please Contact The Nearest Retail Shop For Further Guidance Or Send An Email To Safaricom Customer Care Via M-PESA <span class="email">Customercare@Safaricom.Net</span>
+    </p>
+  </div>
+
+  <div class="footer-bar">
+    <img src="assets/M-PESA-white-logo.svg" alt="M-PESA">
+  </div>
+
+</div>
+
+</body>
+</html>

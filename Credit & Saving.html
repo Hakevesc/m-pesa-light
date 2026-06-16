@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit & Saving</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Border: #E8E8EC;
+    --Background: #F5F5F5;
+    --Success: #1FC83B;
+    --Green-700: #239150;
+    --Green-400: #2FC56D;
+    --Green-100: #E8F9EC;
+    --M-Pesa-Red-Gradient: linear-gradient(180deg, #A41016 0%, #ED1C24 100%);
+    --Surface-Container: #FCFCFC;
+    --Font-Family: 'Switzer', 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--Font-Family);
+    background: var(--M-Pesa-Red-Gradient);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px; height: 780px;
+    background: var(--Background); border-radius: 30px;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px 8px; background: var(--Background); flex-shrink: 0;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); font-family: var(--Font-Family); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* ── HEADER NAV ── */
+  .header-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 16px 12px; background: var(--Background); flex-shrink: 0;
+  }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: transparent; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+  }
+  .icon-btn:hover { background: rgba(0,0,0,0.05); }
+  .icon-btn svg { width: 22px; height: 22px; stroke: var(--On-Surface); stroke-width: 1.8; fill: none; }
+  .header-title {
+    color: var(--On-Surface); font-family: var(--Font-Family);
+    font-size: 17px; font-weight: 500; letter-spacing: 0.3px; flex: 1; text-align: center;
+  }
+
+  /* ── SCROLL CONTENT — extra top padding so card shadow isn't clipped ── */
+  .scroll-content {
+    flex: 1; overflow-y: auto; padding: 14px 16px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .scroll-content::-webkit-scrollbar { width: 0; }
+
+  /* ══════════════════════════════════
+     BALANCE CARD — exact home style, red gradient
+     Mirrors component-balance-card.css exactly
+  ══════════════════════════════════ */
+  .balance-card {
+    width: 100%; border-radius: 24px;
+    background: var(--M-Pesa-Red-Gradient);
+    padding: 16px; position: relative; overflow: hidden;
+    box-shadow: 0 4px 20px rgba(164,16,22,0.25);
+    flex-shrink: 0;
+  }
+  .balance-card::before {
+    content: ''; position: absolute; top: -50px; right: -50px;
+    width: 250px; height: 250px;
+    background: rgba(255,255,255,0.05); border-radius: 50%;
+  }
+  .balance-card::after {
+    content: ''; position: absolute; bottom: -80px; right: -30px;
+    width: 200px; height: 200px;
+    background: rgba(0,0,0,0.10); border-radius: 50%;
+  }
+
+  .card-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    width: 100%; z-index: 1; position: relative;
+  }
+  /* label — matches .main-balance .header .label */
+  .card-header-label {
+    display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+  }
+  .card-header-label span {
+    color: #FFF; font-family: var(--Font-Family);
+    font-size: 12px; font-weight: 300; line-height: 150%;
+  }
+  /* amount — matches .main-balance .amount (no currency prefix, uniform with home) */
+  .card-amount {
+    color: #FFF; font-family: var(--Font-Family);
+    font-size: 30px; font-weight: 400; line-height: 150%; letter-spacing: 0;
+  }
+
+  .eye-btn {
+    background: none; border: none; cursor: pointer; padding: 4px;
+    opacity: 0.85; z-index: 1; position: relative;
+  }
+  .eye-btn svg { width: 20px; height: 20px; stroke: #FFF; fill: none; stroke-width: 1.5; }
+
+  /* sub-stats row */
+  .card-subs {
+    display: flex; z-index: 1; position: relative;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.18);
+  }
+  .card-sub { flex: 1; display: flex; flex-direction: column; }
+  .card-sub + .card-sub { border-left: 1px solid rgba(255,255,255,0.18); padding-left: 12px; }
+  .sub-label { color: rgba(255,255,255,0.75); font-family: var(--Font-Family); font-size: 11px; font-weight: 300; margin-bottom: 2px; }
+  .sub-value { color: #FFF; font-family: var(--Font-Family); font-size: 16px; font-weight: 400; letter-spacing: 0.5px; }
+  .card-subs { justify-content: space-between; }
+
+  /* ══════════════════════════════════
+     BANNER SLIDER — exact homepage component
+  ══════════════════════════════════ */
+  .banner-slider {
+    width: 100%; max-width: 328px; height: 110px;
+    margin: 0 auto; border-radius: 16px; overflow: hidden;
+    position: relative; background: var(--Surface-Container);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .banner-slides-container {
+    position: relative; width: 100%; height: 100%; overflow: hidden;
+    display: flex; align-items: stretch;
+  }
+  .banner-slide {
+    position: absolute; top: 0; width: 100%; height: 100%;
+    opacity: 0; transition: opacity 0.5s ease-in-out; pointer-events: none;
+  }
+  .banner-slide.active { opacity: 1; pointer-events: auto; z-index: 1; }
+  .banner-slide.active + .banner-slide {
+    opacity: 1; transform: translateX(75%); width: 25%;
+    z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .banner-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+  .banner-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .banner-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg,
+      rgba(254,53,61,0.85) 0%, rgba(254,53,61,0.5) 40%,
+      rgba(196,21,32,0.15) 70%, transparent 100%);
+    z-index: 2;
+  }
+  .banner-content {
+    position: relative; z-index: 3;
+    padding: 14px 16px; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .banner-title {
+    color: #FFF; font-family: 'Switzer', sans-serif; font-size: 15px;
+    font-weight: 700; line-height: 1.3; margin-bottom: 4px;
+    letter-spacing: 0.2px; max-width: 70%;
+  }
+  .banner-subtitle {
+    color: rgba(255,255,255,0.9); font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 400; line-height: 1.4; max-width: 65%;
+  }
+  .banner-dots {
+    position: absolute; bottom: 8px; right: 12px;
+    display: flex; gap: 6px; z-index: 4;
+  }
+  .banner-dots .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s ease;
+  }
+  .banner-dots .dot.active { background: #FFF; width: 18px; border-radius: 3px; }
+  .banner-dots .dot:hover { background: rgba(255,255,255,0.8); }
+
+  /* ══════════════════════════════════
+     ACTION BUTTONS — Deposit | Reallocate | Withdraw circle (no label)
+  ══════════════════════════════════ */
+  .actions-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .btn-deposit {
+    flex: 1; height: 50px; border-radius: 66px;
+    background: var(--Primary); border: none; color: #FFF;
+    font-family: var(--Font-Family); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-weight: 700;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(254,53,61,0.28);
+  }
+  .btn-deposit:hover { background: #E5303A; transform: translateY(-1px); }
+  .btn-deposit:active { transform: scale(0.97); box-shadow: none; }
+  .btn-deposit svg { width: 16px; height: 16px; stroke: #FFF; fill: none; stroke-width: 2; }
+
+  .btn-reallocate {
+    flex: 1; height: 50px; border-radius: 66px;
+    background: #FFF; border: 1.5px solid var(--Border); color: var(--On-Surface);
+    font-family: var(--Font-Family); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    font-weight: 700;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .btn-reallocate:hover { border-color: var(--On-Surface-Low); transform: translateY(-1px); }
+  .btn-reallocate:active { transform: scale(0.97); }
+  .btn-reallocate svg { width: 16px; height: 16px; stroke: var(--On-Surface); fill: none; stroke-width: 2; }
+
+  /* Withdraw — white circle, NO text label */
+  .btn-withdraw {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: #FFF; border: 1.5px solid var(--Border); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .btn-withdraw:hover { border-color: var(--Primary); box-shadow: 0 4px 12px rgba(254,53,61,0.14); transform: scale(1.05); }
+  .btn-withdraw:active { transform: scale(0.95); }
+  .btn-withdraw svg { width: 20px; height: 20px; stroke: var(--On-Surface); fill: none; stroke-width: 2; }
+
+  /* ══════════════════════════════════
+     CREDIT SUMMARY CARD
+  ══════════════════════════════════ */
+  .credit-card {
+    background: #FFF; border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .credit-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(254,53,61,0.08);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .credit-icon svg { width: 24px; height: 24px; stroke: var(--Primary); fill: none; stroke-width: 1.8; }
+  .credit-info { flex: 1; min-width: 0; }
+  .credit-name { font-family: var(--Font-Family); font-size: 13px; font-weight: 600; color: var(--On-Surface); margin-bottom: 2px; }
+  .credit-sub { font-family: var(--Font-Family); font-size: 11px; color: var(--On-Surface-Low); }
+  .credit-amount { font-family: var(--Font-Family); font-size: 18px; font-weight: 700; color: var(--Primary); flex-shrink: 0; }
+
+  /* ══════════════════════════════════
+     SECTION HEADER
+  ══════════════════════════════════ */
+  .section-hdr {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .section-title { font-family: var(--Font-Family); font-size: 15px; font-weight: 600; color: var(--On-Surface); }
+  .see-all { font-family: var(--Font-Family); font-size: 13px; color: var(--Primary); cursor: pointer; font-weight: 500; }
+
+  /* ══════════════════════════════════
+     POCKET CARDS
+  ══════════════════════════════════ */
+  .pockets-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .pocket-card {
+    background: #FFF; border-radius: 16px; padding: 14px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .pocket-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .pocket-card:active { transform: scale(0.99); }
+
+  .ring-wrap { position: relative; width: 54px; height: 54px; flex-shrink: 0; }
+  .ring-wrap svg { display: block; }
+  .pocket-logo {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--Font-Family); font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .pocket-info { flex: 1; min-width: 0; }
+  .pocket-name { font-family: var(--Font-Family); font-size: 13px; font-weight: 600; color: var(--On-Surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pocket-cat { font-family: var(--Font-Family); font-size: 11px; color: var(--On-Surface-Low); margin-top: 1px; }
+  .pocket-track { width: 100%; height: 3px; background: #F0F0F2; border-radius: 2px; margin-top: 8px; }
+  .pocket-fill { height: 100%; border-radius: 2px; }
+
+  .pocket-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex-shrink: 0; }
+  .pocket-pct { font-family: var(--Font-Family); font-size: 15px; font-weight: 700; color: var(--Green-700); }
+  .pocket-saved { font-family: var(--Font-Family); font-size: 10px; color: var(--On-Surface-Low); white-space: nowrap; }
+  .pocket-due { font-family: var(--Font-Family); font-size: 10px; color: var(--On-Surface-Low); white-space: nowrap; }
+
+  /* ══════════════════════════════════
+     BOTTOM BAR — New Saving Pocket button, always at the very bottom
+  ══════════════════════════════════ */
+  .bottom-bar {
+    padding: 12px 16px 20px; background: var(--Background);
+    border-top: 1px solid var(--Border); flex-shrink: 0;
+  }
+  /* solid red pill, uppercase, right-arrow — matches button component style */
+  .new-pocket-btn {
+    width: 100%; height: 55px; border-radius: 62px;
+    background: var(--Primary); border: none; color: #FFF;
+    font-family: var(--Font-Family); font-size: 14px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 6px 24px rgba(254,53,61,0.30);
+  }
+  .new-pocket-btn:hover { background: #E5303A; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(254,53,61,0.38); }
+  .new-pocket-btn:active { transform: scale(0.98); box-shadow: none; }
+  .new-pocket-btn svg { width: 16px; height: 16px; stroke: #FFF; fill: none; stroke-width: 2.5; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--On-Surface); color: #FFF;
+    padding: 12px 24px; border-radius: 12px;
+    font-family: var(--Font-Family); font-size: 13px; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: all 0.3s ease;
+    z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.2); white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ── Status Bar ── -->
+  <div class="status-bar">
+    <span class="time">10:00</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/>
+        <path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/>
+        <path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/>
+      </svg>
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+        <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+        <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+        <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+      </svg>
+      <svg viewBox="0 0 28 14" fill="none">
+        <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+        <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+        <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── Header Nav ── -->
+  <div class="header-nav">
+    <button class="icon-btn" onclick="window.location.href='Lehulum Home.html'" aria-label="Back">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <span class="header-title">Credit & Saving</span>
+    <button class="icon-btn" onclick="showToast('No new notifications')" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Scroll Content ── -->
+  <div class="scroll-content">
+
+    <!-- 1. BALANCE CARD — red, exact home style -->
+      <div class="balance-card">
+      <div class="card-top">
+        <div>
+          <div class="card-header-label"><span>Total Savings (Birr)</span></div>
+          <div class="card-amount" id="cardAmount">
+            24,800.00
+          </div>
+        </div>
+        <button class="eye-btn" onclick="toggleBalance()" aria-label="Toggle balance">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="card-subs">
+        <div class="card-sub">
+          <span class="sub-label">Individual Saving</span>
+          <span class="sub-value" id="sub1">18,200.00</span>
+        </div>
+        <div class="card-sub">
+          <span class="sub-label">Group Saving</span>
+          <span class="sub-value" id="sub2">6,600.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. BANNER SLIDER — exact homepage component -->
+    <div class="banner-slider">
+      <div class="banner-slides-container" id="bannerSlidesContainer">
+        <!-- Banner 1 -->
+        <div class="banner-slide active" data-index="0">
+          <div class="banner-image">
+            <img src="assets/banner-ads-1.png" alt="M-PESA Banner 1">
+            <div class="banner-overlay"></div>
+          </div>
+          <div class="banner-content">
+            <h3 class="banner-title">Do it all with M-PESA</h3>
+            <p class="banner-subtitle">Make payments quickly and conveniently.</p>
+          </div>
+        </div>
+        <!-- Banner 2 -->
+        <div class="banner-slide" data-index="1">
+          <div class="banner-image">
+            <img src="assets/banner-ads-2.png" alt="M-PESA Banner 2">
+            <div class="banner-overlay"></div>
+          </div>
+          <div class="banner-content">
+            <h3 class="banner-title">Send Money Anywhere</h3>
+            <p class="banner-subtitle">Transfer to any M-PESA user instantly.</p>
+          </div>
+        </div>
+        <!-- Banner 3 -->
+        <div class="banner-slide" data-index="2">
+          <div class="banner-image">
+            <img src="assets/banner-ads-3.png" alt="M-PESA Banner 3">
+            <div class="banner-overlay"></div>
+          </div>
+          <div class="banner-content">
+            <h3 class="banner-title">Pay Bills Easily</h3>
+            <p class="banner-subtitle">Settle your utilities and services in seconds.</p>
+          </div>
+        </div>
+      </div>
+      <!-- Navigation Dots -->
+      <div class="banner-dots" id="bannerDots">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+      </div>
+    </div>
+
+    <!-- 3. ACTION BUTTONS — Deposit | Reallocate | Withdraw circle (no text) -->
+    <div class="actions-row">
+      <button class="btn-deposit" onclick="showToast('Deposit feature coming soon')">
+        Deposit
+      </button>
+      <button class="btn-reallocate" onclick="showToast('Reallocate feature coming soon')">
+        Reallocate
+      </button>
+      <!-- Withdraw — circle icon only, no text -->
+      <button class="btn-withdraw" onclick="showToast('Withdraw feature coming soon')" aria-label="Withdraw">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 5. ACTIVE POCKETS -->
+    <div class="section-hdr">
+      <span class="section-title">Active Pockets</span>
+      <span class="see-all" onclick="showToast('See All coming soon')">See All</span>
+    </div>
+
+    <div class="pockets-list">
+
+      <!-- POCKET 1 — EEPCO: thin 2.5px solid arc, round caps -->
+      <div class="pocket-card">
+        <div class="ring-wrap">
+          <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+            <circle cx="27" cy="27" r="23" stroke="#E8F9EC" stroke-width="2.5"/>
+            <circle cx="27" cy="27" r="23"
+              stroke="#2FC56D" stroke-width="2.5" stroke-linecap="round"
+              stroke-dasharray="144.51" stroke-dashoffset="86.71"
+              transform="rotate(-90 27 27)"/>
+          </svg>
+          <div class="pocket-logo" style="background:#FFF3E0;color:#E65100;">EP</div>
+        </div>
+        <div class="pocket-info">
+          <div class="pocket-name">EEPCO Electric</div>
+          <div class="pocket-cat">Utility Bill Saving</div>
+          <div class="pocket-track">
+            <div class="pocket-fill" style="width:40%;background:linear-gradient(90deg,#2FC56D,#239150);"></div>
+          </div>
+        </div>
+        <div class="pocket-meta">
+          <span class="pocket-pct">40%</span>
+          <span class="pocket-saved">1,200 / 3,000</span>
+          <span class="pocket-due">Due Jul 2026</span>
+        </div>
+      </div>
+
+      <!-- POCKET 2 — Ethio Telecom: medium 4px flat-cap arc, visible track -->
+      <div class="pocket-card">
+        <div class="ring-wrap">
+          <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+            <circle cx="27" cy="27" r="22" stroke="#D0F5DA" stroke-width="4"/>
+            <circle cx="27" cy="27" r="22"
+              stroke="#239150" stroke-width="4" stroke-linecap="butt"
+              stroke-dasharray="138.23" stroke-dashoffset="44.23"
+              transform="rotate(-90 27 27)"/>
+          </svg>
+          <div class="pocket-logo" style="background:#E3F2FD;color:#1565C0;">ET</div>
+        </div>
+        <div class="pocket-info">
+          <div class="pocket-name">Ethio Telecom</div>
+          <div class="pocket-cat">Package Saving</div>
+          <div class="pocket-track">
+            <div class="pocket-fill" style="width:68%;background:linear-gradient(90deg,#27a85d,#1a7040);"></div>
+          </div>
+        </div>
+        <div class="pocket-meta">
+          <span class="pocket-pct">68%</span>
+          <span class="pocket-saved">680 / 1,000</span>
+          <span class="pocket-due">Due Aug 2026</span>
+        </div>
+      </div>
+
+      <!-- POCKET 3 — BOA: thick 5px gradient arc -->
+      <div class="pocket-card">
+        <div class="ring-wrap">
+          <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+            <defs>
+              <linearGradient id="grad-boa" x1="54" y1="0" x2="0" y2="54" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#2FC56D"/><stop offset="100%" stop-color="#1a7040"/>
+              </linearGradient>
+            </defs>
+            <circle cx="27" cy="27" r="21" stroke="#F0FFF4" stroke-width="5"/>
+            <circle cx="27" cy="27" r="21"
+              stroke="url(#grad-boa)" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="131.95" stroke-dashoffset="98.96"
+              transform="rotate(-90 27 27)"/>
+          </svg>
+          <div class="pocket-logo" style="background:#F3E5F5;color:#6A1B9A;">BA</div>
+        </div>
+        <div class="pocket-info">
+          <div class="pocket-name">BOA Education</div>
+          <div class="pocket-cat">Education Fund</div>
+          <div class="pocket-track">
+            <div class="pocket-fill" style="width:25%;background:linear-gradient(90deg,#a8e6c0,#239150);"></div>
+          </div>
+        </div>
+        <div class="pocket-meta">
+          <span class="pocket-pct">25%</span>
+          <span class="pocket-saved">5,000 / 20,000</span>
+          <span class="pocket-due">Due Dec 2026</span>
+        </div>
+      </div>
+
+      <!-- POCKET 4 — CBE: dotted track + solid progress arc -->
+      <div class="pocket-card">
+        <div class="ring-wrap">
+          <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+            <circle cx="27" cy="27" r="23"
+              stroke="#D0F5DA" stroke-width="3" stroke-linecap="round"
+              stroke-dasharray="4 5.52"
+              transform="rotate(-90 27 27)"/>
+            <circle cx="27" cy="27" r="23"
+              stroke="#1FC83B" stroke-width="3" stroke-linecap="round"
+              stroke-dasharray="144.51" stroke-dashoffset="21.68"
+              transform="rotate(-90 27 27)"/>
+          </svg>
+          <div class="pocket-logo" style="background:#E8F5E9;color:#1B5E20;">CB</div>
+        </div>
+        <div class="pocket-info">
+          <div class="pocket-name">CBE Home Fund</div>
+          <div class="pocket-cat">Home Purchase Goal</div>
+          <div class="pocket-track">
+            <div class="pocket-fill" style="width:85%;background:linear-gradient(90deg,#1FC83B,#239150);"></div>
+          </div>
+        </div>
+        <div class="pocket-meta">
+          <span class="pocket-pct">85%</span>
+          <span class="pocket-saved">85,000 / 100k</span>
+          <span class="pocket-due">Due Sep 2026</span>
+        </div>
+      </div>
+
+    </div><!-- /pockets-list -->
+  </div><!-- /scroll-content -->
+
+  <!-- 6. BOTTOM BAR — New Saving Pocket, always visible at the very bottom -->
+  <div class="bottom-bar">
+    <button class="new-pocket-btn" onclick="showToast('New Saving Pocket coming soon')">
+      New Saving Pocket
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+
+</div><!-- /phone-frame -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Balance toggle
+  let balanceHidden = false;
+  function toggleBalance() {
+    balanceHidden = !balanceHidden;
+    const amountEl = document.getElementById('cardAmount');
+    const subs = [document.getElementById('sub1'), document.getElementById('sub2')];
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (balanceHidden) {
+      amountEl.innerHTML = '••••••';
+      subs.forEach(v => v.textContent = '•••••');
+      eyeIcon.innerHTML = `
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="1" y1="1" x2="23" y2="23" stroke-linecap="round"/>`;
+    } else {
+      amountEl.innerHTML = '24,800.00';
+      const vals = ['18,200.00', '6,600.00'];
+      subs.forEach((v, i) => v.textContent = vals[i]);
+      eyeIcon.innerHTML = `
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5z"/>
+        <circle cx="12" cy="12" r="3"/>`;
+    }
+  }
+
+  // Banner Slider — same logic as homepage
+  (function initBannerSlider() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dots .dot');
+    let currentSlide = 0;
+    let slideInterval;
+
+    function goToSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.remove('active');
+        if (dots[i]) dots[i].classList.remove('active');
+      });
+      slides[index].classList.add('active');
+      if (dots[index]) dots[index].classList.add('active');
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      goToSlide((currentSlide + 1) % slides.length);
+    }
+
+    function startAutoSlide() { slideInterval = setInterval(nextSlide, 4000); }
+    function stopAutoSlide() { clearInterval(slideInterval); }
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => { goToSlide(i); stopAutoSlide(); startAutoSlide(); });
+    });
+
+    const container = document.getElementById('bannerSlidesContainer');
+    let touchStartX = 0;
+    if (container) {
+      container.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; stopAutoSlide(); }, {passive:true});
+      container.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : goToSlide((currentSlide - 1 + slides.length) % slides.length);
+        startAutoSlide();
+      }, {passive:true});
+    }
+
+    const slider = document.querySelector('.banner-slider');
+    if (slider) {
+      slider.addEventListener('mouseenter', stopAutoSlide);
+      slider.addEventListener('mouseleave', startAutoSlide);
+    }
+    startAutoSlide();
+  })();
+</script>
+
+<script src="figma-export.js"></script>
+</body>
+</html>

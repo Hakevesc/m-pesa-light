@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Link Your Fayda ID (Forced) - Modal</title>
+
+<!-- ============================================================
+     Component Styles
+     Import order matters: design-tokens → base → components
+     ============================================================ -->
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-button.css">
+<link rel="stylesheet" href="styles/component-popup.css">
+<style>
+  body {
+    background: transparent !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // ============================================================
+  // Component Templates
+  // See components/popup.html and components/button.html
+  // CSS in styles/component-popup.css and styles/component-button.css
+  // ============================================================
+
+  const componentTemplates = {
+    // See components/popup.html for the HTML template
+    popup: `
+      <div class="modal-overlay">
+        <div class="fayda-modal">
+          <!-- Logo -->
+          <div class="fayda-logo">
+            <img src="assets/fayda-logo-hq.png" alt="Fayda Logo">
+          </div>
+
+          <!-- Title -->
+          <h2 class="modal-title">Link Your Fayda ID</h2>
+
+          <!-- Description -->
+          <p class="modal-description">
+            A mandatory activation is required to complete your registration.
+          </p>
+
+          <!-- Buttons (using button component styles) -->
+          <div class="button-group">
+            <button class="btn-primary" onclick="linkNow()">
+              <i data-lucide="check-circle"></i>
+              Link Now
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  function renderApp() {
+    document.getElementById('app').innerHTML = componentTemplates.popup;
+
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  }
+
+  // Link Now action
+  function linkNow() {
+    alert('Proceeding to link your Fayda ID...');
+    // In real app, this would navigate to Fayda linking flow
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    renderApp();
+  } else {
+    document.addEventListener('DOMContentLoaded', renderApp);
+  }
+
+  // Prevent closing on escape since it's forced
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      console.log('Cannot close a forced modal via Escape key');
+    }
+  });
+</script>
+
+</body>
+</html>

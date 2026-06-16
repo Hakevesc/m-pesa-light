@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M-PESA AI Studio — Build screens by chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0B1120;
+      --bg2:     #070C16;
+      --surface: #131C2E;
+      --surf2:   #0E1626;
+      --border:  rgba(255,255,255,0.08);
+      --accent:  #F58722;
+      --acc2:    #FF9A3C;
+      --aglow:   rgba(245,135,34,0.10);
+      --ba:      rgba(245,135,34,0.28);
+      --text:    #F1F5F9;
+      --text2:   #94A3B8;
+      --text3:   #5A6B85;
+      --green:   #10B981;
+      --red:     #FE353D;
+      --mpesa:   linear-gradient(180deg,#A41016 0%,#ED1C24 100%);
+    }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      height:100vh; overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      height:56px; flex-shrink:0;
+      display:flex; align-items:center; gap:16px;
+      padding:0 20px;
+      border-bottom:1px solid var(--border);
+      background:var(--bg2);
+    }
+    .logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); font-size:14px; font-weight:700; }
+    .logo-mark {
+      width:28px; height:28px; border-radius:7px;
+      background:linear-gradient(135deg,var(--accent),#c96200);
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:900; color:#fff;
+    }
+    .logo .accent { color:var(--accent); margin-left:2px; }
+    .topbar-spacer { flex:1; }
+    .top-link {
+      padding:6px 13px; border-radius:8px;
+      color:var(--text2); font-size:13px; font-weight:500;
+      text-decoration:none; border:1px solid var(--border);
+      transition:all .15s;
+    }
+    .top-link:hover { color:var(--text); border-color:rgba(255,255,255,.18); }
+    .pill {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 11px; border-radius:100px;
+      background:var(--aglow); border:1px solid var(--ba);
+      color:var(--accent); font-size:11px; font-weight:600;
+      letter-spacing:.4px; text-transform:uppercase;
+    }
+    .pill .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Layout ── */
+    .studio {
+      height:calc(100vh - 56px);
+      display:grid; grid-template-columns:1fr 440px;
+    }
+
+    /* ════ LEFT: PHONE PREVIEW ════ */
+    .preview {
+      position:relative; overflow:hidden;
+      display:flex; flex-direction:column;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 35%,rgba(237,28,36,.08),transparent),
+        var(--surf2);
+      border-right:1px solid var(--border);
+    }
+    .preview-bar {
+      height:46px; flex-shrink:0;
+      display:flex; align-items:center; gap:12px;
+      padding:0 18px; border-bottom:1px solid var(--border);
+    }
+    .preview-title { font-size:12.5px; color:var(--text2); font-weight:500; }
+    .screen-badge {
+      padding:3px 10px; border-radius:100px; font-size:11px; font-weight:600;
+      background:var(--surface); color:var(--text2); border:1px solid var(--border);
+    }
+    .preview-actions { margin-left:auto; display:flex; gap:8px; }
+    .pbtn {
+      width:30px; height:30px; border-radius:8px;
+      background:var(--surface); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text2); cursor:pointer; transition:all .15s;
+    }
+    .pbtn:hover { color:var(--text); border-color:var(--ba); }
+    .pbtn svg { width:15px; height:15px; }
+
+    /* Stage with the red Lehulum backdrop + floating phone */
+    .stage {
+      flex:1; overflow:auto;
+      display:flex; align-items:center; justify-content:center;
+      padding:32px;
+    }
+    .device {
+      width:360px; height:780px; flex-shrink:0;
+      border-radius:42px;
+      background:#0a0a0a;
+      padding:11px;
+      box-shadow:
+        0 0 0 2px rgba(255,255,255,.06),
+        0 40px 90px rgba(0,0,0,.55),
+        0 0 60px rgba(237,28,36,.12);
+      position:relative;
+    }
+    .device::before {           /* notch */
+      content:''; position:absolute; top:11px; left:50%;
+      transform:translateX(-50%);
+      width:120px; height:26px; border-radius:0 0 16px 16px;
+      background:#0a0a0a; z-index:3;
+    }
+    .device-screen {
+      width:100%; height:100%;
+      border-radius:32px; overflow:hidden;
+      background:var(--mpesa);
+      position:relative;
+    }
+    #phone {
+      width:100%; height:100%; border:none; display:block;
+      background:transparent;
+    }
+    /* Loading veil over phone */
+    .phone-veil {
+      position:absolute; inset:0; z-index:4;
+      background:rgba(10,10,10,.55); backdrop-filter:blur(2px);
+      display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+      border-radius:32px;
+    }
+    .phone-veil.show { display:flex; }
+    .spinner {
+      width:38px; height:38px; border-radius:50%;
+      border:3px solid rgba(255,255,255,.18); border-top-color:#fff;
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .veil-txt { font-size:12.5px; color:rgba(255,255,255,.9); font-weight:500; }
+
+    /* ════ RIGHT: CHAT ════ */
+    .chat {
+      display:flex; flex-direction:column;
+      background:var(--bg); height:100%; min-height:0;
+    }
+    .chat-head {
+      padding:20px 22px 16px; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .chat-title { font-size:18px; font-weight:800; letter-spacing:-.4px; display:flex; align-items:center; gap:9px; }
+    .chat-title .spark {
+      width:24px; height:24px; border-radius:7px;
+      background:var(--aglow); border:1px solid var(--ba);
+      display:flex; align-items:center; justify-content:center; font-size:13px;
+    }
+    .chat-sub { font-size:13px; color:var(--text2); margin-top:6px; line-height:1.5; }
+
+    .messages {
+      flex:1; overflow-y:auto; min-height:0;
+      padding:20px 22px;
+      display:flex; flex-direction:column; gap:16px;
+    }
+    .messages::-webkit-scrollbar { width:7px; }
+    .messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+    .msg { display:flex; gap:11px; max-width:100%; animation:fade .35s ease both; }
+    @keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .msg-av {
+      width:30px; height:30px; border-radius:9px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:800;
+    }
+    .msg.ai  .msg-av { background:linear-gradient(135deg,var(--accent),#c96200); color:#fff; }
+    .msg.me  .msg-av { background:var(--surface); border:1px solid var(--border); color:var(--text2); }
+    .msg.me  { flex-direction:row-reverse; }
+    .bubble {
+      padding:11px 14px; border-radius:13px; font-size:14px; line-height:1.6;
+      max-width:300px; word-wrap:break-word;
+    }
+    .msg.ai .bubble { background:var(--surface); border:1px solid var(--border); border-top-left-radius:4px; color:var(--text); }
+    .msg.me .bubble { background:var(--accent); color:#fff; border-top-right-radius:4px; }
+    .bubble .ok { color:var(--green); font-weight:600; }
+    .bubble code {
+      font-family:'Fira Code',monospace; font-size:12px;
+      background:rgba(255,255,255,.06); padding:1px 5px; border-radius:4px;
+    }
+    .bubble-note {
+      margin-top:9px; padding:8px 11px; border-radius:8px;
+      background:var(--aglow); border:1px solid var(--ba);
+      font-size:12px; color:var(--accent);
+    }
+    .bubble-acts { margin-top:10px; display:flex; gap:7px; flex-wrap:wrap; }
+    .mini-btn {
+      padding:5px 11px; border-radius:7px; font-size:12px; font-weight:500;
+      background:var(--surf2); border:1px solid var(--border); color:var(--text2);
+      cursor:pointer; transition:all .15s; font-family:inherit;
+    }
+    .mini-btn:hover { color:var(--text); border-color:var(--ba); }
+
+    /* typing dots */
+    .typing { display:flex; gap:4px; padding:4px 2px; }
+    .typing span {
+      width:7px; height:7px; border-radius:50%; background:var(--text3);
+      animation:typing 1.2s infinite ease-in-out;
+    }
+    .typing span:nth-child(2){ animation-delay:.18s; }
+    .typing span:nth-child(3){ animation-delay:.36s; }
+    @keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:.4} 30%{transform:translateY(-5px);opacity:1} }
+
+    /* suggestion chips */
+    .suggest { display:flex; flex-wrap:wrap; gap:7px; }
+    .chip {
+      padding:7px 13px; border-radius:100px; font-size:12.5px;
+      background:var(--surface); border:1px solid var(--border); color:var(--text2);
+      cursor:pointer; transition:all .15s; font-family:inherit;
+    }
+    .chip:hover { color:var(--accent); border-color:var(--ba); transform:translateY(-1px); }
+
+    /* composer / chat box */
+    .composer {
+      flex-shrink:0; padding:14px 18px 18px; border-top:1px solid var(--border);
+      background:var(--bg2);
+    }
+    .composer-box {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:14px; padding:6px 6px 6px 14px;
+      display:flex; align-items:flex-end; gap:8px;
+      transition:border-color .15s;
+    }
+    .composer-box:focus-within { border-color:var(--ba); }
+    #prompt {
+      flex:1; background:transparent; border:none; outline:none; resize:none;
+      color:var(--text); font-family:inherit; font-size:14px; line-height:1.5;
+      max-height:120px; padding:8px 0;
+    }
+    #prompt::placeholder { color:var(--text3); }
+    .send-btn {
+      width:38px; height:38px; flex-shrink:0; border-radius:10px;
+      background:var(--accent); border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; transition:all .15s;
+    }
+    .send-btn:hover:not(:disabled) { background:var(--acc2); }
+    .send-btn:disabled { opacity:.45; cursor:not-allowed; }
+    .send-btn svg { width:17px; height:17px; }
+    .composer-hint { font-size:11px; color:var(--text3); margin-top:8px; text-align:center; }
+    .composer-hint kbd {
+      font-family:'Fira Code',monospace; font-size:10px;
+      background:var(--surface); border:1px solid var(--border);
+      padding:1px 5px; border-radius:4px; color:var(--text2);
+    }
+
+    @media (max-width:980px) {
+      .studio { grid-template-columns:1fr; grid-template-rows:1fr 1fr; }
+      .preview { border-right:none; border-bottom:1px solid var(--border); }
+      .device { transform:scale(.78); transform-origin:center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Top bar ── -->
+  <div class="topbar">
+    <a href="homepage.html" class="logo">
+      <div class="logo-mark">M</div>
+      M-PESA<span class="accent">AI Studio</span>
+    </a>
+    <span class="pill"><span class="dot"></span> Live</span>
+    <div class="topbar-spacer"></div>
+    <a href="homepage.html" class="top-link">← Back to home</a>
+  </div>
+
+  <div class="studio">
+
+    <!-- ════ LEFT: PHONE PREVIEW ════ -->
+    <section class="preview">
+      <div class="preview-bar">
+        <span class="preview-title">Preview</span>
+        <span class="screen-badge" id="screenBadge">Lehulum Home</span>
+        <div class="preview-actions">
+          <button class="pbtn" id="reloadBtn" title="Reload">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <button class="pbtn" id="homeBtn" title="Show Lehulum Home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="device">
+          <div class="device-screen">
+            <iframe id="phone" title="Phone preview"></iframe>
+            <div class="phone-veil" id="phoneVeil">
+              <div class="spinner"></div>
+              <div class="veil-txt">Building your screen…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ RIGHT: CHAT ════ -->
+    <section class="chat">
+      <div class="chat-head">
+        <div class="chat-title"><span class="spark">✨</span> AI Screen Builder</div>
+        <div class="chat-sub">Describe a screen and watch it render on the phone — built from your M-PESA design system.</div>
+      </div>
+
+      <div class="messages" id="messages">
+        <!-- seed message injected by JS -->
+      </div>
+
+      <div class="composer">
+        <div class="composer-box">
+          <textarea id="prompt" rows="1" placeholder="Describe a screen… e.g. M-Pesa bill payment with amount and PIN"></textarea>
+          <button class="send-btn" id="sendBtn" title="Send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="composer-hint"><kbd>Enter</kbd> to send · <kbd>Shift</kbd>+<kbd>Enter</kbd> for new line</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    /* ── Origins ──
+       API_BASE   → where the Express API lives (relative if served by it)
+       ORIGIN     → absolute server origin, for loading static files / <base>
+       ASSET_BASE → base href injected into generated HTML so its relative
+                    "../styles/*.css" links resolve to the real server. */
+    const API_BASE  = (location.port === '3001') ? '' : 'http://localhost:3001';
+    const ORIGIN    = API_BASE || location.origin;
+    const ASSET_BASE = ORIGIN + '/screens/ai-generated/';
+
+    const phone     = document.getElementById('phone');
+    const veil      = document.getElementById('phoneVeil');
+    const messages  = document.getElementById('messages');
+    const promptEl  = document.getElementById('prompt');
+    const sendBtn   = document.getElementById('sendBtn');
+    const badge     = document.getElementById('screenBadge');
+
+    const EXAMPLES = [
+      'M-Pesa bill payment with categories, amount and pay button',
+      'Send money to a contact with recipient card and PIN entry',
+      'Loan application with amount input and confirm button',
+      'Transaction success receipt with amount and details'
+    ];
+
+    let lastRawHtml = '';   // clean server HTML of the last generated screen (for Save)
+
+    /* ── Core: render a full HTML document into the phone ──
+       Injects a <base> so the doc's relative "styles/.." links resolve to the
+       real server, and neutralises its page padding/centering so the
+       .phone-frame fills our device screen edge-to-edge. */
+    function renderDoc(html, baseHref) {
+      const baseTag = `<base href="${baseHref}">`;
+      const fix = `<style>
+        html,body{margin:0!important;padding:0!important;min-height:0!important;
+                  background:transparent!important;display:block!important;}
+        .phone-frame{width:100%!important;height:100vh!important;border-radius:0!important;
+                     box-shadow:none!important;margin:0!important;}
+      </style>`;
+      let out = html;
+      if (/<head[^>]*>/i.test(out)) {
+        out = out.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`).replace(/<\/head>/i, `${fix}</head>`);
+      } else {
+        out = baseTag + fix + out;
+      }
+      phone.removeAttribute('src');
+      phone.srcdoc = out;
+    }
+
+    /* ── Load the real Lehulum Home as the default phone content ──
+       Home lives at the server root, so its links are "styles/.." → base = root. */
+    async function showHome() {
+      badge.textContent = 'Lehulum Home';
+      try {
+        const res = await fetch(ORIGIN + '/' + encodeURIComponent('Lehulum Home.html'));
+        renderDoc(await res.text(), ORIGIN + '/');
+      } catch {
+        phone.srcdoc = '<body style="font-family:sans-serif;color:#999;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">Could not load Lehulum Home</body>';
+      }
+    }
+
+    /* Generated screens live in screens/ai-generated/, links are "../styles/.." */
+    function renderGenerated(html) {
+      lastRawHtml = html;
+      renderDoc(html, ASSET_BASE);
+    }
+
+    /* ── Chat rendering ── */
+    function addMsg(role, htmlContent) {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ' + role;
+      const av = role === 'ai' ? 'AI' : 'You'.slice(0,2);
+      wrap.innerHTML = `
+        <div class="msg-av">${role === 'ai' ? '✦' : '🧑'}</div>
+        <div class="bubble">${htmlContent}</div>`;
+      messages.appendChild(wrap);
+      messages.scrollTop = messages.scrollHeight;
+      return wrap;
+    }
+
+    function addTyping() {
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ai';
+      wrap.innerHTML = `<div class="msg-av">✦</div>
+        <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+      messages.appendChild(wrap);
+      messages.scrollTop = messages.scrollHeight;
+      return wrap;
+    }
+
+    function seed() {
+      const chips = EXAMPLES.map(e =>
+        `<button class="chip" onclick="useExample(this)">${e.split(' with ')[0].replace('M-Pesa ','').replace(/^./,c=>c.toUpperCase())}</button>`
+      ).join('');
+      addMsg('ai', `Hi! I'm your design-system assistant. Tell me what screen to build and I'll render it on the phone using your M-PESA components.
+        <div class="bubble-acts" style="margin-top:12px;"><div class="suggest">${chips}</div></div>`);
+    }
+
+    window.useExample = function(btn) {
+      const idx = [...btn.parentElement.children].indexOf(btn);
+      promptEl.value = EXAMPLES[idx] || btn.textContent;
+      promptEl.focus();
+      autoGrow();
+    };
+
+    /* ── Generate ── */
+    let busy = false;
+    async function send() {
+      const prompt = promptEl.value.trim();
+      if (!prompt || busy) return;
+      busy = true; sendBtn.disabled = true;
+
+      addMsg('me', escapeHtml(prompt));
+      promptEl.value = ''; autoGrow();
+
+      const typing = addTyping();
+      veil.classList.add('show');
+
+      try {
+        const res = await fetch(API_BASE + '/api/generate-screen', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ prompt })
+        });
+        if (!res.ok) {
+          let detail = res.statusText;
+          try { const e = await res.json(); if (e.error) detail = e.error; } catch {}
+          throw new Error(detail);
+        }
+        const data = await res.json();
+        typing.remove();
+
+        if (data.html) {
+          renderGenerated(data.html);
+          badge.textContent = data.screen || 'Generated';
+        }
+
+        const count = (data.figma && data.figma.children) ? data.figma.children.length : 0;
+        let body = `<span class="ok">✓ Built <strong>${escapeHtml(data.screen || 'screen')}</strong></span> — rendered on the phone with ${count} component${count===1?'':'s'}.`;
+        if (data.missingComponents && data.missingComponents.length) {
+          body += `<div class="bubble-note">🧩 Created new component${data.missingComponents.length>1?'s':''}: ${data.missingComponents.map(escapeHtml).join(', ')}</div>`;
+        }
+        body += `<div class="bubble-acts">
+          <button class="mini-btn" onclick="saveScreen('${escapeAttr(data.screen||'generated-screen')}')">Save to server</button>
+          <button class="mini-btn" onclick="openFull()">Open full screen</button>
+        </div>`;
+        addMsg('ai', body);
+
+      } catch (err) {
+        typing.remove();
+        const quota = /quota|429|Too Many/i.test(err.message);
+        addMsg('ai', `⚠️ Couldn't build that screen.<br>
+          <code>${escapeHtml(err.message).slice(0,160)}</code>
+          ${quota ? '<div class="bubble-note">The Gemini API quota is exhausted. Check the key/model in <code>api/gemini-client.js</code>.</div>'
+                  : '<div class="bubble-note">Make sure the server is running on port 3001.</div>'}`);
+      } finally {
+        veil.classList.remove('show');
+        busy = false; sendBtn.disabled = false;
+        promptEl.focus();
+      }
+    }
+
+    window.saveScreen = async function(name) {
+      if (!lastRawHtml) { addMsg('ai', '⚠️ Nothing to save yet.'); return; }
+      try {
+        const res = await fetch(API_BASE + '/api/save-screen', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ screenName: name, html: lastRawHtml })
+        });
+        const data = await res.json();
+        addMsg('ai', data.success ? `💾 Saved as <code>${escapeHtml(data.path)}</code>` : '⚠️ Save failed.');
+      } catch (e) {
+        addMsg('ai', '⚠️ Save failed: ' + escapeHtml(e.message));
+      }
+    };
+
+    window.openFull = function() {
+      const w = window.open('', '_blank');
+      if (w && lastRawHtml) { w.document.open(); w.document.write(lastRawHtml); w.document.close(); }
+    };
+
+    /* ── Helpers ── */
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s){ return escapeHtml(s).replace(/'/g,'&#39;'); }
+    function autoGrow(){ promptEl.style.height='auto'; promptEl.style.height=Math.min(promptEl.scrollHeight,120)+'px'; }
+
+    /* ── Events ── */
+    sendBtn.addEventListener('click', send);
+    promptEl.addEventListener('input', autoGrow);
+    promptEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    document.getElementById('reloadBtn').addEventListener('click', () => {
+      if (phone.srcdoc) { const s = phone.srcdoc; phone.srcdoc=''; phone.srcdoc=s; }
+      else { phone.src = phone.src; }
+    });
+    document.getElementById('homeBtn').addEventListener('click', showHome);
+
+    /* ── Init ── */
+    showHome();
+    seed();
+  </script>
+</body>
+</html>

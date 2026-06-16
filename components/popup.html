@@ -1,0 +1,34 @@
+<!-- ===== POPUP/MODAL COMPONENT ===== -->
+<!--
+  This is the popup/modal component for Fayda ID activation & similar dialogs.
+  CSS in styles/component-popup.css
+  Buttons use styles/component-button.css (btn-primary, btn-secondary)
+-->
+
+<div class="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="fayda-modal">
+    <!-- Logo -->
+    <div class="fayda-logo">
+      <img src="assets/fayda-logo-hq.png" alt="Fayda Logo">
+    </div>
+
+    <!-- Title -->
+    <h2 class="modal-title">Link Your Fayda ID</h2>
+
+    <!-- Description -->
+    <p class="modal-description">
+      Link your account with Fayda to enjoy a more secure and seamless experience on the app.
+    </p>
+
+    <!-- Buttons (using button component styles) -->
+    <div class="button-group">
+      <button class="btn-primary" onclick="linkNow()">
+        <i data-lucide="check-circle"></i>
+        Link Now
+      </button>
+      <button class="btn-secondary" onclick="remindLater()">
+        Remind me later
+      </button>
+    </div>
+  </div>
+</div>

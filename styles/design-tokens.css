@@ -1,0 +1,39 @@
+/* ============================================================
+   M-PESA Design Tokens (CSS Custom Properties)
+   Import this first in your main stylesheet
+   Use this file to export to Figma JSON for design system sync
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Switzer:wght@300;400;500;600&display=swap');
+
+:root {
+  /* ---- Brand Colors ---- */
+  --Primary: #FE353D;
+  --Primary-Container: #FFDFE0;
+  --On-Primary: #FFF1F2;
+  --On-Surface: #1C1C21;
+  --On-Surface-Low: #7C7C87;
+  --Surface-Container: #FCFCFC;
+  --Gray-0: #FFF;
+  --Success: #1FC83B;
+  --lg: 16px;
+
+  /* ---- M-Pesa Red Palette ---- */
+  --M-Pesa-Red-800: #A41016;
+  --M-Pesa-Red-600: #ED1C24;
+  --M-Pesa-Red-700: #C41520;
+
+  /* ---- M-Pesa Red Gradient ---- */
+  --M-Pesa-Red-Gradient: linear-gradient(180deg, var(--M-Pesa-Red-800, #A41016) 0%, var(--M-Pesa-Red-600, #ED1C24) 100%);
+
+  /* ---- Background ---- */
+  --Body-BG: transparent;
+
+  /* ---- Typography ---- */
+  --Font-Family: 'Switzer', sans-serif;
+  --Font-Weight-Light: 300;
+  --Font-Weight-Regular: 400;
+  --Font-Weight-Medium: 500;
+  --Font-Weight-SemiBold: 600;
+  --Line-Height: 150%;
+}

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Settings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+  :root {
+    --Primary: #FE353D;
+    --Primary-Dark: #C41520;
+    --Primary-Darker: #A41016;
+    --On-Surface: #1C1C21;
+    --On-Surface-Low: #7C7C87;
+    --Surface-Container: #FCFCFC;
+    --Gray-0: #FFF;
+    --On-Primary: #FFF1F2;
+    --Primary-Light: #FFF1F2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Switzer', sans-serif;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 360px;
+    height: 780px;
+    background: #F5F5F5;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  .app-content {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-content::-webkit-scrollbar { width: 0; }
+
+  /* Status Bar */
+  .status-bar {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px 8px;
+    background: #F5F5F5;
+  }
+  .status-bar .time { font-size: 14px; font-weight: 600; color: var(--On-Surface); }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .status-icons svg { width: 18px; height: 18px; }
+
+  /* Header Navigation */
+  .header-nav {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px 16px;
+    background: #F5F5F5;
+  }
+
+  .back-btn {
+    position: absolute;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+
+  .back-btn:hover {
+    background: rgba(0,0,0,0.05);
+    transform: scale(1.05);
+  }
+
+  .back-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--On-Surface);
+    stroke-width: 1.5px;
+  }
+
+  .header-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  /* 3-dot Menu Button (top right) */
+  .menu-btn {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+
+  .menu-btn:hover {
+    background: rgba(0,0,0,0.05);
+    transform: scale(1.05);
+  }
+
+  .menu-btn svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--Primary);
+    stroke-width: 1.5px;
+  }
+
+  /* Dropdown Overlay */
+  .dropdown-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: none;
+  }
+
+  .dropdown-overlay.show {
+    display: block;
+  }
+
+  /* Dropdown Menu */
+  .dropdown-menu {
+    position: absolute;
+    top: 70px;
+    right: 16px;
+    background: #FFF;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    z-index: 55;
+    min-width: 200px;
+    overflow: hidden;
+    display: none;
+    animation: fadeIn 0.15s ease-out;
+  }
+
+  .dropdown-menu.show {
+    display: block;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    text-align: left;
+  }
+
+  .dropdown-item:hover {
+    background: #FAFAFA;
+  }
+
+  .dropdown-item:active {
+    background: #F5F5F5;
+  }
+
+  .dropdown-item i, .dropdown-item svg {
+    width: 18px !important;
+    height: 18px !important;
+    color: var(--On-Surface-Low);
+    stroke-width: 2px;
+  }
+
+  .dropdown-item.logout-item {
+    color: var(--Primary);
+  }
+
+  .dropdown-item.logout-item i, .dropdown-item.logout-item svg {
+    color: var(--Primary);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Main Content */
+  .main-content {
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    width: 100%;
+  }
+
+  /* Profile Card */
+  .profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #FFF;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #F0F0F0;
+    background: #F5F5F5;
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .profile-info .name {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .profile-info .phone {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  .tier-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--Primary);
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .tier-badge:hover {
+    background: #E5303A;
+    transform: scale(1.02);
+  }
+
+  .tier-badge i, .tier-badge svg {
+    width: 14px !important;
+    height: 14px !important;
+    color: #FFF;
+    stroke-width: 2px;
+  }
+
+  .tier-badge .tier-text {
+    color: #FFF;
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .tier-badge .arrow {
+    width: 14px !important;
+    height: 14px !important;
+    color: #FFF;
+    stroke-width: 2px;
+  }
+
+  /* Menu Group Card */
+  .menu-group {
+    background: #FFF;
+    border-radius: 16px;
+    padding: 4px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .menu-item:hover {
+    background: #FAFAFA;
+  }
+
+  .menu-item:active {
+    background: #F5F5F5;
+  }
+
+  .menu-item + .menu-item {
+    border-top: 1px solid #F0F0F0;
+  }
+
+  .menu-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--Primary-Light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .menu-icon i, .menu-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--Primary);
+    stroke-width: 2px;
+  }
+
+  .menu-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .menu-content .menu-title {
+    color: var(--On-Surface);
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  .menu-content .menu-subtitle {
+    color: var(--On-Surface-Low);
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+  }
+
+  .menu-arrow {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--Primary);
+  }
+
+  .menu-arrow svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--Primary);
+    stroke-width: 2px;
+  }
+
+  /* Toggle Switch */
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #E0E0E0;
+    border-radius: 24px;
+    transition: 0.3s;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background: #FFF;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--Primary);
+  }
+
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+  }
+
+  /* Log Out Button */
+  .logout-btn {
+    display: flex;
+    width: 100%;
+    height: 48px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    background: #FFF;
+    border: none;
+    cursor: pointer;
+    font-family: 'Switzer', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--Primary);
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    margin-top: 4px;
+  }
+
+  .logout-btn:hover {
+    background: var(--Primary-Light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.15);
+  }
+
+  .logout-btn:active {
+    transform: scale(0.98);
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="app-content">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="time">10:00</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/>
+          <rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/>
+          <rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/>
+          <rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M1.42 9a16 16 0 0 1 21.16 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="20" x2="12.01" y2="20" stroke="#1C1C21" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 28 14" fill="none">
+          <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/>
+          <rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/>
+          <rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <div class="header-nav">
+      <button class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="header-title">Account</span>
+      <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" title="More options">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Dropdown Overlay & Menu -->
+    <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeMenu()"></div>
+    <div class="dropdown-menu" id="dropdownMenu">
+      <button class="dropdown-item logout-item" onclick="handleLogout()">
+        <i data-lucide="log-out"></i>
+        Log Out
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Profile Card (clickable — navigates to Account Detail) -->
+      <div class="profile-card" onclick="location.href='Account Detail.html'" style="cursor:pointer;">
+        <div class="profile-avatar">
+          <img src="assets/avatars/avatar-1.png" alt="Hana Kagnew">
+        </div>
+        <div class="profile-info">
+          <span class="name">Hana Kagnew</span>
+          <span class="phone">25171 1293882</span>
+        </div>
+        <button class="tier-badge">
+          <i data-lucide="shield-check"></i>
+          <span class="tier-text">Tier 2</span>
+          <i data-lucide="arrow-right" class="arrow"></i>
+        </button>
+      </div>
+
+      <!-- Menu Group 1: Security & Language -->
+      <div class="menu-group">
+        <div class="menu-item" onclick="handleMenuClick('Account Security')">
+          <div class="menu-icon">
+            <i data-lucide="lock"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Account Security</span>
+            <span class="menu-subtitle">Update PIN & Biometrics</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-item" onclick="handleMenuClick('Language')">
+          <div class="menu-icon">
+            <i data-lucide="languages"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Language</span>
+            <span class="menu-subtitle">English, Amharic</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Group 2: Statements & Payments -->
+      <div class="menu-group">
+        <div class="menu-item" onclick="handleMenuClick('Full Statement')">
+          <div class="menu-icon">
+            <i data-lucide="file-text"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Full Statement</span>
+            <span class="menu-subtitle">Download PDF, email, or schedule</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-item" onclick="handleMenuClick('Schedule Payment')">
+          <div class="menu-icon">
+            <i data-lucide="credit-card"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Schedule Payment</span>
+            <span class="menu-subtitle">Find and download PDF receipts</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Group 3: App Features -->
+      <div class="menu-group">
+        <div class="menu-item" onclick="handleMenuClick('App Walkthrough')">
+          <div class="menu-icon">
+            <i data-lucide="rocket"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">App Walkthrough</span>
+            <span class="menu-subtitle">Review key features and initial setup.</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-item" onclick="handleMenuClick('Invite Friends')">
+          <div class="menu-icon">
+            <i data-lucide="gift"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Invite Friends</span>
+            <span class="menu-subtitle">Invite your friend to earn reward</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-item">
+          <div class="menu-icon">
+            <i data-lucide="bell"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Notifications</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" checked id="notifToggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Menu Group 4: Help & Support -->
+      <div class="menu-group">
+        <div class="menu-item" onclick="handleMenuClick('Help Center')">
+          <div class="menu-icon">
+            <i data-lucide="help-circle"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Help Center</span>
+            <span class="menu-subtitle">FAQs, user guides</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="menu-item" onclick="handleMenuClick('Contact Support')">
+          <div class="menu-icon">
+            <i data-lucide="message-square"></i>
+          </div>
+          <div class="menu-content">
+            <span class="menu-title">Contact Support</span>
+          </div>
+          <div class="menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  // Initialize Lucide icons
+  lucide.createIcons();
+
+  // Go back
+  function goBack() {
+    window.location.href = 'Lehulum Home.html';
+  }
+
+  // Menu item click handler
+  function handleMenuClick(itemName) {
+    console.log('Clicked:', itemName);
+    // In real app, navigate to the respective screen
+  }
+
+  // Toggle dropdown menu
+  function toggleMenu() {
+    const menu = document.getElementById('dropdownMenu');
+    const overlay = document.getElementById('dropdownOverlay');
+    const isOpen = menu.classList.contains('show');
+    menu.classList.toggle('show');
+    overlay.classList.toggle('show');
+  }
+
+  // Close menu
+  function closeMenu() {
+    document.getElementById('dropdownMenu').classList.remove('show');
+    document.getElementById('dropdownOverlay').classList.remove('show');
+  }
+
+  // Logout handler
+  function handleLogout() {
+    closeMenu();
+    if (confirm('Are you sure you want to log out?')) {
+      console.log('Logging out...');
+      // In real app, clear session and redirect to login
+    }
+  }
+
+  // Notification toggle
+  document.getElementById('notifToggle').addEventListener('change', function() {
+    console.log('Notifications:', this.checked ? 'enabled' : 'disabled');
+  });
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

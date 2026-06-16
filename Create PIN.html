@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create M-PESA PIN</title>
+  <style>
+    @import url("styles/component-keypad.css");
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600&family=Barlow:wght@400&display=swap');
+    @import url('https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap');
+
+    :root {
+      --Primary: #FE353D;
+      --Primary-Dark: #C41520;
+      --Primary-Darker: #A41016;
+      --On-Surface: #1C1C21;
+      --On-Surface-Low: #7C7C87;
+      --Surface-Container: #FCFCFC;
+      --Gray-0: #FFF;
+      --On-Primary: #FFF1F2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .phone-frame {
+      width: 360px;
+      height: 780px;
+      background: #F5F5F5;
+      border-radius: 30px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .app-content {
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ===== HEADER / RED CARD ===== */
+    .header-section {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, #A41016 0%, #C41520 30%, #D32F2F 60%, #B71C1C 100%);
+      border-radius: 0 0 30px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Pattern Overlay */
+    .pattern-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.20;
+      z-index: 0;
+      background-image: url('assets/M-PESA-pattern.svg');
+      background-size: 490px;
+      background-position: right -270px top -270px;
+      background-repeat: no-repeat;
+      border-radius: 0 0 30px 30px;
+      mix-blend-mode: overlay;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 14px 24px 8px;
+    }
+
+    .status-bar .time {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FFF;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Header Navigation */
+    .header-nav {
+      position: relative;
+      z-index: 5;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px 0;
+    }
+
+    .back-btn {
+      position: absolute;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: transparent;
+      transform: scale(1.05);
+    }
+
+    .back-btn i {
+      width: 24px !important;
+      height: 24px !important;
+      color: #FFF;
+      stroke-width: 2px;
+    }
+
+    .header-title {
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .header-subtitle {
+      position: relative;
+      z-index: 5;
+      color: #FFF;
+      font-family: 'Switzer', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 30px;
+      padding: 0 24px;
+      text-align: left;
+      width: 100%;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      padding: 24px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Instruction Text */
+    .instruction {
+      color: var(--On-Surface);
+      font-family: 'Switzer', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      text-align: center;
+      margin-top: 36px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    /* PIN Input Boxes */
+    .pin-container {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+
+    .pin-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: #FFF;
+      border: 2px solid #ECECEC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .pin-box.filled {
+      background: #FFF;
+      border-color: transparent;
+    }
+
+    .pin-box.filled .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--On-Surface);
+    }
+
+    .pin-box.active {
+      border-color: var(--Primary);
+      background: #FFF5F5;
+    }
+
+    .pin-box.active .dot {
+      display: none;
+    }
+
+    .pin-box.active::after {
+      content: '';
+      width: 2px;
+      height: 24px;
+      background: var(--Primary);
+      animation: cursor-blink 1s step-end infinite;
+    }
+
+    @keyframes cursor-blink {
+
+      from,
+      to {
+        background-color: transparent
+      }
+
+      50% {
+        background-color: var(--Primary)
+      }
+    }
+
+    .pin-box.error {
+      border-color: var(--Primary);
+      background: #FFF5F5;
+      animation: shake 0.4s ease-in-out;
+    }
+
+    .pin-box.error .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--Primary);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 0.8;
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-6px);
+      }
+
+      75% {
+        transform: translateX(6px);
+      }
+    }
+
+    /* Hidden Input */
+    .pin-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Continue/Next Button */
+    .action-btn {
+      display: flex;
+      width: 328px;
+      max-width: 100%;
+      height: 40px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      border-radius: 12px;
+      background: var(--Primary, #FE353D);
+      color: var(--On-Primary, #FFF1F2);
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 1.5;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: auto;
+      margin-bottom: 0px;
+      box-shadow: 0 4px 16px rgba(254, 53, 61, 0.25);
+    }
+
+    .action-btn:hover:not(:disabled) {
+      background: #E5303A;
+      box-shadow: 0 6px 20px rgba(254, 53, 61, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .action-btn:active:not(:disabled) {
+      transform: scale(0.98) translateY(0);
+    }
+
+    .action-btn:disabled {
+      background: #E0E0E0;
+      color: #7C7C87;
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Footer Links */
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding-bottom: 16px;
+      width: 100%;
+    }
+
+    .footer-links .divider {
+      width: 1px;
+      height: 12px;
+      background: #D0D0D0;
+    }
+
+    .footer-links .link {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      color: var(--On-Surface-Low);
+      font-size: 11px;
+      font-weight: 400;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .footer-links .link:hover {
+      color: var(--On-Surface);
+    }
+
+    .footer-links .link i {
+      width: 11px !important;
+      height: 11px !important;
+      stroke-width: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="phone-frame">
+    <div class="app-content">
+
+      <!-- Header Section -->
+      <div class="header-section">
+
+        <!-- Pattern Overlay -->
+        <div class="pattern-overlay"></div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span class="time">10:00</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF" />
+              <path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF" />
+              <path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF" />
+            </svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF" />
+              <rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF" />
+              <rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF" />
+              <rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3" />
+            </svg>
+            <svg viewBox="0 0 28 14" fill="none">
+              <rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5" />
+              <rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF" />
+              <rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <div class="header-nav">
+          <button class="back-btn" onclick="goBack()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <span class="header-title">Sign Up</span>
+        </div>
+
+        <!-- Header Subtitle -->
+        <div class="header-subtitle">Create your M-PESA PIN</div>
+
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+
+        <!-- Instruction -->
+        <p class="instruction" id="instructionText">Choose a 4-digit code to secure your wallet</p>
+
+        <!-- PIN Input Boxes -->
+        <div class="pin-container" id="pinContainer">
+          <div class="pin-box" data-index="0">
+            <div class="dot"></div>
+          </div>
+          <div class="pin-box" data-index="1">
+            <div class="dot"></div>
+          </div>
+          <div class="pin-box" data-index="2">
+            <div class="dot"></div>
+          </div>
+          <div class="pin-box" data-index="3">
+            <div class="dot"></div>
+          </div>
+        </div>
+
+        <!-- Hidden Input -->
+        <input type="password" class="pin-input" id="pinInput" maxlength="4" inputmode="numeric">
+
+        <!-- Action Button -->
+        <button class="action-btn" id="actionBtn" disabled>Next</button>
+
+        <!-- Keypad -->
+        <div class="keypad">
+          <button class="key" data-value="1" onclick="pressKey('1')">1</button>
+          <button class="key" data-value="2" onclick="pressKey('2')">2</button>
+          <button class="key" data-value="3" onclick="pressKey('3')">3</button>
+          <button class="key" data-value="4" onclick="pressKey('4')">4</button>
+          <button class="key" data-value="5" onclick="pressKey('5')">5</button>
+          <button class="key" data-value="6" onclick="pressKey('6')">6</button>
+          <button class="key" data-value="7" onclick="pressKey('7')">7</button>
+          <button class="key" data-value="8" onclick="pressKey('8')">8</button>
+          <button class="key" data-value="9" onclick="pressKey('9')">9</button>
+          <button class="key empty"></button>
+          <button class="key" data-value="0" onclick="pressKey('0')">0</button>
+          <button class="key backspace" onclick="pressBackspace()">
+            <i data-lucide="delete"></i>
+          </button>
+        </div>
+
+        <!-- Footer Links -->
+        <div class="footer-links">
+          <a class="link">
+            <i data-lucide="headphones"></i>
+            Contact Us
+          </a>
+          <div class="divider"></div>
+          <a class="link">
+            <i data-lucide="file-text"></i>
+            Terms and Conditions
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // PIN State
+    let pin = '';
+
+    const pinInput = document.getElementById('pinInput');
+    const pinBoxes = document.querySelectorAll('.pin-box');
+    const actionBtn = document.getElementById('actionBtn');
+    const instructionText = document.getElementById('instructionText');
+
+    // Update PIN display
+    function updatePinDisplay() {
+      pinBoxes.forEach((box, index) => {
+        box.classList.remove('filled', 'active', 'error');
+
+        if (index < pin.length) {
+          box.classList.add('filled');
+        } else if (index === pin.length) {
+          box.classList.add('active');
+        }
+      });
+
+      actionBtn.disabled = pin.length < 4;
+    }
+
+    // Press key
+    function pressKey(value) {
+      if (pin.length < 4) {
+        pin += value;
+        pinInput.value = pin;
+        updatePinDisplay();
+      }
+    }
+
+    // Press backspace
+    function pressBackspace() {
+      pin = pin.slice(0, -1);
+      pinInput.value = pin;
+      updatePinDisplay();
+    }
+
+    // Handle Next button click → store PIN and redirect to Re-enter PIN
+    actionBtn.addEventListener('click', function () {
+      if (pin.length === 4) {
+        sessionStorage.setItem('pendingPin', pin);
+        window.location.href = 'Re-enter PIN.html';
+      }
+    });
+
+    // Go back
+    function goBack() {
+      if (confirm('Go back to previous screen?')) {
+        alert('Navigating back...');
+      }
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function (e) {
+      if (e.key >= '0' && e.key <= '9') {
+        pressKey(e.key);
+      } else if (e.key === 'Backspace') {
+        pressBackspace();
+      } else if (e.key === 'Enter' && pin.length === 4 && !actionBtn.disabled) {
+        actionBtn.click();
+      }
+    });
+
+    // Initialize
+    updatePinDisplay();
+
+    // Focus pin input on keypad click
+    document.querySelector('.keypad').addEventListener('click', function () {
+      pinInput.focus();
+    });
+  </script>
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA App</title>
+
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-status-bar.css">
+<link rel="stylesheet" href="styles/component-welcome-bar.css">
+<link rel="stylesheet" href="styles/component-balance-card.css">
+<link rel="stylesheet" href="styles/component-actions.css">
+<link rel="stylesheet" href="styles/component-banner-slider.css">
+<link rel="stylesheet" href="styles/component-transactions.css">
+<link rel="stylesheet" href="styles/component-qr-popup.css">
+
+<style>
+  .walkthrough-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    display: none;
+    border-radius: 30px;
+    overflow: hidden;
+  }
+  .walkthrough-overlay.active { display: block; }
+
+  .walkthrough-dark-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    transition: all 0.3s ease;
+  }
+
+  .walkthrough-spotlight {
+    position: absolute;
+    border-radius: 16px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 30px rgba(254, 53, 61, 0.5);
+    background: transparent;
+    pointer-events: none;
+    z-index: 10000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .walkthrough-spotlight.glow {
+    animation: spotlightPulse 2s ease-in-out infinite;
+  }
+  @keyframes spotlightPulse {
+    0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 30px rgba(254, 53, 61, 0.5); }
+    50% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75), 0 0 50px rgba(254, 53, 61, 0.8); }
+  }
+
+  .walkthrough-tooltip {
+    position: absolute;
+    background: #FFF;
+    border-radius: 12px;
+    padding: 14px 18px;
+    max-width: 220px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    animation: tooltipSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes tooltipSlide {
+    from { opacity: 0; transform: translateY(10px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .walkthrough-tooltip::before {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #FFF;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .walkthrough-tooltip.position-top::before { bottom: -6px; left: var(--arrow-left, 50%); margin-left: -6px; }
+  .walkthrough-tooltip.position-bottom::before { top: -6px; left: var(--arrow-left, 50%); margin-left: -6px; }
+
+  .walkthrough-tooltip-text {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--On-Surface);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .walkthrough-skip-btn {
+    position: absolute;
+    top: 50px;
+    right: 24px;
+    padding: 8px 20px;
+    background: var(--Primary);
+    color: #FFF;
+    border: none;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    z-index: 10002;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(254, 53, 61, 0.3);
+  }
+  .walkthrough-skip-btn:hover {
+    background: #E5303A;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(254, 53, 61, 0.4);
+  }
+  .walkthrough-skip-btn:active { transform: scale(0.95); }
+
+  .walkthrough-progress {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10002;
+  }
+  .progress-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .progress-dot.active {
+    background: var(--Primary);
+    width: 20px;
+    border-radius: 3px;
+  }
+  .progress-dot:hover { background: rgba(254, 53, 61, 0.7); }
+
+  .hand-cursor {
+    position: absolute;
+    width: 36px; height: 36px;
+    background: #FFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    animation: handBounce 1.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes handBounce {
+    0%, 100% { transform: translateY(0) rotate(-15deg); }
+    50% { transform: translateY(-8px) rotate(-15deg); }
+  }
+  .hand-cursor svg {
+    width: 18px; height: 18px;
+    stroke: var(--Primary);
+    stroke-width: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  const componentTemplates = {
+    phone: `
+      <div class="phone-frame">
+        <div id="statusBarContainer"></div>
+        <div class="app-content">
+          <div id="welcomeAppBarContainer"></div>
+          <div id="balanceCardContainer"></div>
+          <div id="actionsContainer"></div>
+          <div id="bannerSliderContainer"></div>
+          <div id="recentTransactionsContainer"></div>
+        </div>
+        <div id="qrPopupContainer"></div>
+        <div class="walkthrough-overlay" id="walkthroughOverlay">
+          <div class="walkthrough-dark-overlay" id="darkOverlay"></div>
+          <div class="walkthrough-spotlight" id="spotlight"></div>
+          <button class="walkthrough-skip-btn" onclick="skipStep()">Skip</button>
+          <div class="walkthrough-tooltip" id="tooltip">
+            <div class="walkthrough-tooltip-text" id="tooltipText"></div>
+          </div>
+          <div class="hand-cursor" id="handCursor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+            </svg>
+          </div>
+          <div class="walkthrough-progress" id="progressDots"></div>
+        </div>
+      </div>
+    `,
+    statusBar: `
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/></svg>
+        </div>
+      </div>
+    `,
+    welcomeAppBar: `
+      <div class="welcome-app-bar">
+        <div class="leading-icon"><div class="avatar"><span>AM</span></div></div>
+        <div class="title"><span>Good Morning, Aster 👋</span></div>
+        <div class="trailing-icon">
+          <div class="icon-button"><div class="container"><div class="state-layer">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div></div></div>
+        </div>
+      </div>
+    `,
+    balanceCard: `
+      <div class="balance-card-wrapper">
+        <div class="balance-card" id="balanceCard">
+          <div class="balance-card-top">
+            <div class="main-balance"><div class="header"><span class="label">Main Balance (Birr)</span></div><div class="amount" id="mainBalance" data-value="12,580.00">* * * * * * * *</div></div>
+            <button class="add-money-btn"><div class="plus-icon"><svg viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Add Money</span></button>
+          </div>
+          <div class="balance-card-bottom">
+            <div class="other-balance"><span class="header-label">Reward Balance</span><span class="amount" id="rewardBalance" data-value="1,250.00">****</span></div>
+            <div class="other-balance"><span class="header-label">Errif Balance</span><span class="amount" id="errifBalance" data-value="3,450.00">****</span></div>
+            <div class="hide-unhide"><button class="eye-btn" id="eyeBtn" title="Toggle balance visibility"><svg id="eyeIcon" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          </div>
+        </div>
+      </div>
+    `,
+    actions: `
+      <div class="actions">
+        <div class="primary-action" id="action-merchant" onclick="window.location.href='Pay Merchant.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Merchant Payemnt.svg" alt="Merchant Payment" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Merchant<br>Payment</span>
+        </div>
+        <div class="primary-action" id="action-bill" onclick="window.location.href='Pay Bill.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Bill Payment.svg" alt="Bill Payment" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Bill<br>Payment</span>
+        </div>
+        <div class="primary-action" id="action-credit">
+          <div class="icon-container">
+            <img src="assets/Credit Saving.svg" alt="Credit & Saving" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Credit &<br>Saving</span>
+        </div>
+        <div class="primary-action" id="action-transfer" onclick="window.location.href='Send Money Menu.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Transfer Money.svg" alt="Transfer Money" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Transfer<br>Money</span>
+        </div>
+        <div class="primary-action" id="action-airtime">
+          <div class="icon-container">
+            <img src="assets/Airtime Package.svg" alt="Airtime/Package" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Airtime/<br>Package</span>
+        </div>
+        <div class="primary-action" id="action-more">
+          <div class="icon-container">
+            <img src="assets/More Services.svg" alt="More Services" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">More<br>Services</span>
+        </div>
+      </div>
+    `,
+    bannerSlider: `
+      <div class="banner-slider">
+        <div class="banner-slides-container" id="bannerSlidesContainer">
+          <div class="banner-slide active" data-index="0"><div class="banner-image"><img src="assets/banner-ads-1.png" alt="M-PESA Banner 1"><div class="banner-overlay"></div></div><div class="banner-content"><h3 class="banner-title">Do it all with M-PESA</h3><p class="banner-subtitle">Make payments quickly and conveniently.</p></div></div>
+          <div class="banner-slide" data-index="1"><div class="banner-image"><img src="assets/banner-ads-2.png" alt="M-PESA Banner 2"><div class="banner-overlay"></div></div><div class="banner-content"><h3 class="banner-title">Send Money Anywhere</h3><p class="banner-subtitle">Transfer to any M-PESA user instantly.</p></div></div>
+          <div class="banner-slide" data-index="2"><div class="banner-image"><img src="assets/banner-ads-3.png" alt="M-PESA Banner 3"><div class="banner-overlay"></div></div><div class="banner-content"><h3 class="banner-title">Pay Bills Easily</h3><p class="banner-subtitle">Settle your utilities and services in seconds.</p></div></div>
+        </div>
+        <div class="banner-dots" id="bannerDots"><span class="dot active" data-index="0"></span><span class="dot" data-index="1"></span><span class="dot" data-index="2"></span></div>
+      </div>
+    `,
+    recentTransactions: `
+      <div class="recent-transactions">
+        <div class="header"><span class="transactions-title">Transactions</span><span class="see-all">See all</span></div>
+        <div class="transactions-list">
+          <div class="transaction-card"><div class="left"><div class="logo"><img src="assets/banks logo/cbe-logo.png" alt="CBE" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Aster Mequanent</span><span class="type">Bank</span></div></div><div class="right"><span class="amount positive">+220.00</span><span class="date">Today</span></div></div>
+          <div class="transaction-card"><div class="left"><div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div></div><div class="right"><span class="amount negative">-1,020.00</span><span class="date">Today</span></div></div>
+          <div class="transaction-card"><div class="left"><div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div></div><div class="right"><span class="amount negative">-50.00</span><span class="date">Today</span></div></div>
+        </div>
+      </div>
+    `,
+    qrPopup: `
+      <div class="qr-fab-wrapper">
+      <button class="qr-popup" id="qrFabBtn" title="QR Actions" aria-label="Open QR actions" aria-expanded="false">
+        <div class="frame-2061">
+          <img src="assets/qr-scan.svg" alt="QR Scan" onerror="this.style.display='none'; this.parentElement.innerHTML = '<svg width=\\'30\\' height=\\'30\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><rect x=\\'3\\' y=\\'3\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'14\\' y=\\'3\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'14\\' y=\\'14\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'3\\' y=\\'14\\' width=\\'7\\' height=\\'7\\'/><line x1=\\'6.5\\' y1=\\'6.5\\' x2=\\'6.51\\' y2=\\'6.5\\'/><line x1=\\'17.5\\' y1=\\'6.5\\' x2=\\'17.51\\' y2=\\'6.5\\'/><line x1=\\'17.5\\' y1=\\'17.5\\' x2=\\'17.51\\' y2=\\'17.5\\'/><line x1=\\'6.5\\' y1=\\'17.5\\' x2=\\'6.51\\' y2=\\'17.5\\'/></svg>';">
+        </div>
+      </button>
+      </div>
+    `
+  };
+
+  const componentMap = [
+    { container: 'statusBarContainer', template: 'statusBar' },
+    { container: 'welcomeAppBarContainer', template: 'welcomeAppBar' },
+    { container: 'balanceCardContainer', template: 'balanceCard' },
+    { container: 'actionsContainer', template: 'actions' },
+    { container: 'bannerSliderContainer', template: 'bannerSlider' },
+    { container: 'recentTransactionsContainer', template: 'recentTransactions' },
+    { container: 'qrPopupContainer', template: 'qrPopup' }
+  ];
+
+  function renderApp() {
+    document.getElementById('app').innerHTML = componentTemplates.phone;
+    componentMap.forEach(({ container, template }) => {
+      const el = document.getElementById(container);
+      if (el) el.innerHTML = componentTemplates[template];
+    });
+    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+
+    const eyeBtn = document.getElementById('eyeBtn'), eyeIcon = document.getElementById('eyeIcon');
+    const balanceCard = document.getElementById('balanceCard'), mainBalance = document.getElementById('mainBalance');
+    const rewardBalance = document.getElementById('rewardBalance'), errifBalance = document.getElementById('errifBalance');
+    if (eyeBtn && eyeIcon && balanceCard && mainBalance && rewardBalance && errifBalance) {
+      let isVisible = false;
+      const off = '<svg viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19.5C7 19.5 2.73 16.39 1 12C2.73 7.61 7 4.5 12 4.5C14.12 4.5 16.07 5.2 17.62 6.38" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      const on = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      eyeBtn.addEventListener('click', function() {
+        isVisible = !isVisible;
+        if (isVisible) {
+          mainBalance.textContent = mainBalance.dataset.value;
+          rewardBalance.textContent = rewardBalance.dataset.value;
+          errifBalance.textContent = errifBalance.dataset.value;
+          balanceCard.classList.add('balance-visible');
+          eyeIcon.innerHTML = off; eyeBtn.title = 'Hide balances';
+        } else {
+          mainBalance.textContent = '* * * * * * * *';
+          rewardBalance.textContent = '****'; errifBalance.textContent = '****';
+          balanceCard.classList.remove('balance-visible');
+          eyeIcon.innerHTML = on; eyeBtn.title = 'Show balances';
+        }
+      });
+    }
+    initBannerSlider();
+    setTimeout(() => startWalkthrough(), 1000);
+  }
+
+  function initBannerSlider() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dot, .dot');
+    let currentSlide = 0, slideInterval;
+    function goToSlide(i) { slides.forEach((s, idx) => { s.classList.remove('active'); if (dots[idx]) dots[idx].classList.remove('active'); }); slides[i].classList.add('active'); if (dots[i]) dots[i].classList.add('active'); currentSlide = i; }
+    function next() { goToSlide((currentSlide + 1) % slides.length); }
+    function start() { slideInterval = setInterval(next, 4000); }
+    function stop() { clearInterval(slideInterval); }
+    dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); stop(); start(); }));
+    let tx = 0, ty = 0; const sc = document.getElementById('bannerSlidesContainer');
+    if (sc) {
+      sc.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; stop(); }, {passive:true});
+      sc.addEventListener('touchend', e => { ty = e.changedTouches[0].screenX; if (Math.abs(tx-ty)>50) { if (tx-ty>0) next(); else goToSlide((currentSlide-1+slides.length)%slides.length); } start(); }, {passive:true});
+    }
+    start();
+    const bs = document.querySelector('.banner-slider');
+    if (bs) { bs.addEventListener('mouseenter', stop); bs.addEventListener('mouseleave', start); }
+  }
+
+  const walkthroughSteps = [
+    { elementId: 'action-merchant', text: 'Scan and pay at any M-PESA merchant with ease.', position: 'top' },
+    { elementId: 'action-bill', text: 'Pay electricity, water, TV and more bills in seconds.', position: 'top' },
+    { elementId: 'action-credit', text: 'Access quick loans or manage your savings.', position: 'top' },
+    { elementId: 'action-airtime', text: 'Top up your airtime or buy data bundles here.', position: 'top' },
+    { elementId: 'action-transfer', text: 'Send money instantly to any phone number, bank.', position: 'top' },
+    { elementId: 'balanceCard', text: 'Tap Add Money to deposit funds into your M-PESA wallet instantly.', position: 'bottom' },
+    { elementId: 'qrFabBtn', text: 'Scan to pay merchants or receive money instantly.', position: 'top' },
+    { elementId: 'eyeBtn', text: 'Tap here to show or hide your balance birr securely.', position: 'bottom' }
+  ];
+
+  let currentStep = 0, walkthroughInterval;
+
+  function startWalkthrough() {
+    document.getElementById('walkthroughOverlay').classList.add('active');
+    currentStep = 0; showStep(currentStep); startAutoAdvance();
+  }
+
+  function showStep(index) {
+    const step = walkthroughSteps[index];
+    const element = document.getElementById(step.elementId);
+    if (!element) return;
+    const phoneFrame = document.querySelector('.phone-frame');
+    const phoneRect = phoneFrame.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    const top = rect.top - phoneRect.top;
+    const left = rect.left - phoneRect.left;
+    const width = rect.width, height = rect.height;
+    const pw = phoneRect.width;
+
+    const spotlight = document.getElementById('spotlight');
+    spotlight.style.top = (top - 8) + 'px'; spotlight.style.left = (left - 8) + 'px';
+    spotlight.style.width = (width + 16) + 'px'; spotlight.style.height = (height + 16) + 'px';
+    spotlight.classList.add('glow');
+
+    const tooltip = document.getElementById('tooltip');
+    tooltip.className = 'walkthrough-tooltip position-' + step.position;
+    document.getElementById('tooltipText').textContent = step.text;
+
+    const ph = phoneRect.height;
+    const elCenter = left + width / 2;
+    const ttW = tooltip.offsetWidth || 220;   // measured after text is set
+    const ttH = tooltip.offsetHeight || 80;
+    const tooltipLeft = Math.max(12, Math.min(elCenter - ttW / 2, pw - ttW - 12));
+    if (step.position === 'top') {
+      tooltip.style.top = Math.max(12, top - ttH - 14) + 'px';
+    } else {
+      tooltip.style.top = Math.min(ph - ttH - 12, top + height + 14) + 'px';
+    }
+    tooltip.style.left = tooltipLeft + 'px';
+    // Point the tooltip's arrow at the highlighted element, clamped inside the tooltip.
+    const arrowLeft = Math.max(16, Math.min(elCenter - tooltipLeft, ttW - 16));
+    tooltip.style.setProperty('--arrow-left', arrowLeft + 'px');
+
+    const handCursor = document.getElementById('handCursor');
+    handCursor.style.top = Math.min(ph - 44, top + height + 4) + 'px';
+    handCursor.style.left = Math.max(8, Math.min(elCenter - 18, pw - 44)) + 'px';
+
+    updateProgressDots();
+  }
+
+  function updateProgressDots() {
+    const c = document.getElementById('progressDots');
+    c.innerHTML = '';
+    walkthroughSteps.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'progress-dot' + (i === currentStep ? ' active' : '');
+      d.onclick = () => goToStep(i);
+      c.appendChild(d);
+    });
+  }
+
+  // Advance to the next tip; finish the tour once the last tip has been shown.
+  function nextStep() {
+    if (currentStep >= walkthroughSteps.length - 1) { endWalkthrough(); return; }
+    currentStep++; showStep(currentStep);
+  }
+  function goToStep(i) { currentStep = i; showStep(currentStep); resetAutoAdvance(); }
+  // Skip button: ends the walkthrough immediately.
+  function skipStep() { endWalkthrough(); }
+  function endWalkthrough() { document.getElementById('walkthroughOverlay').classList.remove('active'); stopAutoAdvance(); }
+  function startAutoAdvance() { stopAutoAdvance(); walkthroughInterval = setInterval(nextStep, 2500); }
+  function stopAutoAdvance() { clearInterval(walkthroughInterval); }
+  function resetAutoAdvance() { stopAutoAdvance(); startAutoAdvance(); }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') renderApp();
+  else document.addEventListener('DOMContentLoaded', renderApp);
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

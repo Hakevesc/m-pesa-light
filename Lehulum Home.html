@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M-PESA App</title>
+
+<!-- ============================================================
+     Design System & Component Styles
+     Import order matters: design-tokens → base → components
+     ============================================================ -->
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/component-status-bar.css">
+<link rel="stylesheet" href="styles/component-welcome-bar.css">
+<link rel="stylesheet" href="styles/component-balance-card.css">
+<link rel="stylesheet" href="styles/component-actions.css">
+<link rel="stylesheet" href="styles/component-banner-slider.css">
+<link rel="stylesheet" href="styles/component-transactions.css">
+<link rel="stylesheet" href="styles/component-qr-popup.css">
+
+<style>
+</style>
+
+</head>
+<body>
+
+<div id="app"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+  // ============================================================
+  // Listen for test scenario popups from parent (index.html)
+  // ============================================================
+  window.addEventListener('message', function(event) {
+    // Only accept messages from the same origin
+    if (event.data && event.data.type === 'showTestPopup') {
+      showTestPopupInline(event.data.html, event.data.css || '');
+    }
+  });
+
+  function showTestPopupInline(html, css) {
+    // Remove any previous test popup
+    const existing = document.getElementById('testPopupInline');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'testPopupInline';
+    container.innerHTML = (css ? `<style>${css}</style>` : '') + html;
+    document.body.appendChild(container);
+  }
+</script>
+<script>
+  // ============================================================
+  // Component Templates - each component's HTML as a template string
+  // Edit the corresponding file in components/ then rebuild here
+  // Edit the corresponding CSS in styles/component-*.css
+  // ============================================================
+
+  const componentTemplates = {
+    phone: `
+      <div class="phone-frame">
+        <div id="statusBarContainer"></div>
+        <div class="app-content">
+          <div id="welcomeAppBarContainer"></div>
+          <div id="balanceCardContainer"></div>
+          <div id="actionsContainer"></div>
+          <div id="bannerSliderContainer"></div>
+          <div id="recentTransactionsContainer"></div>
+        </div>
+        <div id="qrPopupContainer"></div>
+      </div>
+    `,
+
+    statusBar: `
+      <div class="status-bar">
+        <span class="time">10:00</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/></svg>
+          <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/></svg>
+        </div>
+      </div>
+    `,
+
+    welcomeAppBar: `
+      <div class="welcome-app-bar">
+        <div class="leading-icon">
+          <div class="avatar"><span>AM</span></div>
+        </div>
+        <div class="title"><span>Good Morning, Aster 👋</span></div>
+        <div class="trailing-icon" onclick="window.location.href='Notification Center.html'" style="cursor:pointer">
+          <div class="icon-button">
+            <div class="container">
+              <div class="state-layer">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    balanceCard: `
+      <div class="balance-card-wrapper">
+        <div class="balance-card" id="balanceCard">
+          <div class="balance-card-top">
+            <div class="main-balance">
+              <div class="header"><span class="label">Main Balance (Birr)</span></div>
+              <div class="amount" id="mainBalance" data-value="12,580.00">* * * * * * * *</div>
+            </div>
+            <button class="add-money-btn">
+              <div class="plus-icon">
+                <svg viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <span>Add Money</span>
+            </button>
+          </div>
+          <div class="balance-card-bottom">
+            <div class="other-balance">
+              <span class="header-label">Reward Balance</span>
+              <span class="amount" id="rewardBalance" data-value="1,250.00">****</span>
+            </div>
+            <div class="other-balance">
+              <span class="header-label">Errif Balance</span>
+              <span class="amount" id="errifBalance" data-value="3,450.00">****</span>
+            </div>
+            <div class="hide-unhide">
+              <button class="eye-btn" id="eyeBtn" title="Toggle balance visibility">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    actions: `
+      <div class="actions">
+        <div class="primary-action" onclick="window.location.href='Pay Merchant.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Merchant Payemnt.svg" alt="Merchant Payment" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Merchant<br>Payment</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Pay Bill.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Bill Payment.svg" alt="Bill Payment" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Bill<br>Payment</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Credit & Saving.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Credit Saving.svg" alt="Credit & Saving" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Credit &<br>Saving</span>
+        </div>
+        <div class="primary-action" onclick="window.location.href='Send Money Menu.html'" style="cursor:pointer">
+          <div class="icon-container">
+            <img src="assets/Transfer Money.svg" alt="Transfer Money" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Transfer<br>Money</span>
+        </div>
+        <div class="primary-action">
+          <div class="icon-container">
+            <img src="assets/Airtime Package.svg" alt="Airtime/Package" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">Airtime/<br>Package</span>
+        </div>
+        <div class="primary-action">
+          <div class="icon-container">
+            <img src="assets/More Services.svg" alt="More Services" style="width:40px;height:40px;object-fit:contain;">
+          </div>
+          <span class="label">More<br>Services</span>
+        </div>
+      </div>
+    `,
+
+    // See components/banner-slider.html for the HTML template
+    bannerSlider: `
+      <div class="banner-slider">
+        <div class="banner-slides-container" id="bannerSlidesContainer">
+          <!-- Banner 1 -->
+          <div class="banner-slide active" data-index="0">
+            <div class="banner-image">
+              <img src="assets/banner-ads-1.png" alt="M-PESA Banner 1">
+              <div class="banner-overlay"></div>
+            </div>
+            <div class="banner-content">
+              <h3 class="banner-title">Do it all with M-PESA</h3>
+              <p class="banner-subtitle">Make payments quickly and conveniently.</p>
+            </div>
+          </div>
+          
+          <!-- Banner 2 -->
+          <div class="banner-slide" data-index="1">
+            <div class="banner-image">
+              <img src="assets/banner-ads-2.png" alt="M-PESA Banner 2">
+              <div class="banner-overlay"></div>
+            </div>
+            <div class="banner-content">
+              <h3 class="banner-title">Send Money Anywhere</h3>
+              <p class="banner-subtitle">Transfer to any M-PESA user instantly.</p>
+            </div>
+          </div>
+          
+          <!-- Banner 3 -->
+          <div class="banner-slide" data-index="2">
+            <div class="banner-image">
+              <img src="assets/banner-ads-3.png" alt="M-PESA Banner 3">
+              <div class="banner-overlay"></div>
+            </div>
+            <div class="banner-content">
+              <h3 class="banner-title">Pay Bills Easily</h3>
+              <p class="banner-subtitle">Settle your utilities and services in seconds.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation Dots -->
+        <div class="banner-dots" id="bannerDots">
+          <span class="dot active" data-index="0"></span>
+          <span class="dot" data-index="1"></span>
+          <span class="dot" data-index="2"></span>
+        </div>
+      </div>
+    `,
+
+    recentTransactions: `
+      <div class="recent-transactions">
+        <div class="header">
+          <span class="transactions-title">Transactions</span>
+          <span class="see-all" onclick="window.location.href='Transaction History.html'" style="cursor:pointer">See all</span>
+        </div>
+        <div class="transactions-list">
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/cbe-logo.png" alt="CBE" onerror="this.style.display='none'"></div>
+              <div class="name-type">
+                <span class="name">Aster Mequanent</span>
+                <span class="type">Bank</span>
+              </div>
+            </div>
+            <div class="right">
+              <span class="amount positive">+220.00</span>
+              <span class="date">Today</span>
+            </div>
+          </div>
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div>
+              <div class="name-type">
+                <span class="name">Henok Chala</span>
+                <span class="type">Airtime</span>
+              </div>
+            </div>
+            <div class="right">
+              <span class="amount negative">-1,020.00</span>
+              <span class="date">Today</span>
+            </div>
+          </div>
+          <div class="transaction-card">
+            <div class="left">
+              <div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div>
+              <div class="name-type">
+                <span class="name">Henok Chala</span>
+                <span class="type">Airtime</span>
+              </div>
+            </div>
+            <div class="right">
+              <span class="amount negative">-50.00</span>
+              <span class="date">Today</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+
+    qrPopup: `
+      <div class="qr-fab-wrapper" id="qrFabWrapper">
+
+        <!-- Backdrop (click to close) -->
+        <div class="qr-fab-backdrop" id="qrFabBackdrop"></div>
+
+        <!-- Action items -->
+        <div class="qr-fab-menu" id="qrFabMenu">
+
+          <!-- My QR Code -->
+          <div class="qr-fab-item" id="qrActionMyQR" role="button" tabindex="0" aria-label="My QR Code">
+            <span class="qr-fab-label">My QR Code</span>
+            <div class="qr-fab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="3" height="3"/>
+                <rect x="18" y="14" width="3" height="3"/>
+                <rect x="14" y="18" width="3" height="3"/>
+                <rect x="18" y="18" width="3" height="3"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Scan QR Code -->
+          <div class="qr-fab-item" id="qrActionScan" role="button" tabindex="0" aria-label="Scan QR Code">
+            <span class="qr-fab-label">Scan QR Code</span>
+            <div class="qr-fab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <line x1="7" y1="12" x2="17" y2="12"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Verify Receipt -->
+          <div class="qr-fab-item" id="qrActionVerify" role="button" tabindex="0" aria-label="Verify Receipt">
+            <span class="qr-fab-label">Verify Receipt</span>
+            <div class="qr-fab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <polyline points="9 15 11 17 15 13"/>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Main FAB button -->
+        <button class="qr-popup" id="qrFabBtn" title="QR Actions" aria-label="Open QR actions" aria-expanded="false">
+          <div class="frame-2061">
+            <img src="assets/qr-scan.svg" alt="QR Scan" onerror="this.style.display='none'; this.parentElement.innerHTML = '<svg width=\\'30\\' height=\\'30\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'white\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><rect x=\\'3\\' y=\\'3\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'14\\' y=\\'3\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'14\\' y=\\'14\\' width=\\'7\\' height=\\'7\\'/><rect x=\\'3\\' y=\\'14\\' width=\\'7\\' height=\\'7\\'/><line x1=\\'6.5\\' y1=\\'6.5\\' x2=\\'6.51\\' y2=\\'6.5\\'/><line x1=\\'17.5\\' y1=\\'6.5\\' x2=\\'17.51\\' y2=\\'6.5\\'/><line x1=\\'17.5\\' y1=\\'17.5\\' x2=\\'17.51\\' y2=\\'17.5\\'/><line x1=\\'6.5\\' y1=\\'17.5\\' x2=\\'6.51\\' y2=\\'17.5\\'/></svg>';">
+          </div>
+        </button>
+
+      </div>
+    `
+  };
+
+  // Component registry: which template goes into which container
+  const componentMap = [
+    { container: 'statusBarContainer', template: 'statusBar' },
+    { container: 'welcomeAppBarContainer', template: 'welcomeAppBar' },
+    { container: 'balanceCardContainer', template: 'balanceCard' },
+    { container: 'actionsContainer', template: 'actions' },
+    { container: 'bannerSliderContainer', template: 'bannerSlider' },
+    { container: 'recentTransactionsContainer', template: 'recentTransactions' },
+    { container: 'qrPopupContainer', template: 'qrPopup' }
+  ];
+
+  function renderApp() {
+    // 1. Render phone frame with placeholder containers
+    document.getElementById('app').innerHTML = componentTemplates.phone;
+
+    // 2. Render each component into its container
+    componentMap.forEach(({ container, template }) => {
+      const el = document.getElementById(container);
+      if (el) el.innerHTML = componentTemplates[template];
+    });
+
+    // 3. Initialize Lucide icons
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+
+    // 4. Initialize eye toggle
+    const eyeBtn = document.getElementById('eyeBtn');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const balanceCard = document.getElementById('balanceCard');
+    const mainBalance = document.getElementById('mainBalance');
+    const rewardBalance = document.getElementById('rewardBalance');
+    const errifBalance = document.getElementById('errifBalance');
+
+    if (eyeBtn && eyeIcon && balanceCard && mainBalance && rewardBalance && errifBalance) {
+      let isVisible = false;
+
+      const eyeOffSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19.5C7 19.5 2.73 16.39 1 12C2.73 7.61 7 4.5 12 4.5C14.12 4.5 16.07 5.2 17.62 6.38" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12C15 13.66 13.66 15 12 15C10.34 15 9 13.66 9 12C9 10.34 10.34 9 12 9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      const eyeOnSvg = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+      eyeBtn.addEventListener('click', function() {
+        isVisible = !isVisible;
+        if (isVisible) {
+          mainBalance.textContent = mainBalance.dataset.value;
+          rewardBalance.textContent = rewardBalance.dataset.value;
+          errifBalance.textContent = errifBalance.dataset.value;
+          balanceCard.classList.add('balance-visible');
+          eyeIcon.innerHTML = eyeOffSvg;
+          eyeBtn.title = 'Hide balances';
+        } else {
+          mainBalance.textContent = '* * * * * * * *';
+          rewardBalance.textContent = '****';
+          errifBalance.textContent = '****';
+          balanceCard.classList.remove('balance-visible');
+          eyeIcon.innerHTML = eyeOnSvg;
+          eyeBtn.title = 'Show balances';
+        }
+      });
+    }
+
+    // 5. Initialize Banner Slider
+    initBannerSlider();
+
+    // 6. Initialize QR FAB Speed-dial
+    initQrFab();
+  }
+
+  // Banner Slider Functionality
+  function initBannerSlider() {
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dot, .dot');
+    let currentSlide = 0;
+    let slideInterval;
+
+    function goToSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+        if (dots[i]) dots[i].classList.remove('active');
+      });
+      
+      slides[index].classList.add('active');
+      if (dots[index]) dots[index].classList.add('active');
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      const next = (currentSlide + 1) % slides.length;
+      goToSlide(next);
+    }
+
+    function startAutoSlide() {
+      slideInterval = setInterval(nextSlide, 4000);
+    }
+
+    function stopAutoSlide() {
+      clearInterval(slideInterval);
+    }
+
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        goToSlide(index);
+        stopAutoSlide();
+        startAutoSlide();
+      });
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const sliderContainer = document.getElementById('bannerSlidesContainer');
+    
+    if (sliderContainer) {
+      sliderContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoSlide();
+      }, {passive: true});
+
+      sliderContainer.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+        startAutoSlide();
+      }, {passive: true});
+    }
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          nextSlide();
+        } else {
+          const prev = (currentSlide - 1 + slides.length) % slides.length;
+          goToSlide(prev);
+        }
+      }
+    }
+
+    startAutoSlide();
+
+    const bannerSlider = document.querySelector('.banner-slider');
+    if (bannerSlider) {
+      bannerSlider.addEventListener('mouseenter', stopAutoSlide);
+      bannerSlider.addEventListener('mouseleave', startAutoSlide);
+    }
+  }
+
+  // QR FAB Speed-Dial Functionality
+  function initQrFab() {
+    const wrapper = document.getElementById('qrFabWrapper');
+    const btn = document.getElementById('qrFabBtn');
+    const backdrop = document.getElementById('qrFabBackdrop');
+    if (!wrapper || !btn) return;
+
+    let isOpen = false;
+
+    function openMenu() {
+      isOpen = true;
+      wrapper.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu() {
+      isOpen = false;
+      wrapper.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeMenu);
+    }
+
+    const myQrEl = document.getElementById('qrActionMyQR');
+    if (myQrEl) {
+      myQrEl.addEventListener('click', function() {
+        closeMenu();
+        window.location.href = 'My QR Code.html';
+      });
+    }
+
+    const scanEl = document.getElementById('qrActionScan');
+    if (scanEl) {
+      scanEl.addEventListener('click', function() {
+        closeMenu();
+        window.location.href = 'Scan QR.html';
+      });
+    }
+
+    const verifyEl = document.getElementById('qrActionVerify');
+    if (verifyEl) {
+      verifyEl.addEventListener('click', function() {
+        closeMenu();
+        window.location.href = 'Verify Receipt.html';
+      });
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && isOpen) closeMenu();
+    });
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    renderApp();
+  } else {
+    document.addEventListener('DOMContentLoaded', renderApp);
+  }
+</script>
+
+
+<!-- Export to Figma button (shared exporter) -->
+<script src="figma-export.js"></script>
+</body>
+</html>

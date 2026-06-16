@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>M-PESA Lehulum — Component Library</title>
+
+<!-- Fonts: Switzer (brand) comes via design-tokens.css; buttons use Poppins, keypad uses Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Real component styles (single source of truth — same files the app uses) -->
+<link rel="stylesheet" href="styles/design-tokens.css">
+<link rel="stylesheet" href="styles/component-button.css">
+<link rel="stylesheet" href="styles/component-status-bar.css">
+<link rel="stylesheet" href="styles/component-welcome-bar.css">
+<link rel="stylesheet" href="styles/component-balance-card.css">
+<link rel="stylesheet" href="styles/component-actions.css">
+<link rel="stylesheet" href="styles/component-banner-slider.css">
+<link rel="stylesheet" href="styles/component-transactions.css">
+<link rel="stylesheet" href="styles/component-qr-popup.css">
+<link rel="stylesheet" href="styles/component-popup.css">
+<link rel="stylesheet" href="styles/component-keypad.css">
+<link rel="stylesheet" href="styles/component-extras.css">
+
+<style>
+  /* ── Showcase chrome (not part of the app — only this catalog page) ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: var(--Font-Family, 'Switzer', sans-serif);
+    background: #f4f5f7;
+    color: var(--On-Surface, #1C1C21);
+  }
+
+  .lib-head {
+    background: linear-gradient(135deg, #ED1C24 0%, #A41016 100%);
+    padding: 34px 40px; color: #fff;
+    position: relative;
+  }
+  .lib-head h1 { font-size: 26px; font-weight: 700; letter-spacing: -.4px; display: flex; align-items: center; gap: 12px; }
+  .lib-head h1 svg { width: 26px; height: 26px; }
+  .lib-head p { font-size: 13.5px; opacity: .9; margin-top: 6px; font-weight: 500; }
+  .lib-counts { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .lib-counts span { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; font-weight: 600; }
+
+  .lib-wrap { max-width: 1320px; margin: 0 auto; padding: 36px 40px 90px; display: flex; flex-direction: column; gap: 40px; }
+
+  /* Each .screen exports as one Figma frame (.phone is the export root marker) */
+  .lib-canvas {
+    background: #ffffff; border: 1px solid #ececf0; border-radius: 18px;
+    padding: 26px; width: 100%; box-shadow: 0 2px 14px rgba(0,0,0,.04);
+  }
+  .pp-title { font-size: 17px; font-weight: 700; letter-spacing: -.2px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .pp-title svg { width: 18px; height: 18px; color: var(--Primary, #FE353D); }
+  .canvas-sub { font-size: 12px; color: var(--On-Surface-Low, #7C7C87); margin-bottom: 22px; font-weight: 500; }
+
+  /* Fixed mobile-width cards so every component shows at true phone size */
+  .comp-grid { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .comp {
+    width: 372px; max-width: 100%;
+    border: 1px solid #eef0f3; border-radius: 14px; padding: 14px;
+    display: flex; flex-direction: column; gap: 12px; background: #fcfcfd;
+  }
+  .comp.wide { width: 372px; }
+  .comp-label { font-size: 9.5px; font-weight: 700; color: var(--On-Surface-Low, #7C7C87); text-transform: uppercase; letter-spacing: .8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .comp-label code { font-size: 9px; background: #f4f5f7; border: 1px solid #e7e9ee; border-radius: 5px; padding: 2px 6px; color: #5b6470; font-family: Consolas, monospace; text-transform: none; letter-spacing: 0; }
+
+  /* Stage = the app background a component normally sits on (≈ phone content width) */
+  .comp-stage {
+    background: #F5F5F5; border-radius: 12px; padding: 16px;
+    display: flex; justify-content: center; align-items: flex-start; overflow: hidden;
+  }
+  .comp-stage > * { width: 100%; }
+  /* Self-sized components (cards, toasts, pickers) keep their natural width */
+  .comp-stage.fit > * { width: auto; max-width: 100%; }
+  .comp-stage.dark { background: #1C1C21; }
+
+  /* Scoped fixes so floating / full-screen components sit inside their card */
+  .comp-stage .qr-fab-wrapper { position: relative; inset: auto; bottom: auto; right: auto; margin: 0 auto; align-items: center; }
+  .comp-stage .qr-popup { position: relative; inset: auto; right: auto; bottom: auto; margin: 0 auto; width: auto; }
+  .comp-stage .modal-overlay {
+    position: relative; inset: auto; width: 100%; min-height: 380px;
+    background: rgba(28,28,33,.55); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .comp-stage .keypad { padding: 0; }
+
+  /* ── Avatar / Profile ── */
+  .profile-avatar {
+    width: 72px !important; height: 72px !important;
+    min-width: 72px; min-height: 72px;
+    border-radius: 50%;
+    overflow: hidden; flex-shrink: 0;
+    background: #FFDFE0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .cl-avatar-initials {
+    width: 72px !important; height: 72px !important;
+    min-width: 72px; min-height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FE353D 0%, #A41016 100%);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 22px; font-weight: 700; letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(254,53,61,0.35);
+    user-select: none;
+  }
+
+  /* ── Transaction Confirmation — success checkmark ── */
+  .success-icon-wrapper {
+    width: 56px !important; height: 56px !important;
+    min-width: 56px; min-height: 56px;
+    border-radius: 50%;
+    background: #1FC83B;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 6px 20px rgba(31,200,59,0.35);
+    flex-shrink: 0;
+  }
+  .success-icon-wrapper svg {
+    width: 28px !important; height: 28px !important;
+    min-width: 28px; min-height: 28px;
+  }
+
+  /* ── Component index (contents list) ── */
+  .lib-index { max-width: 1320px; margin: 0 auto; padding: 26px 40px 0; }
+  .lib-index h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--On-Surface-Low, #7C7C87); margin-bottom: 12px; }
+  .lib-index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .lib-index-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: #fff; border: 1px solid #ececf0; border-radius: 10px; padding: 9px 12px;
+    font-size: 12.5px; font-weight: 600; color: var(--On-Surface, #1C1C21);
+    text-decoration: none; cursor: pointer; transition: border-color .15s, transform .1s, box-shadow .15s;
+  }
+  .lib-index-item:hover { border-color: var(--Primary, #FE353D); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(254,53,61,.10); }
+  .lib-index-item .n { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .lib-index-item .num { width: 20px; height: 20px; border-radius: 6px; background: var(--Primary-Container, #FFDFE0); color: #A41016; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .lib-index-item code { font-size: 9px; background: #f4f5f7; border: 1px solid #e7e9ee; border-radius: 5px; padding: 2px 6px; color: #5b6470; font-family: Consolas, monospace; flex-shrink: 0; }
+
+  /* ── Dropdown on Top Right Corner ── */
+  .lib-dropdown {
+    position: absolute;
+    top: 34px;
+    right: 40px;
+    display: inline-block;
+  }
+  .lib-dropdown-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    font-family: inherit;
+  }
+  .lib-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .lib-dropdown-btn svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+    stroke: currentColor;
+    stroke-width: 2.5px;
+  }
+  .lib-dropdown.open .lib-dropdown-btn svg {
+    transform: rotate(180deg);
+  }
+  .lib-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #ececf0;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    min-width: 220px;
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .lib-dropdown.open .lib-dropdown-menu {
+    display: block;
+  }
+  .lib-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: #1c1c21;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+    border-bottom: 1px solid #f4f5f7;
+  }
+  .lib-dropdown-item:last-child {
+    border-bottom: none;
+  }
+  .lib-dropdown-item:hover {
+    background: #f4f5f7;
+  }
+  .lib-dropdown-item.active {
+    color: #ED1C24;
+    background: #FFF1F2;
+  }
+  .lib-dropdown-item svg {
+    stroke-width: 2.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="lib-head">
+  <!-- Dropdown Selector -->
+  <div class="lib-dropdown" id="libDropdown">
+    <button class="lib-dropdown-btn" id="libDropdownBtn">
+      <span>Component Libraries</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="lib-dropdown-menu" id="libDropdownMenu">
+      <a href="component-library.html" class="lib-dropdown-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        Component Library 1
+      </a>
+      <a href="Component Library 2.html" class="lib-dropdown-item">
+        <div style="width: 16px; height: 16px; display: inline-block;"></div>
+        Component Library 2
+      </a>
+    </div>
+  </div>
+
+  <h1><i data-lucide="layout-grid"></i> M-PESA Lehulum — Component Library</h1>
+  <p>Live catalog of the app's reusable components. Each card renders the real component using its own CSS.</p>
+  <div class="lib-counts">
+    <span>47 components</span>
+    <span>9 frames</span>
+    <span>Switzer · Red brand</span>
+    <span>Export-ready for Figma</span>
+  </div>
+</div>
+
+<!-- Component index (click to jump to a card) -->
+<div class="lib-index">
+  <h2>Components in this library · 47</h2>
+  <div class="lib-index-grid">
+    <a class="lib-index-item" data-target="Button — Primary"><span class="n"><span class="num">1</span>Button — Primary</span><code>.btn-primary</code></a>
+    <a class="lib-index-item" data-target="Button — Secondary"><span class="n"><span class="num">2</span>Button — Secondary</span><code>.btn-secondary</code></a>
+    <a class="lib-index-item" data-target="QR Speed-Dial FAB"><span class="n"><span class="num">3</span>QR Speed-Dial FAB</span><code>.qr-fab-wrapper</code></a>
+    <a class="lib-index-item" data-target="Status Bar"><span class="n"><span class="num">4</span>Status Bar</span><code>.status-bar</code></a>
+    <a class="lib-index-item" data-target="Welcome App Bar"><span class="n"><span class="num">5</span>Welcome App Bar</span><code>.welcome-app-bar</code></a>
+    <a class="lib-index-item" data-target="Balance Card"><span class="n"><span class="num">6</span>Balance Card</span><code>.balance-card</code></a>
+    <a class="lib-index-item" data-target="Quick Actions"><span class="n"><span class="num">7</span>Quick Actions</span><code>.actions</code></a>
+    <a class="lib-index-item" data-target="Banner Slider"><span class="n"><span class="num">8</span>Banner Slider</span><code>.banner-slider</code></a>
+    <a class="lib-index-item" data-target="Recent Transactions"><span class="n"><span class="num">9</span>Recent Transactions</span><code>.recent-transactions</code></a>
+    <a class="lib-index-item" data-target="Fayda Popup"><span class="n"><span class="num">10</span>Fayda Popup</span><code>.fayda-modal</code></a>
+    <a class="lib-index-item" data-target="Numeric Keypad"><span class="n"><span class="num">11</span>Numeric Keypad</span><code>.keypad</code></a>
+    <a class="lib-index-item" data-target="App Bar — Back"><span class="n"><span class="num">12</span>App Bar — Back</span><code>.header-nav</code></a>
+    <a class="lib-index-item" data-target="App Bar — With Actions"><span class="n"><span class="num">13</span>App Bar — Actions</span><code>.with-actions</code></a>
+    <a class="lib-index-item" data-target="Avatar"><span class="n"><span class="num">14</span>Avatar</span><code>.profile-avatar</code></a>
+    <a class="lib-index-item" data-target="Profile Header"><span class="n"><span class="num">15</span>Profile Header</span><code>.profile-section</code></a>
+    <a class="lib-index-item" data-target="Profile Info Card"><span class="n"><span class="num">16</span>Profile Info Card</span><code>.form-card</code></a>
+    <a class="lib-index-item" data-target="Text Field"><span class="n"><span class="num">17</span>Text Field</span><code>.form-field</code></a>
+    <a class="lib-index-item" data-target="Toast — Success"><span class="n"><span class="num">18</span>Toast — Success</span><code>.toast</code></a>
+    <a class="lib-index-item" data-target="Toast — Error"><span class="n"><span class="num">19</span>Toast — Error</span><code>.toast.error</code></a>
+    <a class="lib-index-item" data-target="Tooltip"><span class="n"><span class="num">20</span>Tooltip</span><code>.update-tooltip</code></a>
+    <a class="lib-index-item" data-target="Icon + Text Buttons"><span class="n"><span class="num">21</span>Icon + Text Buttons</span><code>.action-btn</code></a>
+    <a class="lib-index-item" data-target="Transaction Confirmation Card"><span class="n"><span class="num">22</span>Confirmation Card</span><code>.receipt-card</code></a>
+    <a class="lib-index-item" data-target="Date Picker"><span class="n"><span class="num">23</span>Date Picker</span><code>.date-picker</code></a>
+    <a class="lib-index-item" data-target="Auth Header"><span class="n"><span class="num">24</span>Auth Header</span><code>.header-section</code></a>
+    <a class="lib-index-item" data-target="PIN Input"><span class="n"><span class="num">25</span>PIN Input</span><code>.pin-box</code></a>
+    <a class="lib-index-item" data-target="OTP Input"><span class="n"><span class="num">26</span>OTP Input</span><code>.otp-box</code></a>
+    <a class="lib-index-item" data-target="Footer Links"><span class="n"><span class="num">27</span>Footer Links</span><code>.footer-links</code></a>
+    <a class="lib-index-item" data-target="Empty State"><span class="n"><span class="num">28</span>Empty State</span><code>.empty-state</code></a>
+    <a class="lib-index-item" data-target="Carousel Dots"><span class="n"><span class="num">29</span>Carousel Dots</span><code>.banner-dots</code></a>
+    <a class="lib-index-item" data-target="Statement / PDF Row"><span class="n"><span class="num">30</span>Statement / PDF Row</span><code>.statement-pdf-row</code></a>
+    <a class="lib-index-item" data-target="Amount Input"><span class="n"><span class="num">31</span>Amount Input</span><code>.amount-value</code></a>
+    <a class="lib-index-item" data-target="Phone Input"><span class="n"><span class="num">32</span>Phone Input</span><code>.phone-input</code></a>
+    <a class="lib-index-item" data-target="Search Box"><span class="n"><span class="num">33</span>Search Box</span><code>.search-box</code></a>
+    <a class="lib-index-item" data-target="Bank Selector"><span class="n"><span class="num">34</span>Bank Selector</span><code>.bank-selector</code></a>
+    <a class="lib-index-item" data-target="Dropdown / Select"><span class="n"><span class="num">35</span>Dropdown / Select</span><code>.dropdown-menu</code></a>
+    <a class="lib-index-item" data-target="Toggle / Switch"><span class="n"><span class="num">36</span>Toggle / Switch</span><code>.toggle-switch</code></a>
+    <a class="lib-index-item" data-target="Checkbox"><span class="n"><span class="num">37</span>Checkbox</span><code>.checkbox-box</code></a>
+    <a class="lib-index-item" data-target="Radio"><span class="n"><span class="num">38</span>Radio</span><code>.radio-option</code></a>
+    <a class="lib-index-item" data-target="Tabs"><span class="n"><span class="num">39</span>Tabs</span><code>.filter-tab</code></a>
+    <a class="lib-index-item" data-target="Transaction History Row"><span class="n"><span class="num">40</span>Transaction Row</span><code>.transaction-card</code></a>
+    <a class="lib-index-item" data-target="Notification Card"><span class="n"><span class="num">41</span>Notification Card</span><code>.notification-item</code></a>
+    <a class="lib-index-item" data-target="Favourites Quick-Send"><span class="n"><span class="num">42</span>Favourites Quick-Send</span><code>.favorite-item</code></a>
+    <a class="lib-index-item" data-target="Frequent Contact"><span class="n"><span class="num">43</span>Frequent Contact</span><code>.frequent-item</code></a>
+    <a class="lib-index-item" data-target="Account Menu List"><span class="n"><span class="num">44</span>Account Menu List</span><code>.menu-item</code></a>
+    <a class="lib-index-item" data-target="Account Tier"><span class="n"><span class="num">45</span>Account Tier</span><code>.tier-badge</code></a>
+    <a class="lib-index-item" data-target="Status Pill"><span class="n"><span class="num">46</span>Status Pill</span><code>.status-pill</code></a>
+    <a class="lib-index-item" data-target="Dark Toast"><span class="n"><span class="num">47</span>Dark Toast</span><code>.toast.dark</code></a>
+  </div>
+</div>
+
+<div class="lib-wrap">
+
+  <!-- ════════ FRAME 1 — Foundation & Buttons ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="square-dashed-mouse-pointer"></i> Foundation &amp; Buttons</div>
+      <div class="canvas-sub">Core actions and the floating QR launcher.</div>
+      <div class="comp-grid">
+
+        <div class="comp">
+          <div class="comp-label">Button — Primary <code>.btn-primary</code></div>
+          <div class="comp-stage">
+            <button class="btn-primary" data-component="Button" data-variant="Primary">
+              <i data-lucide="check-circle"></i> Link Now
+            </button>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Button — Secondary <code>.btn-secondary</code></div>
+          <div class="comp-stage">
+            <button class="btn-secondary" data-component="Button" data-variant="Secondary">
+              Remind me later
+            </button>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">QR Speed-Dial FAB <code>.qr-fab-wrapper</code></div>
+          <div class="comp-stage dark" style="min-height:220px; align-items:flex-end; padding-bottom:20px; position:relative;">
+            <!-- Show in open state for library preview -->
+            <div class="qr-fab-wrapper open" id="libQrFab" style="position:relative; bottom:auto; right:auto;">
+              <div class="qr-fab-menu">
+                <div class="qr-fab-item">
+                  <span class="qr-fab-label">My QR Code</span>
+                  <div class="qr-fab-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1"/>
+                      <rect x="14" y="3" width="7" height="7" rx="1"/>
+                      <rect x="3" y="14" width="7" height="7" rx="1"/>
+                      <rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/>
+                      <rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="qr-fab-item">
+                  <span class="qr-fab-label">Scan QR Code</span>
+                  <div class="qr-fab-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                      <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                      <line x1="7" y1="12" x2="17" y2="12"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="qr-fab-item">
+                  <span class="qr-fab-label">Verify Receipt</span>
+                  <div class="qr-fab-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <button class="qr-popup" style="position:relative;">
+                <div class="frame-2061">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 2 — App Chrome & Home ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="smartphone"></i> App Chrome &amp; Home</div>
+      <div class="canvas-sub">The building blocks of the Lehulum home screen.</div>
+      <div class="comp-grid">
+
+        <div class="comp wide">
+          <div class="comp-label">Status Bar <code>.status-bar</code></div>
+          <div class="comp-stage">
+            <div class="status-bar" data-component="StatusBar">
+              <span class="time">10:00</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#1C1C21"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#1C1C21"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#1C1C21"/></svg>
+                <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#1C1C21"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#1C1C21"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#1C1C21"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#1C1C21" opacity="0.3"/></svg>
+                <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#1C1C21" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#1C1C21"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#1C1C21"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Welcome App Bar <code>.welcome-app-bar</code></div>
+          <div class="comp-stage">
+            <div class="welcome-app-bar" data-component="WelcomeAppBar">
+              <div class="leading-icon"><div class="avatar"><span>AM</span></div></div>
+              <div class="title"><span>Good Morning, Aster 👋</span></div>
+              <div class="trailing-icon">
+                <div class="icon-button"><div class="container"><div class="state-layer">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" stroke="#1C1C21" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Balance Card <code>.balance-card</code></div>
+          <div class="comp-stage">
+            <div class="balance-card-wrapper" data-component="BalanceCard">
+              <div class="balance-card">
+                <div class="balance-card-top">
+                  <div class="main-balance">
+                    <div class="header"><span class="label">Main Balance (Birr)</span></div>
+                    <div class="amount" data-value="12,580.00">* * * * * * * *</div>
+                  </div>
+                  <button class="add-money-btn">
+                    <div class="plus-icon"><svg viewBox="0 0 12 12" fill="none"><path d="M6 1V11M1 6H11" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                    <span>Add Money</span>
+                  </button>
+                </div>
+                <div class="balance-card-bottom">
+                  <div class="other-balance"><span class="header-label">Reward Balance</span><span class="amount">****</span></div>
+                  <div class="other-balance"><span class="header-label">Errif Balance</span><span class="amount">****</span></div>
+                  <div class="hide-unhide">
+                    <button class="eye-btn" title="Toggle balance visibility">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Quick Actions <code>.actions</code></div>
+          <div class="comp-stage">
+            <div class="actions" data-component="QuickActions">
+              <div class="primary-action"><div class="icon-container"><i data-lucide="scan-line"></i></div><span class="label">Merchant<br>Payment</span></div>
+              <div class="primary-action"><div class="icon-container"><i data-lucide="receipt"></i></div><span class="label">Bill<br>Payment</span></div>
+              <div class="primary-action"><div class="icon-container"><i data-lucide="hand-coins"></i></div><span class="label">Credit &amp;<br>Saving</span></div>
+              <div class="primary-action"><div class="icon-container"><i data-lucide="arrow-left-right"></i></div><span class="label">Transfer<br>Money</span></div>
+              <div class="primary-action"><div class="icon-container"><i data-lucide="package-open"></i></div><span class="label">Airtime/<br>Package</span></div>
+              <div class="primary-action"><div class="icon-container"><i data-lucide="layout-grid"></i></div><span class="label">More<br>Services</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Banner Slider <code>.banner-slider</code></div>
+          <div class="comp-stage">
+            <div class="banner-slider" data-component="BannerSlider">
+              <div class="banner-slides-container">
+                <div class="banner-slide active" data-index="0">
+                  <div class="banner-image"><img src="assets/banner-ads-1.png" alt="M-PESA Banner 1" onerror="this.style.display='none'"><div class="banner-overlay"></div></div>
+                  <div class="banner-content"><h3 class="banner-title">Do it all with M-PESA</h3><p class="banner-subtitle">Make payments quickly and conveniently.</p></div>
+                </div>
+                <div class="banner-slide" data-index="1">
+                  <div class="banner-image"><img src="assets/banner-ads-2.png" alt="M-PESA Banner 2" onerror="this.style.display='none'"><div class="banner-overlay"></div></div>
+                  <div class="banner-content"><h3 class="banner-title">Send Money Anywhere</h3><p class="banner-subtitle">Transfer to any M-PESA user instantly.</p></div>
+                </div>
+              </div>
+              <div class="banner-dots"><span class="dot active"></span><span class="dot"></span><span class="dot"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Recent Transactions <code>.recent-transactions</code></div>
+          <div class="comp-stage">
+            <div class="recent-transactions" data-component="RecentTransactions">
+              <div class="header"><span class="transactions-title">Transactions</span><span class="see-all">See all</span></div>
+              <div class="transactions-list">
+                <div class="transaction-card">
+                  <div class="left"><div class="logo"><img src="assets/banks logo/cbe-logo.png" alt="CBE" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Aster Mequanent</span><span class="type">Bank</span></div></div>
+                  <div class="right"><span class="amount positive">+220.00</span><span class="date">Today</span></div>
+                </div>
+                <div class="transaction-card">
+                  <div class="left"><div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div></div>
+                  <div class="right"><span class="amount negative">-1,020.00</span><span class="date">Today</span></div>
+                </div>
+                <div class="transaction-card">
+                  <div class="left"><div class="logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="M-PESA" onerror="this.style.display='none'"></div><div class="name-type"><span class="name">Henok Chala</span><span class="type">Airtime</span></div></div>
+                  <div class="right"><span class="amount negative">-50.00</span><span class="date">Today</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 3 — Dialogs & Input ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="message-square"></i> Dialogs &amp; Input</div>
+      <div class="canvas-sub">Modal dialog and the shared numeric keypad.</div>
+      <div class="comp-grid">
+
+        <div class="comp">
+          <div class="comp-label">Fayda Popup <code>.fayda-modal</code></div>
+          <div class="comp-stage">
+            <div class="modal-overlay">
+              <div class="fayda-modal" data-component="FaydaPopup">
+                <div class="fayda-logo"><img src="assets/fayda-logo-hq.png" alt="Fayda Logo" onerror="this.style.display='none'"></div>
+                <h2 class="modal-title">Link Your Fayda ID</h2>
+                <p class="modal-description">Link your account with Fayda to enjoy a more secure and seamless experience on the app.</p>
+                <div class="button-group">
+                  <button class="btn-primary"><i data-lucide="check-circle"></i> Link Now</button>
+                  <button class="btn-secondary">Remind me later</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Numeric Keypad <code>.keypad</code></div>
+          <div class="comp-stage">
+            <div class="keypad" data-component="Keypad">
+              <button class="key">1</button><button class="key">2</button><button class="key">3</button>
+              <button class="key">4</button><button class="key">5</button><button class="key">6</button>
+              <button class="key">7</button><button class="key">8</button><button class="key">9</button>
+              <button class="key empty"></button>
+              <button class="key">0</button>
+              <button class="key delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 4 — Navigation & Profile ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="panel-top"></i> Navigation &amp; Profile</div>
+      <div class="canvas-sub">App bars, avatars and profile surfaces.</div>
+      <div class="comp-grid">
+
+        <div class="comp">
+          <div class="comp-label">App Bar — Back <code>.header-nav</code></div>
+          <div class="comp-stage" style="padding:0">
+            <div class="header-nav" data-component="AppBar" data-variant="Back">
+              <button class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+              <span class="header-title">Confirm Your Profile</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">App Bar — With Actions <code>.header-nav.with-actions</code></div>
+          <div class="comp-stage" style="padding:0">
+            <div class="header-nav with-actions" data-component="AppBar" data-variant="Actions">
+              <button class="close-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+              <span class="header-title">Confirmation Receipt</span>
+              <div class="header-actions">
+                <button class="header-action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+                <button class="header-action-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Avatar <code>.profile-avatar</code></div>
+          <div class="comp-stage fit" style="gap:24px; align-items:center">
+            <div class="profile-avatar" data-component="Avatar" data-variant="Image"><img src="assets/avatars/avatar-1.png" alt="Profile" onerror="this.parentElement.style.display='none'"></div>
+            <div class="cl-avatar-initials" data-component="Avatar" data-variant="Initials">AM</div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Profile Header <code>.profile-section</code></div>
+          <div class="comp-stage fit">
+            <div class="profile-section" data-component="ProfileHeader">
+              <div class="profile-avatar"><img src="assets/avatars/avatar-1.png" alt="Profile" onerror="this.parentElement.innerHTML='<div class=cl-avatar-initials style=width:100%;height:100%>ZK</div>'"></div>
+              <h2 class="profile-name">Zemedkun Kidane</h2>
+              <p class="profile-phone">Phone Number 079 123 1222</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Profile Info Card <code>.form-card</code></div>
+          <div class="comp-stage">
+            <div class="form-card" data-component="ProfileInfoCard">
+              <div class="form-field"><label>Full Name</label><div class="field-value">Mikias Dereje</div></div>
+              <div class="form-field"><label>Phone Number</label><div class="field-value">0911032052</div></div>
+              <div class="form-field"><label>Nationality</label><div class="field-value">Ethiopian</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Text Field <code>.form-field</code></div>
+          <div class="comp-stage">
+            <div class="form-card" style="gap:18px">
+              <div class="form-field" data-component="TextField" data-variant="Filled"><label>Full Name</label><input type="text" value="Mikias Dereje"></div>
+              <div class="form-field" data-component="TextField" data-variant="Empty"><label>Address</label><input type="text" placeholder="Enter your address"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 5 — Feedback, Receipts &amp; Pickers ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="bell-ring"></i> Feedback, Receipts &amp; Pickers</div>
+      <div class="canvas-sub">Toasts, tooltip, the confirmation receipt and the date picker.</div>
+      <div class="comp-grid">
+
+        <div class="comp">
+          <div class="comp-label">Toast — Success <code>.toast.success</code></div>
+          <div class="comp-stage fit">
+            <div class="toast success" data-component="Toast" data-variant="Success">
+              <div class="toast-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="toast-content"><div class="toast-title">Added to Favorites</div><div class="toast-subtitle">Mom M-PESA has been saved to favorites</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Toast — Error <code>.toast.error</code></div>
+          <div class="comp-stage fit">
+            <div class="toast error" data-component="Toast" data-variant="Error">
+              <div class="toast-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="toast-content"><div class="toast-title">Removed from Favorites</div><div class="toast-subtitle">Mom M-PESA has been removed</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Tooltip <code>.update-tooltip</code></div>
+          <div class="comp-stage fit">
+            <div class="update-tooltip-wrapper" data-component="Tooltip">
+              <div class="tooltip-arrow"></div>
+              <div class="update-tooltip">
+                <div class="tooltip-text"><span class="tooltip-title">Update Available! <span class="version">(v4.2.1)</span></span><span class="tooltip-subtitle">Tap to install new features &amp; fixes.</span></div>
+                <div class="tooltip-info-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Icon + Text Buttons <code>.action-btn</code></div>
+          <div class="comp-stage">
+            <div class="bottom-actions">
+              <button class="action-btn" data-component="IconTextButton"><div class="action-icon"><i data-lucide="heart"></i></div><span class="action-label">Add to Favorite</span></button>
+              <button class="action-btn"><div class="action-icon"><i data-lucide="arrow-left-right"></i></div><span class="action-label">Send Again</span></button>
+              <button class="action-btn"><div class="action-icon"><i data-lucide="rotate-ccw"></i></div><span class="action-label">Reverse</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Transaction Confirmation Card <code>.receipt-card</code></div>
+          <div class="comp-stage">
+            <div class="receipt-card" data-component="ConfirmationCard">
+              <div class="success-icon-wrapper"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+              <div class="receipt-header"><h2>Transaction Successful</h2><p>Thank you for Choosing M-PESA For All</p></div>
+              <div class="dashed-divider"></div>
+              <div class="transaction-details">
+                <div class="detail-row"><span class="label">Transaction Type</span><span class="value">Bank Transfer</span></div>
+                <div class="detail-row"><span class="label">Beneficiary's Bank</span><span class="value">Abyssinia Bank</span></div>
+                <div class="detail-row"><span class="label">Account Number</span><span class="value">978784356436</span></div>
+                <div class="detail-row"><span class="label">Transaction ID</span><span class="value copyable"><button class="copy-btn"><span class="copy-text">Copy ID</span><i data-lucide="copy"></i></button><span>fxt45632578</span></span></div>
+                <div class="detail-row"><span class="label">Date and time</span><span class="value">12/12/2024 at 8:34 AM</span></div>
+              </div>
+              <div class="amount-section">
+                <div class="beneficiary-name">Kidist Alemayehu Tadesse</div>
+                <div class="amount-display"><span class="amount-value">-1,050.20</span><span class="amount-currency">ETB</span></div>
+                <div class="qr-wrapper"><img src="assets/qr-scan.svg" alt="QR" onerror="this.parentElement.style.display='none'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Date Picker <code>.date-picker</code></div>
+          <div class="comp-stage fit">
+            <div class="date-picker" data-component="DatePicker">
+              <div class="picker-header">
+                <button class="nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <div class="view-selector"><span class="view-text">September 2024</span><svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+                <button class="nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+              </div>
+              <div class="day-headers"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+              <div class="picker-grid day-grid">
+                <button class="grid-item faded">26</button><button class="grid-item faded">27</button><button class="grid-item faded">28</button><button class="grid-item faded">29</button><button class="grid-item faded">30</button><button class="grid-item faded">31</button><button class="grid-item">1</button>
+                <button class="grid-item">2</button><button class="grid-item">3</button><button class="grid-item">4</button><button class="grid-item">5</button><button class="grid-item">6</button><button class="grid-item">7</button><button class="grid-item">8</button>
+                <button class="grid-item">9</button><button class="grid-item">10</button><button class="grid-item">11</button><button class="grid-item selected">12</button><button class="grid-item">13</button><button class="grid-item">14</button><button class="grid-item">15</button>
+                <button class="grid-item">16</button><button class="grid-item">17</button><button class="grid-item">18</button><button class="grid-item">19</button><button class="grid-item">20</button><button class="grid-item">21</button><button class="grid-item">22</button>
+                <button class="grid-item">23</button><button class="grid-item">24</button><button class="grid-item">25</button><button class="grid-item">26</button><button class="grid-item">27</button><button class="grid-item">28</button><button class="grid-item">29</button>
+                <button class="grid-item">30</button><button class="grid-item faded">1</button><button class="grid-item faded">2</button><button class="grid-item faded">3</button><button class="grid-item faded">4</button><button class="grid-item faded">5</button><button class="grid-item faded">6</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 6 — Auth & Security ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="shield-check"></i> Auth &amp; Security</div>
+      <div class="canvas-sub">Onboarding header, PIN / OTP entry and auth footer.</div>
+      <div class="comp-grid">
+
+        <div class="comp wide">
+          <div class="comp-label">Auth Header <code>.header-section</code></div>
+          <div class="comp-stage" style="padding:0">
+            <div class="header-section" data-component="AuthHeader">
+              <div class="pattern-overlay"></div>
+              <div class="status-bar">
+                <span class="time">10:00</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z" fill="#FFF"/><path d="M5 13l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z" fill="#FFF"/><path d="M9 17l2 2c1.1-1.1 2.9-1.1 4 0l2-2c-2.21-2.21-5.79-2.21-8 0z" fill="#FFF"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#FFF"/><rect x="8" y="4" width="4" height="14" rx="1" fill="#FFF"/><rect x="14" y="2" width="4" height="16" rx="1" fill="#FFF"/><rect x="20" y="0" width="4" height="18" rx="1" fill="#FFF" opacity="0.3"/></svg>
+                  <svg viewBox="0 0 28 14" fill="none"><rect x="0" y="1" width="22" height="12" rx="2.5" stroke="#FFF" stroke-width="1.5"/><rect x="2" y="3" width="16" height="8" rx="1" fill="#FFF"/><rect x="24" y="4" width="2" height="6" rx="1" fill="#FFF"/></svg>
+                </div>
+              </div>
+              <div class="header-nav">
+                <button class="back-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <span class="header-title">Sign Up</span>
+              </div>
+              <div class="header-subtitle">Create your M-PESA PIN</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">PIN Input <code>.pin-box</code></div>
+          <div class="comp-stage fit">
+            <div class="pin-container" data-component="PinInput">
+              <div class="pin-box filled"><div class="dot"></div></div>
+              <div class="pin-box filled"><div class="dot"></div></div>
+              <div class="pin-box active"></div>
+              <div class="pin-box"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">OTP Input <code>.otp-box</code></div>
+          <div class="comp-stage fit" style="flex-direction:column; gap:14px">
+            <div class="otp-container" data-component="OtpInput">
+              <div class="otp-box">7</div>
+              <div class="otp-box">2</div>
+              <div class="otp-box active">1</div>
+              <div class="otp-box"></div>
+            </div>
+            <div class="resend-row"><span class="resend-label">Didn't receive the OTP?</span><button class="resend-btn">Resend now</button></div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Footer Links <code>.footer-links</code></div>
+          <div class="comp-stage">
+            <div class="footer-links" data-component="FooterLinks">
+              <a class="link"><i data-lucide="headphones"></i> Contact Us</a>
+              <div class="divider"></div>
+              <a class="link"><i data-lucide="file-text"></i> Terms and Conditions</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>
+
+  <!-- ════════ FRAME 7 — Feedback & Lists ════════ -->
+  <div class="lib-wrap" style="padding-top:0">
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="layers"></i> Feedback &amp; Lists</div>
+      <div class="canvas-sub">Empty state illustration, carousel pagination dots, and statement/PDF list row.</div>
+      <div class="comp-grid">
+
+        <!-- Empty State -->
+        <div class="comp wide" id="comp-empty-state">
+          <div class="comp-label">Empty State <code>.empty-state</code></div>
+          <div class="comp-stage" style="background:#F5F5F5; padding:24px 16px; min-height:320px; align-items:center; justify-content:center; flex-direction:column">
+            <div class="empty-state" data-component="EmptyState" style="flex:unset; display:flex; flex-direction:column; align-items:center; text-align:center; gap:0; padding:0">
+              <!-- Illustration -->
+              <div style="position:relative; width:140px; height:140px; margin-bottom:22px">
+                <div style="width:140px; height:140px; border-radius:50%; background:linear-gradient(135deg,#FFF1F2 0%,#FFE5E6 100%); display:flex; align-items:center; justify-content:center; position:relative">
+                  <svg width="88" height="88" viewBox="0 0 72 72" fill="none">
+                    <path d="M36 57C36 57 12 43.2 12 26.4C12 19.56 17.16 14 23.52 14C27.36 14 30.72 16.08 33.12 19.32L36 22.8L38.88 19.32C41.28 16.08 44.64 14 48.48 14C54.84 14 60 19.56 60 26.4C60 43.2 36 57 36 57Z" stroke="#FE353D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="#FFE0E1"/>
+                  </svg>
+                  <div style="position:absolute; top:18px; left:50%; transform:translateX(-50%); width:26px; height:26px; border-radius:50%; background:#FE353D; border:2.5px solid #FFF1F2; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(254,53,61,0.35)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <h2 style="font-family:'Switzer',sans-serif; font-size:18px; font-weight:700; color:#1C1C21; margin-bottom:8px; letter-spacing:0.2px">No Favorites Yet</h2>
+              <p style="font-family:'Inter',sans-serif; font-size:13px; color:#7C7C87; line-height:1.65; max-width:220px">Save your frequent contacts here for quick, one-tap transfers.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carousel Dots -->
+        <div class="comp" id="comp-carousel-dots">
+          <div class="comp-label">Carousel Dots <code>.banner-dots</code></div>
+          <div class="comp-stage fit" style="flex-direction:column; gap:20px; align-items:center; padding:24px 16px">
+            <!-- 3 dots, 1 active -->
+            <div>
+              <p style="font-size:10px; color:#7C7C87; text-align:center; margin-bottom:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px">3 Slides</p>
+              <div class="banner-dots" data-component="CarouselDots" style="display:flex; align-items:center; justify-content:center; gap:5px">
+                <span class="dot active" style="width:20px; height:6px; border-radius:3px; background:#FE353D; transition:all .3s"></span>
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5; transition:all .3s"></span>
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5; transition:all .3s"></span>
+              </div>
+            </div>
+            <!-- 5 dots, 3rd active -->
+            <div>
+              <p style="font-size:10px; color:#7C7C87; text-align:center; margin-bottom:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px">5 Slides</p>
+              <div class="banner-dots" style="display:flex; align-items:center; justify-content:center; gap:5px">
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5"></span>
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5"></span>
+                <span class="dot active" style="width:20px; height:6px; border-radius:3px; background:#FE353D"></span>
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5"></span>
+                <span class="dot" style="width:6px; height:6px; border-radius:50%; background:#D0D0D5"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statement / PDF Row -->
+        <div class="comp wide" id="comp-statement-pdf-row">
+          <div class="comp-label">Statement / PDF Row <code>.statement-pdf-row</code></div>
+          <div class="comp-stage" style="padding:0; background:#FFF; flex-direction:column; gap:0">
+            <!-- Row 1 - Statement -->
+            <div class="statement-pdf-row" data-component="StatementPDFRow" data-variant="Statement" style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #F0F0F4; background:#FFF">
+              <div style="width:42px; height:42px; border-radius:12px; background:#FFF1F2; display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FE353D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <div style="font-family:'Switzer',sans-serif; font-size:14px; font-weight:600; color:#1C1C21; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Account Statement</div>
+                <div style="font-family:'Inter',sans-serif; font-size:12px; color:#7C7C87">Dec 01 – Dec 28, 2025 · PDF</div>
+              </div>
+              <button style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:10px; border:1.5px solid #E8E8EC; background:#FFF; cursor:pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1C1C21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <!-- Row 2 - Receipt -->
+            <div class="statement-pdf-row" data-variant="Receipt" style="display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid #F0F0F4; background:#FFF">
+              <div style="width:42px; height:42px; border-radius:12px; background:#E8F9EC; display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1FC83B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <div style="font-family:'Switzer',sans-serif; font-size:14px; font-weight:600; color:#1C1C21; margin-bottom:3px">Send Money Receipt</div>
+                <div style="font-family:'Inter',sans-serif; font-size:12px; color:#7C7C87">22 Dec 2024 · KRTU7895 · PDF</div>
+              </div>
+              <button style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:10px; border:1.5px solid #E8E8EC; background:#FFF; cursor:pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1C1C21" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+            <!-- Row 3 - Loading/Skeleton hint -->
+            <div style="display:flex; align-items:center; gap:12px; padding:14px 16px; background:#FAFAFA">
+              <div style="width:42px; height:42px; border-radius:12px; background:#F0F0F4"></div>
+              <div style="flex:1">
+                <div style="height:12px; border-radius:6px; background:#F0F0F4; width:60%; margin-bottom:6px"></div>
+                <div style="height:10px; border-radius:5px; background:#F5F5F7; width:80%"></div>
+              </div>
+              <div style="width:32px; height:32px; border-radius:10px; background:#F0F0F4"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <div class="lib-wrap" style="padding-top:0">
+
+  <!-- ════════ FRAME 8 — Inputs & Selection ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="sliders-horizontal"></i> Inputs &amp; Selection</div>
+      <div class="canvas-sub">Amount, phone, search, dropdowns and selection controls.</div>
+      <div class="comp-grid">
+
+        <div class="comp">
+          <div class="comp-label">Amount Input <code>.amount-value</code></div>
+          <div class="comp-stage fit">
+            <div class="amount-entry" data-component="AmountInput">
+              <div class="amount-display"><span class="amount-value">1,200.00</span><span class="amount-currency">ETB</span></div>
+              <div class="balance-row">
+                <div class="balance-item"><span class="label">Main:</span><span class="amount">12,580.00</span></div>
+                <div class="balance-divider"></div>
+                <div class="balance-item"><span class="label">Available:</span><span class="amount">800.00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Phone Input <code>.phone-input</code></div>
+          <div class="comp-stage fit">
+            <div class="phone-input-section" data-component="PhoneInput">
+              <span class="input-label">Enter Phone Number</span>
+              <div class="phone-input-wrapper has-value">
+                <span class="phone-prefix">+251</span>
+                <input class="phone-input" type="tel" value="911 234 567" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Search Box <code>.search-box</code></div>
+          <div class="comp-stage">
+            <div class="search-filter-bar" data-component="SearchBox">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input placeholder="Search transactions" readonly>
+              </div>
+              <button class="filter-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Bank Selector <code>.bank-selector</code></div>
+          <div class="comp-stage" style="flex-direction:column; gap:10px">
+            <div class="bank-selector has-bank" data-component="BankSelector">
+              <div class="bank-selector-left">
+                <div class="bank-logo"><img src="assets/banks logo/cbe-logo.png" alt="" onerror="this.style.display='none'"></div>
+                <span class="bank-name">Awash Bank</span>
+              </div>
+              <div class="bank-selector-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
+            <div class="bank-list">
+              <div class="bank-option selected"><div class="bank-option-logo"><img src="assets/banks logo/cbe-logo.png" alt="" onerror="this.style.display='none'"></div><span class="bank-option-name">Commercial Bank of Ethiopia</span></div>
+              <div class="bank-option"><div class="bank-option-logo"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="" onerror="this.style.display='none'"></div><span class="bank-option-name">Abyssinia Bank</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Dropdown / Select <code>.dropdown-menu</code></div>
+          <div class="comp-stage" style="display:block; min-height:230px">
+            <div class="dropdown" data-component="Dropdown">
+              <div class="dropdown-trigger open">All Transaction <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="dropdown-menu">
+                <div class="dropdown-option selected">All Transaction</div>
+                <div class="dropdown-option">Send Money</div>
+                <div class="dropdown-option">Bank Transfer</div>
+                <div class="dropdown-option">Bill Payment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Toggle / Switch <code>.toggle-switch</code></div>
+          <div class="comp-stage fit" style="gap:24px; align-items:center">
+            <label class="toggle-switch" data-component="Toggle" data-variant="On"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+            <label class="toggle-switch" data-component="Toggle" data-variant="Off"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Checkbox <code>.checkbox-box</code></div>
+          <div class="comp-stage">
+            <div style="width:100%">
+              <div class="checkbox-option checked" data-component="Checkbox"><div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><span class="checkbox-label">Save as favourite</span></div>
+              <div class="checkbox-option"><div class="checkbox-box"></div><span class="checkbox-label">Remember this account</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Radio <code>.radio-option</code></div>
+          <div class="comp-stage">
+            <div class="radio-options" data-component="Radio">
+              <div class="radio-option selected"><div class="radio-circle"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><span class="radio-label">This Month (May 26)</span></div>
+              <div class="radio-option"><div class="radio-circle"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div><span class="radio-label">6 Months</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Tabs <code>.filter-tab</code></div>
+          <div class="comp-stage">
+            <div class="filter-tabs" data-component="Tabs">
+              <button class="filter-tab active">Transactions</button>
+              <button class="filter-tab inactive">Alert</button>
+              <button class="filter-tab inactive">Rewards</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ FRAME 9 — Lists, Cards & Status ════════ -->
+  <section class="screen">
+    <div class="phone lib-canvas">
+      <div class="pp-title"><i data-lucide="layout-list"></i> Lists, Cards &amp; Status</div>
+      <div class="canvas-sub">Transaction & notification rows, contacts, account surfaces and status.</div>
+      <div class="comp-grid">
+
+        <div class="comp wide">
+          <div class="comp-label">Transaction History Row <code>.transaction-card</code></div>
+          <div class="comp-stage">
+            <div class="cl-history" style="width:100%">
+              <div class="transaction-card" data-component="TransactionRow">
+                <div class="tx-icon p2p"><svg viewBox="0 0 24 24" fill="none" stroke="#fff"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+                <div class="tx-details"><div class="name">Sent to Aster Mequanent</div><div><span class="amount">-1,020.00 ETB</span> · Send Money</div><div class="phone">+251 911 234 567</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Notification Card <code>.notification-item</code></div>
+          <div class="comp-stage">
+            <div class="notification-item" data-component="NotificationCard">
+              <div class="notif-icon-col"><div class="notif-icon success"><i data-lucide="arrow-down-left"></i></div></div>
+              <div class="notif-body">
+                <div class="notif-top-row"><span class="notif-title">From Mikias Dereje</span><span class="notif-date">July 14, 2027</span></div>
+                <div class="notif-bottom-row"><span class="notif-meta">Transfer Money</span><span class="amount positive">+2,000.00</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Favourites Quick-Send <code>.favorite-item</code></div>
+          <div class="comp-stage">
+            <div class="favorites-scroll" data-component="FavouritesQuickSend">
+              <div class="favorite-item"><div class="favorite-avatar cl-avatar-initials" style="font-size:15px">MO</div><span class="favorite-name">Mom</span></div>
+              <div class="favorite-item"><div class="favorite-avatar cl-avatar-initials" style="font-size:15px">RE</div><span class="favorite-name">Rent</span></div>
+              <div class="favorite-item"><div class="favorite-avatar cl-avatar-initials" style="font-size:15px">SI</div><span class="favorite-name">Sister</span></div>
+              <div class="favorite-item"><div class="favorite-avatar cl-avatar-initials" style="font-size:15px">AS</div><span class="favorite-name">Aster</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Frequent Contact <code>.frequent-item</code></div>
+          <div class="comp-stage">
+            <div class="frequent-list" data-component="FrequentContact">
+              <div class="frequent-item">
+                <div class="frequent-avatar"><img src="assets/banks logo/cbe-logo.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="frequent-info"><span class="frequent-name">Aster Mequanent</span><span class="frequent-detail">CBE · ****1234</span></div>
+              </div>
+              <div class="frequent-item">
+                <div class="frequent-avatar"><img src="assets/banks logo/M-PESA-logo-icon.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="frequent-info"><span class="frequent-name">Henok Chala</span><span class="frequent-detail">M-PESA · 0712 345 678</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp wide">
+          <div class="comp-label">Account Menu List <code>.menu-item</code></div>
+          <div class="comp-stage">
+            <div class="account-menu" data-component="AccountMenu">
+              <div class="menu-item"><div class="menu-icon"><i data-lucide="shield"></i></div><div class="menu-info">Account Security</div><div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+              <div class="menu-item"><div class="menu-icon"><i data-lucide="globe"></i></div><div class="menu-info">Language</div><div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"/></svg></div></div>
+              <div class="menu-item"><div class="menu-icon"><i data-lucide="fingerprint"></i></div><div class="menu-info">Biometric Login</div><label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Account Tier <code>.tier-badge</code></div>
+          <div class="comp-stage fit">
+            <button class="tier-badge" data-component="AccountTier"><i data-lucide="award"></i><span class="tier-text">Tier 2</span></button>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Status Pill <code>.status-pill</code></div>
+          <div class="comp-stage fit" style="gap:8px; flex-wrap:wrap">
+            <span class="status-pill success" data-component="StatusPill" data-variant="Success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> Success</span>
+            <span class="status-pill pending" data-component="StatusPill" data-variant="Pending">Pending</span>
+            <span class="status-pill failed" data-component="StatusPill" data-variant="Failed">Failed</span>
+          </div>
+        </div>
+
+        <div class="comp">
+          <div class="comp-label">Dark Toast <code>.toast.dark</code></div>
+          <div class="comp-stage fit">
+            <div class="toast dark" data-component="Toast" data-variant="Dark"><span class="toast-text">Transaction ID copied to clipboard</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+  </div>
+
+<!-- Lucide icons (components use data-lucide) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  if (window.lucide && lucide.createIcons) lucide.createIcons();
+
+  // Index links jump to the matching component card.
+  document.querySelectorAll('.lib-index-item').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var target = a.getAttribute('data-target');
+      var labels = document.querySelectorAll('.comp-label');
+      for (var i = 0; i < labels.length; i++) {
+        if (labels[i].textContent.trim().indexOf(target) === 0) {
+          labels[i].closest('.comp').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          break;
+        }
+      }
+    });
+  });
+
+  // Dropdown toggle logic
+  var dropdownBtn = document.getElementById('libDropdownBtn');
+  var dropdown = document.getElementById('libDropdown');
+  if (dropdownBtn && dropdown) {
+    dropdownBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', function () {
+      dropdown.classList.remove('open');
+    });
+  }
+</script>
+
+<!-- Shared exporter: adds the "Export to Figma" button (one source at project root) -->
+<script src="figma-export.js"></script>
+</body>
+</html>
