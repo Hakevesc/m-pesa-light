@@ -209,17 +209,17 @@
 
   .btn-reallocate {
     flex: 1; height: 50px; border-radius: 66px;
-    background: #FFF; border: 1.5px solid var(--Border); color: var(--On-Surface);
+    background: var(--On-Surface); border: none; color: #FFF;
     font-family: var(--Font-Family); font-size: 14px; font-weight: 600;
     letter-spacing: 0.3px; text-transform: uppercase; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 7px;
     font-weight: 700;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
-  .btn-reallocate:hover { border-color: var(--On-Surface-Low); transform: translateY(-1px); }
+  .btn-reallocate:hover { background: #2C2C31; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
   .btn-reallocate:active { transform: scale(0.97); }
-  .btn-reallocate svg { width: 16px; height: 16px; stroke: var(--On-Surface); fill: none; stroke-width: 2; }
+  .btn-reallocate svg { width: 16px; height: 16px; stroke: #FFF; fill: none; stroke-width: 2; }
 
   /* Withdraw — white circle, NO text label */
   .btn-withdraw {
@@ -616,8 +616,8 @@
     const subs = [document.getElementById('sub1'), document.getElementById('sub2')];
     const eyeIcon = document.getElementById('eyeIcon');
     if (balanceHidden) {
-      amountEl.innerHTML = '••••••';
-      subs.forEach(v => v.textContent = '•••••');
+      amountEl.innerHTML = '* * * * * * * *';
+      subs.forEach(v => v.textContent = '* * * *');
       eyeIcon.innerHTML = `
         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke-linecap="round" stroke-linejoin="round"/>
