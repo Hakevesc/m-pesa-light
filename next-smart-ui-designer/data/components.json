@@ -1,0 +1,204 @@
+{
+  "components": [
+    {
+      "id": "button",
+      "name": "Button",
+      "category": "Actions",
+      "description": "Primary, secondary, text, link, icon and shape-based action controls.",
+      "props": ["label", "icon", "variant", "shape", "size", "disabled", "loading", "fullWidth"],
+      "variants": ["normal", "half-rectangle", "circle", "text", "link", "icon", "ghost", "danger"],
+      "states": ["default", "hover", "active", "disabled", "inactive", "loading", "focused"],
+      "tokens": ["colors.primary", "colors.onPrimary", "radius.md", "shadow.soft", "typography.body"]
+    },
+    {
+      "id": "icon-button",
+      "name": "Icon Button",
+      "category": "Actions",
+      "description": "Compact icon-only action with circular, rounded and ghost variants.",
+      "props": ["icon", "variant", "size", "disabled", "ariaLabel"],
+      "variants": ["default", "ghost", "primary", "danger"],
+      "states": ["default", "hover", "active", "disabled", "focused"],
+      "tokens": ["colors.primary", "radius.full", "icons.md"]
+    },
+    {
+      "id": "text-field",
+      "name": "Text Field",
+      "category": "Forms",
+      "description": "Labelled input used for names, accounts, search and general text entry.",
+      "props": ["label", "placeholder", "value", "error", "helperText"],
+      "variants": ["default", "filled", "error"],
+      "states": ["default", "focus", "filled", "error", "disabled"],
+      "tokens": ["colors.stroke", "colors.onSurfaceLow", "typography.bodySmall"]
+    },
+    {
+      "id": "amount-input",
+      "name": "Amount Input",
+      "category": "Forms",
+      "description": "Large numeric amount display and edit surface for payment flows.",
+      "props": ["amount", "currency", "editable"],
+      "variants": ["display", "editable"],
+      "states": ["default", "editing", "error"],
+      "tokens": ["typography.title", "colors.onSurface", "spacing.lg"]
+    },
+    {
+      "id": "pin-input",
+      "name": "PIN Input",
+      "category": "Forms",
+      "description": "Four-box PIN entry component.",
+      "props": ["length", "value"],
+      "variants": ["dots", "filled-boxes"],
+      "states": ["empty", "filled", "active", "error"],
+      "tokens": ["colors.primary", "radius.md", "spacing.sm"]
+    },
+    {
+      "id": "otp-input",
+      "name": "OTP Input",
+      "category": "Forms",
+      "description": "OTP entry boxes with resend action.",
+      "props": ["length", "value", "resendDisabled"],
+      "variants": ["default"],
+      "states": ["empty", "filled", "active", "error"],
+      "tokens": ["colors.primary", "radius.md", "typography.body"]
+    },
+    {
+      "id": "numeric-keypad",
+      "name": "Numeric Keypad",
+      "category": "Forms",
+      "description": "Phone-style numeric keypad for amount and PIN flows.",
+      "props": ["onDelete", "onPress"],
+      "variants": ["numeric"],
+      "states": ["default", "pressed"],
+      "tokens": ["colors.surface", "colors.stroke", "typography.h2"]
+    },
+    {
+      "id": "header-nav",
+      "name": "Header Nav",
+      "category": "Navigation",
+      "description": "Mobile screen header with optional back, close and action buttons.",
+      "props": ["title", "showBack", "showClose", "actions"],
+      "variants": ["back", "close", "actions"],
+      "states": ["default", "with-actions"],
+      "tokens": ["colors.surface", "typography.h2", "radius.full"]
+    },
+    {
+      "id": "welcome-app-bar",
+      "name": "Welcome App Bar",
+      "category": "Navigation",
+      "description": "Home screen greeting bar with avatar and notification action.",
+      "props": ["greeting", "name", "showNotification"],
+      "variants": ["default"],
+      "states": ["default", "with-avatar"],
+      "tokens": ["typography.body", "colors.surface", "radius.full"]
+    },
+    {
+      "id": "balance-card",
+      "name": "Balance Card",
+      "category": "Cards",
+      "description": "Main, reward and Errif balance card with hide/unhide action.",
+      "props": ["mainBalance", "rewardBalance", "errifBalance", "visible"],
+      "variants": ["visible", "hidden"],
+      "states": ["default", "hidden"],
+      "tokens": ["colors.primaryDarker", "colors.primaryDark", "shadow.medium", "typography.title"]
+    },
+    {
+      "id": "quick-actions",
+      "name": "Quick Actions",
+      "category": "Actions",
+      "description": "Home screen grid of primary M-PESA actions.",
+      "props": ["actions"],
+      "variants": ["default"],
+      "states": ["default", "hover", "disabled"],
+      "tokens": ["colors.surface", "radius.lg", "typography.caption"]
+    },
+    {
+      "id": "banner-slider",
+      "name": "Banner Slider",
+      "category": "Media",
+      "description": "Promotional carousel with slides and dot pagination.",
+      "props": ["slides", "autoPlay"],
+      "variants": ["default"],
+      "states": ["default", "active-slide"],
+      "tokens": ["radius.lg", "shadow.soft", "spacing.md"]
+    },
+    {
+      "id": "transaction-card",
+      "name": "Transaction Card",
+      "category": "Cards",
+      "description": "Recent transaction row with logo, name, amount and date.",
+      "props": ["logo", "name", "type", "amount", "date", "tone"],
+      "variants": ["income", "expense", "pending"],
+      "states": ["default", "hover"],
+      "tokens": ["colors.surface", "typography.bodySmall", "radius.md"]
+    },
+    {
+      "id": "receiver-card",
+      "name": "Receiver Card",
+      "category": "Cards",
+      "description": "Recipient profile card for transfer and payment flows.",
+      "props": ["avatar", "name", "bank", "account", "editable"],
+      "variants": ["bank", "wallet"],
+      "states": ["default", "selected"],
+      "tokens": ["colors.surface", "radius.lg", "typography.body"]
+    },
+    {
+      "id": "modal",
+      "name": "Modal",
+      "category": "Feedback",
+      "description": "Overlay dialog for confirmations, notices and required actions.",
+      "props": ["title", "description", "actions", "dismissible"],
+      "variants": ["alert", "confirmation", "forced"],
+      "states": ["default", "open"],
+      "tokens": ["colors.surface", "shadow.modal", "radius.xl"]
+    },
+    {
+      "id": "toast",
+      "name": "Toast",
+      "category": "Feedback",
+      "description": "Short success, error or info message.",
+      "props": ["title", "subtitle", "tone"],
+      "variants": ["success", "error", "info", "dark"],
+      "states": ["visible", "leaving"],
+      "tokens": ["colors.success", "colors.error", "radius.md", "shadow.medium"]
+    },
+    {
+      "id": "tooltip",
+      "name": "Tooltip",
+      "category": "Feedback",
+      "description": "Small contextual message for updates and hints.",
+      "props": ["title", "subtitle", "icon"],
+      "variants": ["default", "dark"],
+      "states": ["visible", "hidden"],
+      "tokens": ["colors.surface", "colors.onSurface", "radius.md"]
+    },
+    {
+      "id": "avatar",
+      "name": "Avatar",
+      "category": "Media",
+      "description": "Profile image or initials avatar.",
+      "props": ["src", "initials", "size"],
+      "variants": ["image", "initials"],
+      "states": ["default", "fallback"],
+      "tokens": ["radius.full", "colors.primary", "colors.onPrimary"]
+    },
+    {
+      "id": "qr-fab",
+      "name": "QR FAB",
+      "category": "Actions",
+      "description": "Floating QR action launcher with My QR, Scan QR and Verify Receipt actions.",
+      "props": ["open", "actions"],
+      "variants": ["default"],
+      "states": ["closed", "open"],
+      "tokens": ["colors.primary", "radius.full", "shadow.fab"]
+    },
+    {
+      "id": "phone-frame",
+      "name": "Phone Frame",
+      "category": "Layout",
+      "description": "Mobile preview frame used by the presentation and component library pages.",
+      "props": ["children", "theme"],
+      "variants": ["default", "desktop"],
+      "states": ["default"],
+      "tokens": ["radius.xl", "shadow.strong", "spacing.xl"]
+    }
+  ]
+}

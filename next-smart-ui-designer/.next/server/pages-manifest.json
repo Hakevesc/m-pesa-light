@@ -1,0 +1,11 @@
+{
+  "/_app": "pages/_app.js",
+  "/component-library": "pages/component-library.html",
+  "/_error": "pages/_error.js",
+  "/design-system": "pages/design-system.html",
+  "/": "pages/index.html",
+  "/presentation": "pages/presentation.html",
+  "/flows/[flowId]/[screenId]": "pages/flows/[flowId]/[screenId].js",
+  "/_document": "pages/_document.js",
+  "/404": "pages/404.html"
+}

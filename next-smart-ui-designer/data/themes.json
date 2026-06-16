@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "themes": {
+    "light": {
+      "id": "light",
+      "label": "Light",
+      "colors": {
+        "primary": "#FE353D",
+        "primaryDark": "#C41520",
+        "primaryDarker": "#A41016",
+        "primaryContainer": "#FFDFE0",
+        "onPrimary": "#FFF1F2",
+        "surface": "#FFFFFF",
+        "surfaceContainer": "#FCFCFC",
+        "background": "#F5F5F5",
+        "onBackground": "#1C1C21",
+        "onSurface": "#1C1C21",
+        "onSurfaceLow": "#7C7C87",
+        "success": "#1FC83B",
+        "warning": "#FFB020",
+        "error": "#D92D20",
+        "info": "#2E90FA",
+        "stroke": "#E8E8EC",
+        "overlay": "rgba(0, 0, 0, 0.45)"
+      }
+    },
+    "dark": {
+      "id": "dark",
+      "label": "Dark",
+      "colors": {
+        "primary": "#FF5A62",
+        "primaryDark": "#FF333D",
+        "primaryDarker": "#C41520",
+        "primaryContainer": "#5B1017",
+        "onPrimary": "#2B0003",
+        "surface": "#18181B",
+        "surfaceContainer": "#202025",
+        "background": "#0F0F12",
+        "onBackground": "#F3F4F6",
+        "onSurface": "#F3F4F6",
+        "onSurfaceLow": "#A0A0A8",
+        "success": "#30D158",
+        "warning": "#FFD166",
+        "error": "#FF6B6B",
+        "info": "#64B5FF",
+        "stroke": "#303038",
+        "overlay": "rgba(0, 0, 0, 0.62)"
+      }
+    }
+  }
+}

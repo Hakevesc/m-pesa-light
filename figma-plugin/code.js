@@ -7,11 +7,14 @@ function freshRun() {
     mode: 'design',        // 'library' | 'design'
     autoRegister: true,    // build + register a master when no match is found
     bindVariables: false,  // Tier 3: bind matching fills to colour variables
+    bindTypography: false, // Tier 4A: bind fontSize to typography variables
     builtThisRun: {},      // key -> ComponentNode (within-run dedup)
     libraryBuilt: [],      // { key, name, variantProp, value, overrides, component }
     pendingMasters: [],    // auto-registered masters waiting to be filed
-    tokens: null,          // [{ name, value, color }]
-    varMap: null           // hex -> Variable (Tier 3)
+    tokens: null,          // [{ name, value, color?, fontSize? }]
+    varMap: null,          // hex -> Variable (Tier 3 color)
+    typographyVarMap: null,// fontSize -> Variable (Tier 4A)
+    stats: { screens: 0, frames: 0, components: 0, textNodes: 0, colorsBound: 0 }
   };
 }
 function resetRun(msg) {
@@ -20,6 +23,7 @@ function resetRun(msg) {
   RUN.mode = msg.mode === 'library' ? 'library' : 'design';
   RUN.autoRegister = o.autoRegister !== false;
   RUN.bindVariables = !!o.bindVariables;
+  RUN.bindTypography = !!o.bindTypography;
   RUN.tokens = (msg.data && msg.data.tokens) || null;
 }
 
@@ -60,13 +64,36 @@ figma.ui.onmessage = function (msg) {
     return;
   }
   if (msg.type === 'cancel') { figma.closePlugin(); return; }
+
+  if (msg.type === 'getPages') {
+    var pages = figma.root.children.map(function(page) {
+      return { id: page.id, name: page.name };
+    });
+    figma.ui.postMessage({ type: 'pages', pages: pages });
+    return;
+  }
+
+  if (msg.type === 'export') {
+    exportPages(msg.pageIds || [], msg.options || {})
+      .then(function(result) {
+        figma.ui.postMessage({ type: 'exportDone', filename: result.filename, json: result.json });
+      })
+      .catch(function(err) {
+        figma.notify('Export failed: ' + err.message, { error: true });
+        figma.ui.postMessage({ type: 'error', message: err.message });
+      });
+    return;
+  }
+
   if (msg.type !== 'import') return;
 
   resetRun(msg);
   var data = msg.data;
   // Build the colour-variable map first (when enabled) so masters in either
   // mode can bind their fills as they're created.
-  var setup = RUN.bindVariables ? ensureTokenCollection() : Promise.resolve();
+  var setup = Promise.resolve();
+  if (RUN.bindVariables) setup = setup.then(function() { return ensureTokenCollection(); });
+  if (RUN.bindTypography) setup = setup.then(function() { return ensureTypographyCollection(); });
   var promise = setup.then(function () {
     if (RUN.mode === 'library') return buildLibrary(data);
     if (data.type === 'multi-screen' && data.screens) return importMultipleScreens(data).then(finalizeDesignMasters);
@@ -79,7 +106,7 @@ figma.ui.onmessage = function (msg) {
       : 'Import complete!';
     figma.notify(note, { timeout: 3000 });
     sendRegistryCount();
-    figma.ui.postMessage({ type: 'done', mode: RUN.mode, summary: result || null });
+    figma.ui.postMessage({ type: 'done', mode: RUN.mode, summary: result || null, stats: RUN.stats });
   }).catch(function (err) {
     figma.notify('Failed: ' + err.message, { error: true });
     figma.ui.postMessage({ type: 'error', message: err.message });
@@ -92,13 +119,15 @@ function importMultipleScreens(data) {
   var chain = Promise.resolve();
   var screenCount = data.screens.length;
   for (var i = 0; i < screenCount; i++) {
-    (function (screen, x) {
+    (function (screen, x, step) {
       chain = chain.then(function () {
         return buildScreenFrame(screen, x).then(function (frame) {
           figma.currentPage.appendChild(frame);
+          RUN.stats.screens++;
+          figma.ui.postMessage({ type: 'progress', step: step, total: screenCount });
         });
       });
-    })(data.screens[i], xOffset);
+    })(data.screens[i], xOffset, i + 1);
     xOffset += (data.screens[i].width || 375) + spacing;
   }
   return chain.then(function () {
@@ -112,6 +141,7 @@ function importSingleScreen(data) {
   return buildScreenFrame(data, 0).then(function (frame) {
     figma.currentPage.appendChild(frame);
     figma.viewport.scrollAndZoomIntoView([frame]);
+    RUN.stats.screens++;
   });
 }
 
@@ -143,7 +173,9 @@ function buildScreenFrame(screenData, xPos) {
   }
 
   if (screenData.tree) {
-    return renderNode(screenData.tree, frame).then(function () {
+    return preloadFonts(screenData.tree).then(function () {
+      return renderNode(screenData.tree, frame);
+    }).then(function () {
       return frame;
     });
   }
@@ -152,6 +184,26 @@ function buildScreenFrame(screenData, xPos) {
 }
 
 var loadedFonts = {};
+
+function collectFonts(node, set) {
+  set = set || new Set();
+  if (!node) return set;
+  if (node.type === 'TEXT') {
+    var family = node.fontFamily || 'Inter';
+    var style = mapWeightToStyle(node.fontWeight || 400);
+    set.add(family + '::' + style);
+  }
+  (node.children || []).forEach(function(c) { collectFonts(c, set); });
+  return set;
+}
+function preloadFonts(nodeData) {
+  var fonts = Array.from(collectFonts(nodeData));
+  return Promise.all(fonts.map(function(key) {
+    var p = key.split('::');
+    return ensureFont(p[0], p[1]);
+  }));
+}
+
 function ensureFont(family, style) {
   var key = family + '::' + style;
   if (loadedFonts[key]) return Promise.resolve(true);
@@ -367,14 +419,17 @@ function positionAbsolute(node, nodeData, parentIsAutoLayout) {
 
 function renderChildren(container, children, hasAutoLayout, plain) {
   children = children || [];
+  var BATCH = 15;
   var chain = Promise.resolve();
-  for (var i = 0; i < children.length; i++) {
-    (function (child) {
-      chain = chain.then(function () {
-        return plain ? renderPlainNode(child, container, hasAutoLayout)
-                     : renderNode(child, container, hasAutoLayout);
+  for (var i = 0; i < children.length; i += BATCH) {
+    (function(batch) {
+      chain = chain.then(function() {
+        return Promise.all(batch.map(function(child) {
+          return plain ? renderPlainNode(child, container, hasAutoLayout)
+                       : renderNode(child, container, hasAutoLayout);
+        }));
       });
-    })(children[i]);
+    })(children.slice(i, i + BATCH));
   }
   return chain;
 }
@@ -389,6 +444,7 @@ function renderPlainFrame(nodeData, parent, parentIsAutoLayout, plain) {
   frame.y = nodeData.y || 0;
   parent.appendChild(frame);
   positionAbsolute(frame, nodeData, parentIsAutoLayout);
+  RUN.stats.frames++;
   return renderChildren(frame, nodeData.children, !!al, plain);
 }
 
@@ -418,6 +474,7 @@ function buildComponent(nodeData) {
   var al = decorateContainer(component, nodeData);
   return renderChildren(component, nodeData.children, !!al, true).then(function () {
     if (RUN.bindVariables) { try { bindFillsToVariables(component); } catch (e) { /* optional */ } }
+    if (RUN.bindTypography) { try { bindTypographyToVariables(component); } catch (e) { /* optional */ } }
     return component;
   });
 }
@@ -472,6 +529,7 @@ function placeInstance(master, nodeData, parent, parentIsAutoLayout) {
   instance.y = nodeData.y || 0;
   parent.appendChild(instance);
   positionAbsolute(instance, nodeData, parentIsAutoLayout);
+  RUN.stats.components++;
   return applyInstanceOverrides(instance, nodeData);
 }
 
@@ -680,7 +738,7 @@ function ensureTokenCollection() {
       var byName = {};
       for (var j = 0; j < existing.length; j++) byName[existing[j].name] = existing[j];
       var map = {};
-      RUN.tokens.forEach(function (tok) {
+      RUN.tokens.filter(function(tok) { return !!tok.color; }).forEach(function (tok) {
         var varName = tok.name.replace(/^--/, '').replace(/-/g, '/');
         var v = byName[varName];
         if (!v) {
@@ -692,6 +750,39 @@ function ensureTokenCollection() {
       RUN.varMap = map;
     });
   }).catch(function () { /* variables unavailable — skip Tier 3 */ });
+}
+
+function ensureTypographyCollection() {
+  if (!RUN.tokens || !RUN.tokens.length) return Promise.resolve();
+  var sizeToks = RUN.tokens.filter(function(t) { return t.fontSize != null; });
+  if (!sizeToks.length) return Promise.resolve();
+  return figma.variables.getLocalVariableCollectionsAsync().then(function(cols) {
+    var col = cols.find(function(c) { return c.name === 'Typography'; });
+    if (!col) col = figma.variables.createVariableCollection('Typography');
+    var modeId = col.modes[0].modeId;
+    return figma.variables.getLocalVariablesAsync('FLOAT').then(function(existing) {
+      var byName = {};
+      existing.forEach(function(v) { byName[v.name] = v; });
+      var map = {};
+      sizeToks.forEach(function(tok) {
+        var varName = tok.name.replace(/^--/, '').replace(/-/g, '/');
+        var v = byName[varName] || figma.variables.createVariable(varName, col, 'FLOAT');
+        v.setValueForMode(modeId, tok.fontSize);
+        map[tok.fontSize] = v;
+      });
+      RUN.typographyVarMap = map;
+    });
+  }).catch(function() {});
+}
+
+function bindTypographyToVariables(root) {
+  if (!RUN.typographyVarMap) return;
+  var nodes = root.findAll ? root.findAll(function(n) { return n.type === 'TEXT'; }) : [];
+  nodes.forEach(function(node) {
+    var v = RUN.typographyVarMap[node.fontSize];
+    if (!v) return;
+    try { node.setBoundVariable('fontSize', v); } catch(e) {}
+  });
 }
 
 // Replace solid fills whose colour matches a token with a variable-bound paint.
@@ -711,12 +802,13 @@ function bindFillsToVariables(root) {
       if (!v) continue;
       try { next[f] = figma.variables.setBoundVariableForPaint(next[f], 'color', v); changed = true; } catch (e) { /* skip */ }
     }
-    if (changed) node.fills = next;
+    if (changed) { node.fills = next; RUN.stats.colorsBound++; }
   }
 }
 
 function renderTextNode(nodeData, parent) {
   if (!nodeData.text) return Promise.resolve();
+  RUN.stats.textNodes++;
 
   var family = nodeData.fontFamily || 'Inter';
   var weight = nodeData.fontWeight || 400;
@@ -755,4 +847,394 @@ function renderTextNode(nodeData, parent) {
 
     parent.appendChild(text);
   });
+}
+
+// ── Export: Figma → JSON ──────────────────────────────────────────────────────
+
+function exportPages(pageIds, options) {
+  var screens = [];
+  var chain = Promise.resolve();
+
+  figma.root.children.forEach(function(page) {
+    if (pageIds.indexOf(page.id) === -1) return;
+    chain = chain.then(function() {
+      return page.loadAsync().then(function() {
+        var innerChain = Promise.resolve();
+        page.children.forEach(function(node) {
+          if (node.type !== 'FRAME' && node.type !== 'SECTION' && node.type !== 'COMPONENT') return;
+          if (node.visible === false) return;
+          innerChain = innerChain.then(function() {
+            return serializeFrame(node, page.name, options).then(function(screenData) {
+              screens.push(screenData);
+            });
+          });
+        });
+        return innerChain;
+      });
+    });
+  });
+
+  return chain.then(function() {
+    // Walk a serialized tree, calling fn(node) on every node with prototypeLinks
+    function walkLinks(node, fn) {
+      if (!node) return;
+      if (node.prototypeLinks && node.prototypeLinks.length) fn(node.prototypeLinks);
+      if (node.children) node.children.forEach(function(c) { walkLinks(c, fn); });
+    }
+    // Remove _destId from every link across the entire serialized tree
+    function cleanLinks(node) {
+      walkLinks(node, function(links) { links.forEach(function(lk) { delete lk._destId; }); });
+    }
+
+    // Post-pass: mark frames that are OVERLAY destinations as modals
+    if (options.modals) {
+      var overlayDests = {};
+      screens.forEach(function(s) {
+        walkLinks(s.tree, function(links) {
+          links.forEach(function(lk) {
+            if (lk.navigation === 'OVERLAY' && lk._destId) overlayDests[lk._destId] = true;
+          });
+        });
+      });
+      screens.forEach(function(s) {
+        if (overlayDests[s._nodeId] && s.tree) s.tree.modal = true;
+      });
+    }
+
+    // Build linkIndex: destinationId → frame name
+    var linkIndex = {};
+    if (options.links) {
+      var idToName = {};
+      screens.forEach(function(s) { if (s._nodeId) idToName[s._nodeId] = s.name; });
+      screens.forEach(function(s) {
+        walkLinks(s.tree, function(links) {
+          links.forEach(function(lk) {
+            if (lk._destId && idToName[lk._destId]) linkIndex[lk._destId] = idToName[lk._destId];
+          });
+        });
+      });
+    }
+
+    // Strip internal _destId fields from every serialized link
+    screens.forEach(function(s) { cleanLinks(s.tree); });
+
+    // Clean internal tracking fields on screen objects
+    screens.forEach(function(s) { delete s._nodeId; });
+
+    var output = {
+      version: '1.0',
+      exportedFrom: 'figma-plugin',
+      type: 'multi-screen',
+      screens: screens
+    };
+    if (options.links && Object.keys(linkIndex).length) output.linkIndex = linkIndex;
+
+    var firstName = screens.length
+      ? screens[0].name.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
+      : 'export';
+    return { filename: firstName + '.figma-export.json', json: JSON.stringify(output, null, 2) };
+  });
+}
+
+function serializeFrame(frame, pageName, options) {
+  return serializeNode(frame, options).then(function(tree) {
+    return {
+      _nodeId: frame.id,
+      name: frame.name,
+      pageName: pageName,
+      width: Math.round(frame.width),
+      height: Math.round(frame.height),
+      tree: tree
+    };
+  });
+}
+
+function serializeNode(node, options) {
+  if (!node || node.visible === false) return Promise.resolve(null);
+
+  if (node.type === 'TEXT') return Promise.resolve(serializeTextNodeExport(node));
+
+  // Skip masters — they belong on the Components page, not in screen exports
+  if (node.type === 'COMPONENT_SET') return Promise.resolve(null);
+
+  var out = {
+    type: node.type === 'GROUP' || node.type === 'SECTION' ? 'FRAME' : node.type,
+    name: node.name,
+    x: Math.round(node.x),
+    y: Math.round(node.y),
+    w: Math.round(node.width),
+    h: Math.round(node.height)
+  };
+
+  return serializeFillsExport(node).then(function(fillResult) {
+    if (fillResult.fills && fillResult.fills.length) out.fills = fillResult.fills;
+    if (fillResult.imageData) out.imageData = fillResult.imageData;
+
+    var strokes = serializeStrokesExport(node);
+    if (strokes.length) out.strokes = strokes;
+
+    var effects = serializeEffectsExport(node);
+    if (effects.length) out.effects = effects;
+
+    var cr = serializeCornerRadiusExport(node);
+    if (cr !== null) out.cornerRadius = cr;
+
+    if (node.opacity !== undefined && node.opacity < 0.999) out.opacity = node.opacity;
+    if (node.clipsContent) out.clipsContent = true;
+    if (node.layoutPositioning === 'ABSOLUTE') out.absolute = true;
+
+    // Auto layout
+    if (node.layoutMode && node.layoutMode !== 'NONE') {
+      out.autoLayout = {
+        direction: node.layoutMode,
+        itemSpacing: node.itemSpacing || 0,
+        paddingTop: node.paddingTop || 0,
+        paddingRight: node.paddingRight || 0,
+        paddingBottom: node.paddingBottom || 0,
+        paddingLeft: node.paddingLeft || 0,
+        primaryAlign: node.primaryAxisAlignItems || 'MIN',
+        counterAlign: node.counterAxisAlignItems || 'MIN',
+        wrap: node.layoutWrap === 'WRAP'
+      };
+    }
+
+    // Component instance → capture ref + overrides, no children
+    if (node.type === 'INSTANCE') {
+      var mainComp = null;
+      try { mainComp = node.mainComponent; } catch (e) { /* detached instance */ }
+      if (mainComp) {
+        var isInSet = mainComp.parent && mainComp.parent.type === 'COMPONENT_SET';
+        var stableKey = isInSet
+          ? mainComp.parent.name + '/' + mainComp.name
+          : mainComp.name;
+        out.component = {
+          key: stableKey,
+          name: isInSet ? mainComp.parent.name : mainComp.name,
+          variantProp: null,
+          value: null
+        };
+        if (isInSet) {
+          // Component name format: "Style=Primary" or "Style=Primary, Size=Small"
+          var firstPair = mainComp.name.split(',')[0].split('=');
+          if (firstPair.length === 2) {
+            out.component.variantProp = firstPair[0].trim();
+            out.component.value = firstPair[1].trim();
+          }
+        }
+        // Collect text overrides
+        var textChild = null;
+        try { textChild = node.findOne(function(n) { return n.type === 'TEXT'; }); } catch (e) {}
+        if (textChild && textChild.characters) {
+          out.overrides = { label: textChild.characters };
+        }
+      }
+      // Modal check by name convention
+      if (options.modals && isModalByName(node)) out.modal = true;
+      // Prototype links on instances (rare but possible)
+      if (options.links) {
+        var iLinks = serializeReactions(node);
+        if (iLinks.length) out.prototypeLinks = iLinks;
+      }
+      return out;
+    }
+
+    // Modal detection (naming convention)
+    if (options.modals && isModalByName(node)) out.modal = true;
+
+    // Prototype links
+    if (options.links) {
+      var links = serializeReactions(node);
+      if (links.length) out.prototypeLinks = links;
+    }
+
+    // Recurse into children (FRAME, GROUP, SECTION, COMPONENT treated as container)
+    var rawChildren = node.children || [];
+    var visibleChildren = rawChildren.filter(function(c) { return c.visible !== false; });
+    if (!visibleChildren.length) return out;
+
+    var childChain = Promise.resolve();
+    var serializedChildren = [];
+    visibleChildren.forEach(function(child) {
+      childChain = childChain.then(function() {
+        return serializeNode(child, options).then(function(childData) {
+          if (childData) serializedChildren.push(childData);
+        });
+      });
+    });
+    return childChain.then(function() {
+      if (serializedChildren.length) out.children = serializedChildren;
+      return out;
+    });
+  });
+}
+
+// Async: serialize fills, fetching image bytes when needed
+function serializeFillsExport(node) {
+  var fills = node.fills;
+  if (!fills || fills === figma.mixed || !fills.length) {
+    return Promise.resolve({ fills: [], imageData: null });
+  }
+
+  var outFills = [];
+  var imagePromise = Promise.resolve(null);
+
+  fills.forEach(function(f) {
+    if (!f.visible && f.visible !== undefined) return;
+    if (f.type === 'SOLID') {
+      outFills.push({
+        type: 'SOLID',
+        color: {
+          r: f.color.r,
+          g: f.color.g,
+          b: f.color.b,
+          a: f.opacity !== undefined ? f.opacity : 1
+        }
+      });
+    } else if (f.type === 'GRADIENT_LINEAR' && f.gradientStops) {
+      outFills.push({
+        type: 'GRADIENT_LINEAR',
+        gradientHandlePositions: f.gradientHandlePositions,
+        gradientStops: f.gradientStops.map(function(s) {
+          return {
+            position: s.position,
+            color: { r: s.color.r, g: s.color.g, b: s.color.b, a: s.color.a }
+          };
+        })
+      });
+    } else if (f.type === 'IMAGE' && f.imageHash) {
+      imagePromise = figma.getImageByHash(f.imageHash).getBytesAsync().then(function(bytes) {
+        var binary = '';
+        var chunk = 8192;
+        for (var i = 0; i < bytes.length; i += chunk) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+        }
+        return 'data:image/png;base64,' + btoa(binary);
+      }).catch(function() { return null; });
+    }
+  });
+
+  return imagePromise.then(function(imageData) {
+    return { fills: outFills, imageData: imageData };
+  });
+}
+
+function serializeStrokesExport(node) {
+  var out = [];
+  var strokes = node.strokes;
+  if (!strokes || strokes === figma.mixed) return out;
+  strokes.forEach(function(s) {
+    if (s.type === 'SOLID') {
+      out.push({
+        color: { r: s.color.r, g: s.color.g, b: s.color.b, a: s.opacity !== undefined ? s.opacity : 1 },
+        weight: node.strokeWeight || 1
+      });
+    }
+  });
+  return out;
+}
+
+function serializeEffectsExport(node) {
+  var out = [];
+  var effects = node.effects;
+  if (!effects) return out;
+  effects.forEach(function(e) {
+    if (e.visible === false) return;
+    if (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') {
+      out.push({
+        type: e.type,
+        color: { r: e.color.r, g: e.color.g, b: e.color.b, a: e.color.a },
+        offset: { x: e.offset.x, y: e.offset.y },
+        radius: e.radius || 0,
+        spread: e.spread || 0
+      });
+    }
+  });
+  return out;
+}
+
+function serializeCornerRadiusExport(node) {
+  if (node.cornerRadius === undefined) return null;
+  if (node.cornerRadius === figma.mixed) {
+    var tl = node.topLeftRadius || 0;
+    var tr = node.topRightRadius || 0;
+    var br = node.bottomRightRadius || 0;
+    var bl = node.bottomLeftRadius || 0;
+    if (!tl && !tr && !br && !bl) return null;
+    return [tl, tr, br, bl];
+  }
+  return node.cornerRadius > 0 ? node.cornerRadius : null;
+}
+
+// Reverse of mapWeightToStyle: Figma style name → numeric weight
+var STYLE_TO_WEIGHT = {
+  'Thin': 100, 'ExtraLight': 200, 'Light': 300, 'Regular': 400,
+  'Medium': 500, 'SemiBold': 600, 'Bold': 700, 'ExtraBold': 800, 'Black': 900
+};
+
+function serializeTextNodeExport(node) {
+  var family = 'Inter';
+  var weight = 400;
+  if (node.fontName && node.fontName !== figma.mixed) {
+    family = node.fontName.family;
+    weight = STYLE_TO_WEIGHT[node.fontName.style] || 400;
+  }
+
+  var color = null;
+  var fills = node.fills;
+  if (fills && fills !== figma.mixed && fills.length) {
+    var f = fills[0];
+    if (f.type === 'SOLID') {
+      color = { r: f.color.r, g: f.color.g, b: f.color.b, a: f.opacity !== undefined ? f.opacity : 1 };
+    }
+  }
+
+  var out = {
+    type: 'TEXT',
+    name: node.name,
+    text: node.characters || '',
+    fontFamily: family,
+    fontWeight: weight,
+    fontSize: node.fontSize !== figma.mixed ? node.fontSize : 14,
+    x: Math.round(node.x),
+    y: Math.round(node.y),
+    w: Math.round(node.width),
+    h: Math.round(node.height)
+  };
+  if (color) out.color = color;
+  if (node.letterSpacing !== figma.mixed && node.letterSpacing && node.letterSpacing.unit === 'PIXELS') {
+    out.letterSpacing = node.letterSpacing.value;
+  }
+  if (node.lineHeight !== figma.mixed && node.lineHeight && node.lineHeight.unit === 'PIXELS') {
+    out.lineHeight = node.lineHeight.value;
+  }
+  if (node.textAlignHorizontal) out.textAlign = node.textAlignHorizontal;
+  return out;
+}
+
+function isModalByName(node) {
+  var prefixes = ['modal', 'popup', 'overlay', 'dialog', 'sheet', 'drawer', 'bottom sheet'];
+  var lower = (node.name || '').toLowerCase();
+  for (var i = 0; i < prefixes.length; i++) {
+    if (lower.indexOf(prefixes[i]) === 0) return true;
+    // also catch "Name - Modal", "Name / overlay", etc.
+    if (lower.indexOf(': ' + prefixes[i]) !== -1 || lower.indexOf('- ' + prefixes[i]) !== -1) return true;
+  }
+  return false;
+}
+
+function serializeReactions(node) {
+  var out = [];
+  var reactions = node.reactions;
+  if (!reactions || !reactions.length) return out;
+  reactions.forEach(function(r) {
+    if (r.action && r.action.type === 'NODE' && r.action.destinationId) {
+      out.push({
+        trigger: r.trigger ? r.trigger.type : 'ON_CLICK',
+        _destId: r.action.destinationId,     // internal; removed after linkIndex build
+        destinationId: r.action.destinationId,
+        navigation: r.action.navigation || 'NAVIGATE'
+      });
+    }
+  });
+  return out;
 }

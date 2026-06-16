@@ -8,7 +8,7 @@
     "ai:server": "node server.js",
     "ai:preview": "npx serve ai-preview.html --port 3000",
     "dev": "npx vite",
-    "build": "cp index.html 404.html"
+    "build": "cp index.html 404.html",
     "start": "node server.js"
   },
   "dependencies": {

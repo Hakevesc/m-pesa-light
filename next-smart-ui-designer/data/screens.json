@@ -1,0 +1,22 @@
+{
+  "screens": [
+    { "id": "lehulum-home", "title": "Lehulum Home", "group": "Home", "path": "/presentation?screen=lehulum-home", "icon": "home", "status": "legacy-html", "sourceFile": "Lehulum Home.html" },
+    { "id": "first-visit", "title": "First Visit", "group": "Home", "path": "/presentation?screen=first-visit", "icon": "sparkles", "status": "legacy-html", "sourceFile": "first-visit-1.html" },
+    { "id": "my-qr-code", "title": "My QR Code", "group": "Home", "path": "/presentation?screen=my-qr-code", "icon": "qr-code", "status": "legacy-html", "sourceFile": "My QR Code.html" },
+    { "id": "scan-qr", "title": "Scan QR", "group": "Home", "path": "/presentation?screen=scan-qr", "icon": "scan-line", "status": "legacy-html", "sourceFile": "Scan QR.html" },
+    { "id": "verify-receipt", "title": "Verify Receipt", "group": "Home", "path": "/presentation?screen=verify-receipt", "icon": "shield-check", "status": "legacy-html", "sourceFile": "Verify Receipt.html" },
+    { "id": "send-money-menu", "title": "Send Money Menu", "group": "Transactions", "path": "/presentation?screen=send-money-menu", "icon": "send", "status": "legacy-html", "sourceFile": "Send Money Menu.html" },
+    { "id": "transfer-select-bank", "title": "Select Bank", "group": "Transactions", "path": "/presentation?screen=transfer-select-bank", "icon": "building-2", "status": "legacy-html", "sourceFile": "Transfer_Select Bank.html" },
+    { "id": "transfer-enter-amount", "title": "Enter Amount", "group": "Transactions", "path": "/presentation?screen=transfer-enter-amount", "icon": "coins", "status": "legacy-html", "sourceFile": "Transfer_Enter Amount.html" },
+    { "id": "transfer-enter-pin", "title": "Enter PIN", "group": "Transactions", "path": "/presentation?screen=transfer-enter-pin", "icon": "lock", "status": "legacy-html", "sourceFile": "Transfer_Enter PIN.html" },
+    { "id": "transaction-confirmation", "title": "Transaction Confirmation", "group": "Transactions", "path": "/presentation?screen=transaction-confirmation", "icon": "circle-check", "status": "legacy-html", "sourceFile": "Transaction Confirmation.html" },
+    { "id": "pay-bill", "title": "Pay Bill", "group": "Bill Payment", "path": "/presentation?screen=pay-bill", "icon": "receipt", "status": "legacy-html", "sourceFile": "Pay Bill.html" },
+    { "id": "pay-merchant", "title": "Pay Merchant", "group": "Merchant Payment", "path": "/presentation?screen=pay-merchant", "icon": "scan", "status": "legacy-html", "sourceFile": "Pay Merchant.html" },
+    { "id": "account", "title": "Account", "group": "Account", "path": "/presentation?screen=account", "icon": "user", "status": "legacy-html", "sourceFile": "Account.html" },
+    { "id": "account-detail", "title": "Account Detail", "group": "Account", "path": "/presentation?screen=account-detail", "icon": "user-circle", "status": "legacy-html", "sourceFile": "Account Detail.html" },
+    { "id": "notification-center", "title": "Notification Center", "group": "Account", "path": "/presentation?screen=notification-center", "icon": "bell", "status": "legacy-html", "sourceFile": "Notification Center.html" },
+    { "id": "otp-verification", "title": "OTP Verification", "group": "Auth", "path": "/presentation?screen=otp-verification", "icon": "smartphone", "status": "legacy-html", "sourceFile": "OTP Verification.html" },
+    { "id": "create-pin", "title": "Create PIN", "group": "Auth", "path": "/presentation?screen=create-pin", "icon": "lock", "status": "legacy-html", "sourceFile": "Create PIN.html" },
+    { "id": "forgot-pin", "title": "Forgot PIN", "group": "Auth", "path": "/presentation?screen=forgot-pin", "icon": "help-circle", "status": "legacy-html", "sourceFile": "Forgot-PIN.html" }
+  ]
+}

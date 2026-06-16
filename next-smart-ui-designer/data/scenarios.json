@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "id": "update-notice",
+      "name": "Update Notice Popup",
+      "description": "Automatic update notification modal with feature list.",
+      "targetScreens": ["lehulum-home", "account", "notification-center"],
+      "type": "modal",
+      "tone": "success"
+    },
+    {
+      "id": "update-tooltip",
+      "name": "Update Notice Tooltip",
+      "description": "Dark tooltip with update version and install hint.",
+      "targetScreens": ["lehulum-home", "account"],
+      "type": "tooltip",
+      "tone": "info"
+    },
+    {
+      "id": "fayda-activation",
+      "name": "Fayda Activation",
+      "description": "Optional Fayda ID linking modal.",
+      "targetScreens": ["lehulum-home", "account"],
+      "type": "modal",
+      "tone": "info"
+    },
+    {
+      "id": "fayda-forced",
+      "name": "Fayda Activation Forced",
+      "description": "Required Fayda ID activation modal.",
+      "targetScreens": ["account", "send-money-menu"],
+      "type": "modal",
+      "tone": "warning"
+    },
+    {
+      "id": "signup-pin",
+      "name": "SignUp PIN Popup",
+      "description": "PIN creation popup for signup flow.",
+      "targetScreens": ["create-pin", "otp-verification"],
+      "type": "modal",
+      "tone": "primary"
+    },
+    {
+      "id": "enable-fingerprint",
+      "name": "Enable Fingerprint",
+      "description": "Biometric enable prompt.",
+      "targetScreens": ["account", "forgot-pin"],
+      "type": "modal",
+      "tone": "success"
+    },
+    {
+      "id": "transaction-success",
+      "name": "Transaction Success",
+      "description": "Transaction confirmation popup.",
+      "targetScreens": ["transaction-confirmation", "transfer-enter-pin"],
+      "type": "modal",
+      "tone": "success"
+    },
+    {
+      "id": "toast-success",
+      "name": "Toast Success",
+      "description": "Success toast for save actions.",
+      "targetScreens": ["account", "add-favourites"],
+      "type": "toast",
+      "tone": "success"
+    },
+    {
+      "id": "toast-error",
+      "name": "Toast Error",
+      "description": "Error toast for failed actions.",
+      "targetScreens": ["account", "transaction-confirmation"],
+      "type": "toast",
+      "tone": "error"
+    },
+    {
+      "id": "empty-state",
+      "name": "Empty State",
+      "description": "Empty list state for notifications, favourites or statements.",
+      "targetScreens": ["notification-center", "account"],
+      "type": "state",
+      "tone": "neutral"
+    },
+    {
+      "id": "loading-state",
+      "name": "Loading State",
+      "description": "Loading placeholder for network actions.",
+      "targetScreens": ["lehulum-home", "transaction-confirmation"],
+      "type": "state",
+      "tone": "neutral"
+    },
+    {
+      "id": "validation-error",
+      "name": "Validation Error",
+      "description": "Form validation error state.",
+      "targetScreens": ["transfer-enter-amount", "otp-verification", "create-pin"],
+      "type": "state",
+      "tone": "error"
+    },
+    {
+      "id": "network-error",
+      "name": "Network Error",
+      "description": "Network failure message.",
+      "targetScreens": ["lehulum-home", "transaction-confirmation"],
+      "type": "toast",
+      "tone": "error"
+    },
+    {
+      "id": "pin-locked",
+      "name": "PIN Locked",
+      "description": "PIN locked warning state.",
+      "targetScreens": ["forgot-pin", "create-pin"],
+      "type": "modal",
+      "tone": "error"
+    },
+    {
+      "id": "low-balance",
+      "name": "Low Balance",
+      "description": "Low balance warning state.",
+      "targetScreens": ["transfer-enter-amount", "pay-bill", "pay-merchant"],
+      "type": "modal",
+      "tone": "warning"
+    }
+  ]
+}

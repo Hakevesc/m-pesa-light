@@ -26,9 +26,19 @@
   }
 
   function parseGradient(bg) {
-    var m = bg.match(/linear-gradient\(([^)]+)\)/);
-    if (!m) return null;
-    var parts = m[1].split(/,(?![^(]*\))/);
+    // Extract gradient content using paren-depth tracking so rgb(...) stops
+    // don't prematurely close the match (the old [^)]+ regex broke here).
+    var start = bg.indexOf('linear-gradient(');
+    if (start === -1) return null;
+    var ci = start + 'linear-gradient('.length;
+    var depth = 1, content = '';
+    for (var k = ci; k < bg.length; k++) {
+      if (bg[k] === '(') depth++;
+      else if (bg[k] === ')') { depth--; if (depth === 0) break; }
+      content += bg[k];
+    }
+    if (!content) return null;
+    var parts = content.split(/,(?![^(]*\))/);
     var angleDeg = 180;
     var colorStops = parts;
     var angleMatch = parts[0].trim().match(/^([\d.]+)deg$/);
@@ -120,10 +130,11 @@
     return null;
   }
 
-  // Visible text label (icon glyphs use ::before content, so textContent skips
-  // them) — applied as the editable Label override on an instance.
+  // Visible text label stripped of icon/aria elements so it doesn't duplicate.
   function detectLabel(el) {
-    var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    var clone = el.cloneNode(true);
+    clone.querySelectorAll('svg, i, [aria-hidden="true"], .sr-only, .visually-hidden').forEach(function (n) { n.remove(); });
+    var t = (clone.textContent || '').replace(/\s+/g, ' ').trim();
     return t || null;
   }
 
@@ -174,7 +185,15 @@
             if (!prop || prop.indexOf('--') !== 0 || seen[prop]) continue;
             var val = rule.style.getPropertyValue(prop).trim();
             var c = parseCssColor(val);
-            if (c) { tokens.push({ name: prop, value: val, color: c }); seen[prop] = 1; }
+            if (c) { tokens.push({ name: prop, value: val, color: c }); seen[prop] = 1; continue; }
+            // Also collect numeric size tokens (px/rem) for Typography Variables
+            var numMatch = val.match(/^(\d+(?:\.\d+)?)(px|rem|em)?$/);
+            if (numMatch) {
+              var num = parseFloat(numMatch[1]);
+              if (numMatch[2] === 'rem') num = num * 16;
+              tokens.push({ name: prop, value: val, fontSize: num });
+              seen[prop] = 1;
+            }
           }
         }
       }
@@ -320,6 +339,62 @@
     return Promise.all(jobs).then(function () { return map; });
   }
 
+  // Pre-rasterize <img> elements: SVG files via fetch+blob-URL (avoids canvas
+  // taint), PNG/JPG via canvas drawImage. Results merged into svgMap so
+  // serializeElement can use the same lookup for both inline SVGs and <img>.
+  function rasterizeImgSvgs(root) {
+    var imgs = root.querySelectorAll('img');
+    var map = new Map();
+    var jobs = [];
+    imgs.forEach(function (img) {
+      var src = img.getAttribute('src') || '';
+      if (!src) return;
+      var rect = img.getBoundingClientRect();
+      if (rect.width < 1 || rect.height < 1) return;
+      var w = Math.max(2, Math.round(rect.width * 2));
+      var h = Math.max(2, Math.round(rect.height * 2));
+
+      if (src.toLowerCase().indexOf('.svg') !== -1) {
+        jobs.push(
+          fetch(img.src).then(function (r) { return r.text(); }).then(function (svgText) {
+            var parser = new DOMParser();
+            var svgEl = parser.parseFromString(svgText, 'image/svg+xml').documentElement;
+            svgEl.setAttribute('width', rect.width);
+            svgEl.setAttribute('height', rect.height);
+            if (!svgEl.getAttribute('xmlns')) svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            var xml = new XMLSerializer().serializeToString(svgEl);
+            return new Promise(function (resolve) {
+              var i2 = new Image();
+              i2.onload = function () {
+                try {
+                  var c = document.createElement('canvas');
+                  c.width = w; c.height = h;
+                  c.getContext('2d').drawImage(i2, 0, 0, w, h);
+                  resolve(c.toDataURL('image/png'));
+                } catch (e) { resolve(null); }
+              };
+              i2.onerror = function () { resolve(null); };
+              i2.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+            });
+          }).then(function (data) {
+            if (data) map.set(img, data);
+          }).catch(function () {})
+        );
+      } else {
+        jobs.push(new Promise(function (resolve) {
+          try {
+            var c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            map.set(img, c.toDataURL('image/png'));
+          } catch (e) {}
+          resolve();
+        }));
+      }
+    });
+    return Promise.all(jobs).then(function () { return map; });
+  }
+
   // ── Text measurement: exact glyph boxes via DOM ranges ──
   function measureTextNode(textNode, elRect, style) {
     var raw = textNode.textContent;
@@ -355,7 +430,17 @@
 
     var style = getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return null;
-    if (parseFloat(style.opacity) === 0) return null;
+
+    // Skip accessibility-only helpers — they add duplicate text nodes in Figma.
+    if (el.getAttribute('aria-hidden') === 'true') return null;
+    var elCls = (el.className && typeof el.className === 'string') ? el.className : '';
+    if (/\bsr-only\b|\bvisually-hidden\b|\bscreen-reader\b/.test(elCls)) return null;
+
+    // data-figma-slot="true" forces export even when opacity:0 (e.g. banner
+    // slides, QR popup items) — clamped to 0.05 so the layer is findable in Figma.
+    var isSlot = el.getAttribute('data-figma-slot') === 'true';
+    var computedOpacity = parseFloat(style.opacity);
+    if (!isSlot && computedOpacity === 0) return null;
 
     var tag = el.tagName.toLowerCase();
     var cls = el.className && typeof el.className === 'string' ? el.className.split(/\s+/)[0] : '';
@@ -377,7 +462,7 @@
         parseFloat(style.borderBottomRightRadius) || 0,
         parseFloat(style.borderBottomLeftRadius) || 0
       ],
-      opacity: parseFloat(style.opacity),
+      opacity: isSlot ? Math.max(0.05, computedOpacity) : computedOpacity,
       clipsContent: style.overflow === 'hidden' || style.overflow === 'clip' ||
                      style.overflowX === 'hidden' || style.overflowY === 'hidden',
       // flagged so the plugin can pin this child when its parent is auto layout
@@ -439,10 +524,11 @@
       return node;
     }
 
-    // <img> → rasterized
+    // <img> → use pre-rasterized data (handles SVG + cross-origin),
+    //          fall back to direct canvas for same-origin raster images.
     if (tag === 'img') {
-      node.name = 'image';
-      var imgPng = imgToPng(el, rect);
+      node.name = el.alt || (el.getAttribute('src') || 'image').split('/').pop().replace(/\.[^.]+$/, '') || 'image';
+      var imgPng = (svgMap && svgMap.get(el)) || imgToPng(el, rect);
       if (imgPng) node.imageData = imgPng;
       node.autoLayout = null;
       return node;
@@ -544,7 +630,10 @@
       var pageTitle = document.title || 'M-PESA Screen';
       var containerRect = phone.getBoundingClientRect();
 
-      var svgMap = await rasterizeVisibleSvgs(phone);
+      var svgRaster = await rasterizeVisibleSvgs(phone);
+      var imgRaster = await rasterizeImgSvgs(phone);
+      imgRaster.forEach(function (v, k) { svgRaster.set(k, v); });
+      var svgMap = svgRaster;
       var tree = serializeRoot(phone, containerRect, svgMap);
 
       var h2c = null;
@@ -608,7 +697,10 @@
         var screenName = screenDisplayName(phone, fallbackName);
         var containerRect = phone.getBoundingClientRect();
 
-        var svgMap = await rasterizeVisibleSvgs(phone);
+        var svgRaster = await rasterizeVisibleSvgs(phone);
+        var imgRaster = await rasterizeImgSvgs(phone);
+        imgRaster.forEach(function (v, k) { svgRaster.set(k, v); });
+        var svgMap = svgRaster;
         var tree = serializeRoot(phone, containerRect, svgMap);
         var screenshot = await captureScreenshot(h2c, phone);
 
@@ -646,6 +738,149 @@
         screens.forEach(function (s) { s.classList.remove('active'); });
         originalActive.classList.add('active');
       }
+      unfreezeAnimations(noanim);
+    }
+  }
+
+  // ── Export with linked screens ──────────────────────────────────────────────
+
+  function detectLinkedScreens() {
+    var links = new Set();
+    document.querySelectorAll('[onclick]').forEach(function (el) {
+      var oc = el.getAttribute('onclick') || '';
+      var matches = oc.match(/['"]([^'"]+\.html[^'"]*)['"]/g);
+      if (matches) matches.forEach(function (m) {
+        var u = m.replace(/^['"]|['"]$/g, '');
+        if (u && u.indexOf('.html') !== -1) links.add(u);
+      });
+    });
+    document.querySelectorAll('a[href$=".html"]').forEach(function (a) {
+      links.add(a.getAttribute('href'));
+    });
+    return Array.from(links).map(function (href) {
+      return { href: href, label: decodeURIComponent(href.split('/').pop().replace(/\.html$/, '').replace(/[-_]/g, ' ')) };
+    });
+  }
+
+  function showLinkedScreenSelector(detected) {
+    return new Promise(function (resolve) {
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Inter,system-ui,sans-serif;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;padding:24px;min-width:280px;max-width:380px;max-height:80vh;display:flex;flex-direction:column;gap:0;';
+      var items = detected.map(function (l, i) {
+        return '<label style="display:flex;gap:8px;align-items:center;padding:8px 0;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;">' +
+          '<input type="checkbox" checked data-idx="' + i + '" style="width:15px;height:15px;accent-color:#a259ff;flex-shrink:0;">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + l.label + '</span></label>';
+      }).join('');
+      box.innerHTML = '<h3 style="font-size:15px;font-weight:700;margin:0 0 4px;">Linked Screens</h3>' +
+        '<p style="font-size:12px;color:#888;margin:0 0 12px;">Select screens to export together with this one</p>' +
+        '<div style="overflow-y:auto;flex:1;margin:0 -4px;padding:0 4px;">' + items + '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:16px;flex-shrink:0;">' +
+          '<button id="lsel-cancel" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-weight:500;">Cancel</button>' +
+          '<button id="lsel-confirm" style="flex:1;padding:10px;border:none;border-radius:8px;background:#a259ff;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Export</button>' +
+        '</div>';
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      document.getElementById('lsel-cancel').onclick = function () { document.body.removeChild(overlay); resolve(null); };
+      document.getElementById('lsel-confirm').onclick = function () {
+        var result = Array.prototype.map.call(
+          box.querySelectorAll('input[type="checkbox"]:checked'),
+          function (cb) { return detected[+cb.dataset.idx]; }
+        );
+        document.body.removeChild(overlay);
+        resolve(result);
+      };
+    });
+  }
+
+  function fetchLinkedScreen(linkInfo) {
+    return new Promise(function (resolve) {
+      var iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:390px;height:844px;opacity:0;pointer-events:none;border:none;';
+      iframe.src = linkInfo.href;
+      iframe.onload = function () {
+        setTimeout(function () {
+          try {
+            var doc = iframe.contentDocument;
+            if (!doc) { document.body.removeChild(iframe); resolve(null); return; }
+            var phone = doc.querySelector('.phone, .ph, .phone-frame');
+            if (!phone) { document.body.removeChild(iframe); resolve(null); return; }
+            var rect = phone.getBoundingClientRect();
+            var noanim = doc.createElement('style');
+            noanim.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+            doc.head.appendChild(noanim);
+            var tree = serializeRoot(phone, rect, null);
+            document.body.removeChild(iframe);
+            resolve({ name: linkInfo.label, width: Math.round(rect.width), height: Math.round(rect.height), tree: tree });
+          } catch (e) {
+            try { document.body.removeChild(iframe); } catch (e2) {}
+            resolve(null);
+          }
+        }, 900);
+      };
+      iframe.onerror = function () { try { document.body.removeChild(iframe); } catch (e) {} resolve(null); };
+      document.body.appendChild(iframe);
+    });
+  }
+
+  async function exportLinkedScreens() {
+    var detected = detectLinkedScreens();
+    if (!detected.length) {
+      alert('No linked screens (.html navigation) found on this page.');
+      return;
+    }
+    var selected = await showLinkedScreenSelector(detected);
+    if (!selected || !selected.length) { resetButton(0); return; }
+
+    setButtonState('<i class="ti ti-loader-2 figma-spin" aria-hidden="true"></i> Exporting linked…', false);
+    var noanim = freezeAnimations();
+    try {
+      var allExports = [];
+      var phone = getActivePhone();
+      if (!phone) throw new Error('No .phone element found');
+      var containerRect = phone.getBoundingClientRect();
+      var svgRaster = await rasterizeVisibleSvgs(phone);
+      var imgRaster = await rasterizeImgSvgs(phone);
+      imgRaster.forEach(function (v, k) { svgRaster.set(k, v); });
+      var tree = serializeRoot(phone, containerRect, svgRaster);
+      allExports.push({
+        name: screenDisplayName(phone, document.title),
+        width: Math.round(containerRect.width),
+        height: Math.round(containerRect.height),
+        tree: tree
+      });
+
+      for (var i = 0; i < selected.length; i++) {
+        setButtonState('<i class="ti ti-loader-2 figma-spin" aria-hidden="true"></i> ' + (i + 2) + '/' + (selected.length + 1) + '…', false);
+        var screenData = await fetchLinkedScreen(selected[i]);
+        if (screenData) allExports.push(screenData);
+      }
+
+      var h2c = null;
+      try { h2c = await loadHtml2Canvas(); } catch (e) {}
+      var screenshot = await captureScreenshot(h2c, phone);
+
+      downloadJson({
+        version: 3,
+        type: 'multi-screen',
+        name: document.title + ' + linked',
+        tokens: collectColorTokens(),
+        screens: allExports,
+        screenshot: screenshot,
+        exportedAt: new Date().toISOString(),
+        sourceUrl: window.location.href
+      }, 'linked-screens.figma-export.json');
+
+      setButtonState('<i class="ti ti-check" aria-hidden="true"></i> ' + allExports.length + ' screens exported!', true);
+      var btn = document.getElementById('figma-export-btn');
+      if (btn) { btn.style.borderColor = '#00A650'; btn.style.color = '#00A650'; }
+      resetButton(2500);
+    } catch (err) {
+      console.error('Export linked failed:', err);
+      alert('Export failed: ' + err.message);
+      resetButton(0);
+    } finally {
       unfreezeAnimations(noanim);
     }
   }
@@ -696,6 +931,7 @@
       '<div class="figma-export-menu">',
       '  <button class="figma-export-option" id="figma-export-current"><i class="ti ti-artboard" aria-hidden="true"></i> Current screen</button>',
       '  <button class="figma-export-option" id="figma-export-all"><i class="ti ti-layers-intersect" aria-hidden="true"></i> All screens</button>',
+      '  <button class="figma-export-option" id="figma-export-linked"><i class="ti ti-link" aria-hidden="true"></i> Export with linked screens</button>',
       '</div>'
     ].join('\n');
     document.body.appendChild(wrap);
@@ -707,6 +943,10 @@
     document.getElementById('figma-export-all').addEventListener('click', function () {
       wrap.classList.remove('open');
       exportAllScreens();
+    });
+    document.getElementById('figma-export-linked').addEventListener('click', function () {
+      wrap.classList.remove('open');
+      exportLinkedScreens();
     });
 
     document.addEventListener('click', function (e) {

@@ -104,86 +104,222 @@
     border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer;
   }
   .registry button:hover { border-color: #c0392b; color: #c0392b; }
+
+  /* ── Tab switcher ── */
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--figma-color-border, #eee);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 9px 0;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--figma-color-text-secondary, #888);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn.active { color: #a259ff; border-bottom-color: #a259ff; }
+  .panel { display: block; }
+  .panel.hidden { display: none; }
+
+  /* ── Export panel ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--figma-color-text-secondary, #888);
+    margin-bottom: 8px;
+  }
+  .page-list {
+    border: 1px solid var(--figma-color-border, #eee);
+    border-radius: 10px;
+    padding: 4px 0;
+    margin-bottom: 14px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+  .page-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .page-item:hover { background: var(--figma-color-bg-secondary, #f8f8f8); }
+  .page-item input { cursor: pointer; flex-shrink: 0; }
+  .page-item-name { flex: 1; }
+  .page-placeholder {
+    padding: 16px 12px;
+    font-size: 12px;
+    color: var(--figma-color-text-secondary, #888);
+    text-align: center;
+  }
+  .progress-bar { height: 3px; background: var(--figma-color-bg-secondary, #eee); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: #a259ff; border-radius: 2px; transition: width 0.3s ease; }
 </style>
 </head>
 <body>
 
-<h2>M-PESA → Figma Import</h2>
-<p class="sub">Import screens exported from your HTML prototypes</p>
-
-<div class="steps">
-  <div class="step">
-    <span class="num">1</span>
-    <span>Click <strong>Export to Figma</strong> on any HTML page</span>
-  </div>
-  <div class="step active">
-    <span class="num">2</span>
-    <span>Drop the <code>.figma-export.json</code> file here</span>
-  </div>
-  <div class="step">
-    <span class="num">3</span>
-    <span>Click Import — layers are created on the current page</span>
-  </div>
+<!-- Tab switcher -->
+<div class="tabs">
+  <button class="tab-btn active" data-tab="import">Import</button>
+  <button class="tab-btn" data-tab="export">Export</button>
 </div>
 
-<div class="mode-group">
-  <label class="mode-opt">
-    <input type="radio" name="mode" value="design" checked>
-    <div class="mode-card">
-      <div class="mode-title">Import design</div>
-      <div class="mode-desc">Place instances of library components; build the rest as frames.</div>
+<!-- ── Import panel (existing) ── -->
+<div class="panel" id="panelImport">
+
+  <h2>M-PESA → Figma Import</h2>
+  <p class="sub">Import screens exported from your HTML prototypes</p>
+
+  <div class="steps">
+    <div class="step">
+      <span class="num">1</span>
+      <span>Click <strong>Export to Figma</strong> on any HTML page</span>
     </div>
-  </label>
-  <label class="mode-opt">
-    <input type="radio" name="mode" value="library">
-    <div class="mode-card">
-      <div class="mode-title">Build library</div>
-      <div class="mode-desc">Turn tagged elements into master components &amp; variant sets.</div>
+    <div class="step active">
+      <span class="num">2</span>
+      <span>Drop the <code>.figma-export.json</code> file here</span>
     </div>
-  </label>
-</div>
+    <div class="step">
+      <span class="num">3</span>
+      <span>Click Import — layers are created on the current page</span>
+    </div>
+  </div>
 
-<div class="opts">
-  <label class="opt"><input type="checkbox" id="optAuto" checked> Auto-create components for unmatched elements</label>
-  <label class="opt"><input type="checkbox" id="optVars"> Bind colors to Figma variables</label>
-</div>
+  <div class="mode-group">
+    <label class="mode-opt">
+      <input type="radio" name="mode" value="design" checked>
+      <div class="mode-card">
+        <div class="mode-title">Import design</div>
+        <div class="mode-desc">Place instances of library components; build the rest as frames.</div>
+      </div>
+    </label>
+    <label class="mode-opt">
+      <input type="radio" name="mode" value="library">
+      <div class="mode-card">
+        <div class="mode-title">Build library</div>
+        <div class="mode-desc">Turn tagged elements into master components &amp; variant sets.</div>
+      </div>
+    </label>
+  </div>
 
-<div class="registry">
-  <span id="registryLine">Checking component registry…</span>
-  <button id="clearRegistry" type="button">Clear</button>
-</div>
+  <div class="opts">
+    <label class="opt"><input type="checkbox" id="optAuto" checked> Auto-create components for unmatched elements</label>
+    <label class="opt"><input type="checkbox" id="optVars"> Bind colors to Figma variables</label>
+    <label class="opt"><input type="checkbox" id="optTypography"> Bind typography (fontSize) to Figma variables</label>
+  </div>
 
-<div class="drop-zone" id="dropZone">
-  <div class="icon">📂</div>
-  <p><strong>Drop .json file here</strong> or click to browse</p>
-</div>
-<input type="file" id="fileInput" accept=".json">
+  <div class="registry">
+    <span id="registryLine">Checking component registry…</span>
+    <button id="clearRegistry" type="button">Clear</button>
+  </div>
 
-<div class="preview" id="preview">
-  <div class="label">Ready to import</div>
-  <div class="name" id="previewName"></div>
-  <div class="meta" id="previewMeta"></div>
-</div>
+  <div class="drop-zone" id="dropZone">
+    <div class="icon">📂</div>
+    <p><strong>Drop .json file here</strong> or click to browse</p>
+  </div>
+  <input type="file" id="fileInput" accept=".json">
 
-<div class="status" id="status"></div>
+  <div class="preview" id="preview">
+    <div class="label">Ready to import</div>
+    <div class="name" id="previewName"></div>
+    <div class="meta" id="previewMeta"></div>
+  </div>
 
-<button class="btn btn-primary" id="importBtn" disabled>Import to Figma</button>
-<button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+  <div class="status" id="importStatus"></div>
+  <div class="progress-bar" id="progressBar" style="display:none">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <button class="btn btn-primary" id="importBtn" disabled>Import to Figma</button>
+  <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+
+</div><!-- /panelImport -->
+
+<!-- ── Export panel (new) ── -->
+<div class="panel hidden" id="panelExport">
+
+  <h2>Figma → JSON Export</h2>
+  <p class="sub">Serialize selected pages as a .figma-export.json file</p>
+
+  <div class="section-label">Pages</div>
+  <div class="page-list" id="pageList">
+    <div class="page-placeholder">Switch to this tab to load pages…</div>
+  </div>
+
+  <div class="opts">
+    <label class="opt"><input type="checkbox" id="optLinks" checked> Include prototype links</label>
+    <label class="opt"><input type="checkbox" id="optModals" checked> Flag modals / overlays</label>
+  </div>
+
+  <div class="status" id="exportStatus"></div>
+
+  <button class="btn btn-primary" id="exportBtn" disabled>Export Selected Pages</button>
+  <button class="btn btn-secondary" id="exportCancelBtn">Cancel</button>
+
+</div><!-- /panelExport -->
 
 <script>
-  let pendingData = null;
-  const dropZone = document.getElementById('dropZone');
-  const fileInput = document.getElementById('fileInput');
-  const importBtn = document.getElementById('importBtn');
-  const cancelBtn = document.getElementById('cancelBtn');
-  const status = document.getElementById('status');
-  const preview = document.getElementById('preview');
-  const optAuto = document.getElementById('optAuto');
-  const optVars = document.getElementById('optVars');
-  const registryLine = document.getElementById('registryLine');
+  // ── Shared state ──
+  var pendingData = null;
 
+  // ── Import panel elements ──
+  var dropZone     = document.getElementById('dropZone');
+  var fileInput    = document.getElementById('fileInput');
+  var importBtn    = document.getElementById('importBtn');
+  var cancelBtn    = document.getElementById('cancelBtn');
+  var importStatus = document.getElementById('importStatus');
+  var preview      = document.getElementById('preview');
+  var optAuto        = document.getElementById('optAuto');
+  var optVars        = document.getElementById('optVars');
+  var optTypography  = document.getElementById('optTypography');
+  var registryLine   = document.getElementById('registryLine');
+  var progressBar    = document.getElementById('progressBar');
+  var progressFill   = document.getElementById('progressFill');
+
+  // ── Export panel elements ──
+  var exportBtn    = document.getElementById('exportBtn');
+  var exportStatus = document.getElementById('exportStatus');
+  var pageList     = document.getElementById('pageList');
+  var optLinks     = document.getElementById('optLinks');
+  var optModals    = document.getElementById('optModals');
+
+  // ── Tab switching ──
+  var tabBtns    = document.querySelectorAll('.tab-btn');
+  var panelImport = document.getElementById('panelImport');
+  var panelExport = document.getElementById('panelExport');
+
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (btn.dataset.tab === 'import') {
+        panelImport.classList.remove('hidden');
+        panelExport.classList.add('hidden');
+      } else {
+        panelImport.classList.add('hidden');
+        panelExport.classList.remove('hidden');
+        // Request page list from plugin
+        parent.postMessage({ pluginMessage: { type: 'getPages' } }, '*');
+        pageList.innerHTML = '<div class="page-placeholder">Loading pages…</div>';
+        exportBtn.disabled = true;
+      }
+    });
+  });
+
+  // ── Import: mode label helpers ──
   function currentMode() {
-    const checked = document.querySelector('input[name="mode"]:checked');
+    var checked = document.querySelector('input[name="mode"]:checked');
     return checked ? checked.value : 'design';
   }
   function importLabel() {
@@ -192,43 +328,47 @@
   function refreshButtonLabel() {
     if (!importBtn.disabled || pendingData) importBtn.textContent = importLabel();
   }
-  Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), (r) => {
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function(r) {
     r.addEventListener('change', refreshButtonLabel);
   });
 
-  // Ask the plugin for the current registry count once the UI is ready.
+  // Ask plugin for registry count on load
   parent.postMessage({ pluginMessage: { type: 'getRegistry' } }, '*');
 
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', (e) => {
+  // ── Import: file drag & drop ──
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
+  dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
+    var file = e.dataTransfer.files[0];
     if (file) handleFile(file);
   });
-  fileInput.addEventListener('change', () => {
+  fileInput.addEventListener('change', function() {
     if (fileInput.files[0]) handleFile(fileInput.files[0]);
   });
 
   function handleFile(file) {
     if (!file.name.endsWith('.json')) {
-      showStatus('Please select a .figma-export.json file', 'error');
+      showImportStatus('Please select a .figma-export.json file', 'error');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    if (file.size > 10 * 1024 * 1024) {
+      showImportStatus('Warning: file is ' + (file.size / 1024 / 1024).toFixed(1) + ' MB — large imports may be slow or run out of memory.', 'info');
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
       try {
         pendingData = JSON.parse(e.target.result);
         if (!pendingData.version) throw new Error('Not a valid export file');
 
-        const name = pendingData.name || 'Unknown';
-        let meta = '';
+        var name = pendingData.name || file.name.replace('.json', '');
+        var meta = '';
         if (pendingData.type === 'multi-screen' && pendingData.screens) {
           meta = pendingData.screens.length + ' screens';
         } else {
-          meta = (pendingData.width || 375) + ' × ' + (pendingData.height || 812) + 'px';
+          meta = (pendingData.width || 375) + ' \xd7 ' + (pendingData.height || 812) + 'px';
         }
 
         document.getElementById('previewName').textContent = name;
@@ -236,9 +376,9 @@
         preview.classList.add('visible');
         importBtn.disabled = false;
         importBtn.textContent = importLabel();
-        showStatus('File loaded — ready to import', 'info');
+        showImportStatus('File loaded — ready to import', 'info');
       } catch (err) {
-        showStatus('Invalid file: ' + err.message, 'error');
+        showImportStatus('Invalid file: ' + err.message, 'error');
         pendingData = null;
         importBtn.disabled = true;
       }
@@ -246,57 +386,148 @@
     reader.readAsText(file);
   }
 
-  function showStatus(msg, type) {
-    status.textContent = msg;
-    status.className = 'status ' + type;
+  function showImportStatus(msg, type) {
+    importStatus.textContent = msg;
+    importStatus.className = 'status ' + type;
   }
 
-  importBtn.addEventListener('click', () => {
+  // ── Import: send to plugin ──
+  importBtn.addEventListener('click', function() {
     if (!pendingData) return;
-    const mode = currentMode();
+    var mode = currentMode();
     importBtn.disabled = true;
     importBtn.textContent = mode === 'library' ? 'Building…' : 'Importing…';
-    showStatus(mode === 'library' ? 'Building component library…' : 'Creating Figma layers…', 'info');
+    showImportStatus(mode === 'library' ? 'Building component library…' : 'Creating Figma layers…', 'info');
     parent.postMessage({
       pluginMessage: {
         type: 'import',
         mode: mode,
-        options: { autoRegister: optAuto.checked, bindVariables: optVars.checked },
+        options: { autoRegister: optAuto.checked, bindVariables: optVars.checked, bindTypography: optTypography.checked },
         data: pendingData
       }
     }, '*');
   });
 
-  document.getElementById('clearRegistry').addEventListener('click', () => {
+  document.getElementById('clearRegistry').addEventListener('click', function() {
     parent.postMessage({ pluginMessage: { type: 'clearRegistry' } }, '*');
   });
 
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener('click', function() {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
   });
 
-  window.onmessage = (e) => {
-    const msg = e.data.pluginMessage;
+  // ── Export: send to plugin ──
+  exportBtn.addEventListener('click', function() {
+    var checked = pageList.querySelectorAll('input[type="checkbox"]:checked');
+    var pageIds = Array.prototype.map.call(checked, function(cb) { return cb.value; });
+    if (!pageIds.length) {
+      showExportStatus('Select at least one page.', 'error');
+      return;
+    }
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Exporting…';
+    showExportStatus('Serializing Figma layers…', 'info');
+    parent.postMessage({
+      pluginMessage: {
+        type: 'export',
+        pageIds: pageIds,
+        options: { links: optLinks.checked, modals: optModals.checked }
+      }
+    }, '*');
+  });
+
+  document.getElementById('exportCancelBtn').addEventListener('click', function() {
+    parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*');
+  });
+
+  function showExportStatus(msg, type) {
+    exportStatus.textContent = msg;
+    exportStatus.className = 'status ' + type;
+  }
+
+  // ── Message handler ──
+  window.onmessage = function(e) {
+    var msg = e.data.pluginMessage;
     if (!msg) return;
+
+    // Import messages
     if (msg.type === 'registry') {
       registryLine.textContent = msg.masters
         ? (msg.masters + ' component' + (msg.masters === 1 ? '' : 's') + ' registered')
         : 'No components registered yet';
     }
+    if (msg.type === 'progress') {
+      var pct = Math.round((msg.step / msg.total) * 100);
+      progressBar.style.display = 'block';
+      progressFill.style.width = pct + '%';
+      showImportStatus('Importing screen ' + msg.step + ' of ' + msg.total + '…', 'info');
+    }
     if (msg.type === 'done') {
-      let done = 'Import complete! Check your canvas.';
+      progressBar.style.display = 'none';
+      progressFill.style.width = '0%';
+      var done;
       if (msg.mode === 'library' && msg.summary) {
-        done = 'Library built — ' + msg.summary.count + ' components ('
-             + msg.summary.sets + ' on the Components page).';
+        done = 'Library built — ' + msg.summary.count + ' components (' + msg.summary.sets + ' sets).';
+      } else {
+        var s = msg.stats || {};
+        var parts = [];
+        if (s.screens > 0) parts.push(s.screens + ' screen' + (s.screens > 1 ? 's' : ''));
+        if (s.frames > 0)  parts.push(s.frames + ' frames');
+        if (s.components > 0) parts.push(s.components + ' components');
+        if (s.textNodes > 0)  parts.push(s.textNodes + ' text layers');
+        if (s.colorsBound > 0) parts.push(s.colorsBound + ' colors bound');
+        done = parts.length ? 'Done: ' + parts.join(' · ') : 'Import complete! Check your canvas.';
       }
-      showStatus(done, 'success');
+      showImportStatus(done, 'success');
       importBtn.textContent = importLabel();
       importBtn.disabled = false;
     }
     if (msg.type === 'error') {
-      showStatus('Error: ' + msg.message, 'error');
+      showImportStatus('Error: ' + msg.message, 'error');
       importBtn.textContent = importLabel();
       importBtn.disabled = false;
+      // Also reset export button if in export tab
+      exportBtn.textContent = 'Export Selected Pages';
+      exportBtn.disabled = false;
+      showExportStatus('Error: ' + msg.message, 'error');
+    }
+
+    // Export messages
+    if (msg.type === 'pages') {
+      pageList.innerHTML = '';
+      if (!msg.pages || !msg.pages.length) {
+        pageList.innerHTML = '<div class="page-placeholder">No pages found.</div>';
+        return;
+      }
+      msg.pages.forEach(function(page) {
+        var label = document.createElement('label');
+        label.className = 'page-item';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = page.id;
+        cb.checked = (page.name !== 'Components');
+        var span = document.createElement('span');
+        span.className = 'page-item-name';
+        span.textContent = page.name;
+        label.appendChild(cb);
+        label.appendChild(span);
+        pageList.appendChild(label);
+      });
+      exportBtn.disabled = false;
+    }
+    if (msg.type === 'exportDone') {
+      var blob = new Blob([msg.json], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = msg.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showExportStatus('Exported — ' + msg.filename, 'success');
+      exportBtn.textContent = 'Export Selected Pages';
+      exportBtn.disabled = false;
     }
   };
 </script>

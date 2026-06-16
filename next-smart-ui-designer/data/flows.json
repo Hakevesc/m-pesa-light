@@ -1,0 +1,10 @@
+{
+  "flows": [
+    { "id": "lehulum-home", "label": "Lehulum Home", "description": "Main dashboard and quick actions", "icon": "home", "firstScreenId": "lehulum-home", "screens": ["lehulum-home", "my-qr-code", "scan-qr", "verify-receipt"] },
+    { "id": "send-money", "label": "Send Money", "description": "Send money and bank transfer flow", "icon": "send", "firstScreenId": "send-money-menu", "screens": ["send-money-menu", "transfer-select-bank", "transfer-enter-amount", "transfer-enter-pin", "transaction-confirmation"] },
+    { "id": "bill-payment", "label": "Bill Payment", "description": "Select biller, enter account, amount, PIN and confirmation", "icon": "receipt", "firstScreenId": "pay-bill", "screens": ["pay-bill"] },
+    { "id": "merchant-payment", "label": "Merchant Payment", "description": "Merchant payment entry, amount, PIN and receipt", "icon": "scan", "firstScreenId": "pay-merchant", "screens": ["pay-merchant"] },
+    { "id": "account", "label": "Account", "description": "Account settings, profile, notifications and favourites", "icon": "user", "firstScreenId": "account", "screens": ["account", "account-detail", "notification-center"] },
+    { "id": "auth", "label": "Auth and Security", "description": "OTP, PIN and recovery screens", "icon": "shield-check", "firstScreenId": "otp-verification", "screens": ["otp-verification", "create-pin", "forgot-pin"] }
+  ]
+}
