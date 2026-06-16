@@ -651,11 +651,14 @@
   }
 
   // ── Admin Authentication ──
-  function checkAdminAuth(callback) {
+  // Encoded credentials (not plain text, but not secure encryption - just prevents casual viewing)
+  var ADMIN_USER_B64 = 'bWlraXlhaG9v';  // 'mikiyahoo' in base64
+  var ADMIN_PASS_B64 = 'TWlraWFzJEtpMDkxNQ';  // 'Mikias$Ki0915' in base64
+
+  function requireAuth(callback) {
     var stored = sessionStorage.getItem('figmaAdminAuth');
     if (stored === 'true') { callback(); return; }
 
-    // Create login overlay
     var overlay = document.createElement('div');
     overlay.id = 'figma-admin-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-family:Switzer,Inter,sans-serif;';
@@ -672,19 +675,10 @@
     ].join('\n');
     document.body.appendChild(overlay);
 
-    function hash(str) {
-      var h = 0;
-      for (var i = 0; i < str.length; i++) { var c = str.charCodeAt(i); h = ((h << 5) - h) + c; h = h & h; }
-      return 'h' + Math.abs(h).toString(16);
-    }
-
     document.getElementById('figmaAdminBtn').addEventListener('click', function() {
       var user = document.getElementById('figmaAdminUser').value;
       var pass = document.getElementById('figmaAdminPass').value;
-      var storedUserHash = 'h1e3b7f';
-      var storedPassHash = 'h26e0ab2';
-
-      if (hash(user) === storedUserHash && hash(pass) === storedPassHash) {
+      if (btoa(user) === ADMIN_USER_B64 && btoa(pass) === ADMIN_PASS_B64) {
         sessionStorage.setItem('figmaAdminAuth', 'true');
         overlay.remove();
         callback();
@@ -693,15 +687,13 @@
       }
     });
 
-    // Enter key support
     document.getElementById('figmaAdminPass').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') document.getElementById('figmaAdminBtn').click();
     });
   }
 
-  // ── Inject button + styles ──
+  // ── Inject button + styles (no auth check on page load) ──
   function injectExportButton() {
-    checkAdminAuth(function() {
     // The button's icons are Tabler glyphs — load the webfont on pages that
     // don't already include it (e.g. the Lehulum screens, which use Lucide).
     if (!document.querySelector('link[href*="tabler-icons"]')) {
@@ -752,11 +744,11 @@
 
     document.getElementById('figma-export-current').addEventListener('click', function () {
       wrap.classList.remove('open');
-      exportToFigma();
+      requireAuth(function() { exportToFigma(); });
     });
     document.getElementById('figma-export-all').addEventListener('click', function () {
       wrap.classList.remove('open');
-      exportAllScreens();
+      requireAuth(function() { exportAllScreens(); });
     });
 
     document.addEventListener('click', function (e) {
@@ -777,7 +769,6 @@
       unfreezeAnimations(noanim);
       return tree;
     };
-    });
   }
 
   // Init
