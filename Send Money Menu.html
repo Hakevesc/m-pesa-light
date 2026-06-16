@@ -147,6 +147,18 @@
     transform: scale(1.02);
   }
 
+  .type-option .chevron-down {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    stroke: var(--On-Surface-Low);
+    stroke-width: 2;
+    fill: none;
+  }
+
   .type-option:not(.selected) {
     opacity: 1;
   }
@@ -421,6 +433,113 @@
   .recent-transactions.section-card .header .see-all:hover {
     opacity: 0.7;
   }
+
+  /* ===== BOTTOM SHEET MODAL ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeInOverlay 0.2s ease-out;
+  }
+  .modal-overlay.show { display: flex; }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .bottom-sheet {
+    width: 100%;
+    max-width: 360px;
+    background: #FFF;
+    border-radius: 24px 24px 0 0;
+    padding: 20px 20px 30px;
+    animation: slideUpSheet 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .bottom-sheet::-webkit-scrollbar { width: 0; }
+
+  @keyframes slideUpSheet {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .sheet-grip {
+    width: 40px;
+    height: 4px;
+    background: #D8D8DD;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+
+  .sheet-title {
+    font-family: 'Switzer', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--On-Surface);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sheet-item:hover { background: #FFF1F2; }
+  .sheet-item:active { background: #FFDFE0; }
+
+  .sheet-item-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #FFF;
+    border: 1px solid #ECECEC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+  .sheet-item-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+  .sheet-item-info { flex: 1; }
+  .sheet-item-name {
+    font-family: 'Switzer', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--On-Surface);
+  }
+  .sheet-item-sub {
+    font-family: 'Switzer', sans-serif;
+    font-size: 12px;
+    color: var(--On-Surface-Low);
+    margin-top: 1px;
+  }
+
+  .sheet-item-arrow {
+    width: 18px;
+    height: 18px;
+    stroke: #C5C5CB;
+    fill: none;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -464,6 +583,9 @@
             <span class="label-line">Send to</span>
             <span class="label-line">Wallet</span>
           </div>
+          <svg class="chevron-down" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>
         <div class="type-option bank-account" onclick="selectType(this, 'bank')">
           <div class="icon-box">
@@ -480,6 +602,9 @@
             <span class="label-line">Send to</span>
             <span class="label-line">Bank</span>
           </div>
+          <svg class="chevron-down" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
         </div>
       </div>
 
@@ -628,18 +753,83 @@
   </div>
 </div>
 
+<!-- Bottom Sheet Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-grip"></div>
+    <div class="sheet-title" id="sheetTitle">Select Wallet</div>
+    <div class="sheet-list" id="sheetList"></div>
+  </div>
+</div>
+
 <!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
-  // Initialize Lucide icons
   lucide.createIcons();
 
-  // Transfer type selection
+  const walletOptions = [
+    { name: 'M-PESA Wallet', sub: 'Send to M-PESA', logo: 'assets/banks logo/M-PESA-logo-icon.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'TeleBirr Wallet', sub: 'Send to TeleBirr', logo: 'assets/banks logo/M-PESA-logo-icon.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'CBE Birr', sub: 'Send to CBE Birr', logo: 'assets/banks logo/cbe-logo.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'Kacha Wallet', sub: 'Send to Kacha', logo: 'assets/banks logo/abyssinya-bank.png', link: 'Transfer_Enter Amount.html' }
+  ];
+
+  const bankOptions = [
+    { name: 'Commercial Bank of Ethiopia', sub: 'CBE • Account', logo: 'assets/banks logo/cbe-logo.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'Abyssinia Bank', sub: 'BOA • Account', logo: 'assets/banks logo/abyssinya-bank.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'Dashen Bank', sub: 'Dashen • Account', logo: 'assets/banks logo/dashen-bank.png', link: 'Transfer_Enter Amount.html' },
+    { name: 'Awash Bank', sub: 'Awash • Account', logo: 'assets/banks logo/awass-bank.png', link: 'Transfer_Enter Amount.html' }
+  ];
+
+  let selectedType = 'wallet';
+
   function selectType(element, type) {
     document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('selected'));
     element.classList.add('selected');
-    if (type === 'bank') { window.location.href = 'Transfer_Select Bank.html'; }
-    console.log('Selected:', type);
+    selectedType = type;
+    if (type === 'wallet') openWalletModal();
+    else openBankModal();
+  }
+
+  function openWalletModal() {
+    document.getElementById('sheetTitle').textContent = 'Select Wallet';
+    renderSheetOptions(walletOptions);
+    showModal();
+  }
+
+  function openBankModal() {
+    document.getElementById('sheetTitle').textContent = 'Select Bank';
+    renderSheetOptions(bankOptions);
+    showModal();
+  }
+
+  function renderSheetOptions(options) {
+    const list = document.getElementById('sheetList');
+    list.innerHTML = options.map(o => `
+      <div class="sheet-item" onclick="selectSheetOption('${o.name}', '${o.link}')">
+        <div class="sheet-item-logo">
+          <img src="${o.logo}" alt="${o.name}" onerror="this.style.display='none'">
+        </div>
+        <div class="sheet-item-info">
+          <div class="sheet-item-name">${o.name}</div>
+          <div class="sheet-item-sub">${o.sub}</div>
+        </div>
+        <svg class="sheet-item-arrow" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    `).join('');
+  }
+
+  function selectSheetOption(name, link) {
+    sessionStorage.setItem('sendTarget', JSON.stringify({ name: name, type: selectedType }));
+    window.location.href = link;
+  }
+
+  function showModal() {
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
   }
 
   // Select favorite
