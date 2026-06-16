@@ -650,49 +650,7 @@
     }
   }
 
-  // ── Admin Authentication ──
-  // Encoded credentials (not plain text, but not secure encryption - just prevents casual viewing)
-  var ADMIN_USER_B64 = 'bWlraXlhaG9v';  // 'mikiyahoo' in base64
-  var ADMIN_PASS_B64 = 'TWlraWFzJEtpMDkxNQ';  // 'Mikias$Ki0915' in base64
-
-  function requireAuth(callback) {
-    var stored = sessionStorage.getItem('figmaAdminAuth');
-    if (stored === 'true') { callback(); return; }
-
-    var overlay = document.createElement('div');
-    overlay.id = 'figma-admin-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-family:Switzer,Inter,sans-serif;';
-    overlay.innerHTML = [
-      '<div style="background:#FFF;border-radius:20px;padding:32px 28px 28px;width:300px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;">',
-      '  <div style="width:56px;height:56px;border-radius:14px;background:#FE353D;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#FFF;">🔐</div>',
-      '  <h2 style="font-size:18px;font-weight:700;color:#1C1C21;margin-bottom:4px;font-family:Switzer,Inter,sans-serif;">Admin Access</h2>',
-      '  <p style="font-size:13px;color:#7C7C87;margin-bottom:18px;font-family:Switzer,Inter,sans-serif;">Enter credentials to export to Figma</p>',
-      '  <input id="figmaAdminUser" type="text" placeholder="Username" style="width:100%;height:44px;border-radius:10px;border:1.5px solid #E8E8EC;padding:0 14px;font-size:14px;outline:none;margin-bottom:10px;font-family:Switzer,Inter,sans-serif;box-sizing:border-box;">',
-      '  <input id="figmaAdminPass" type="password" placeholder="Password" style="width:100%;height:44px;border-radius:10px;border:1.5px solid #E8E8EC;padding:0 14px;font-size:14px;outline:none;margin-bottom:16px;font-family:Switzer,Inter,sans-serif;box-sizing:border-box;">',
-      '  <div id="figmaAdminError" style="color:#FE353D;font-size:12px;margin-bottom:10px;display:none;font-family:Switzer,Inter,sans-serif;">Invalid credentials</div>',
-      '  <button id="figmaAdminBtn" style="width:100%;height:44px;border-radius:12px;background:#FE353D;color:#FFF;border:none;font-size:14px;font-weight:500;cursor:pointer;font-family:Poppins,Inter,sans-serif;box-shadow:0 4px 12px rgba(254,53,61,0.25);">Login</button>',
-      '</div>'
-    ].join('\n');
-    document.body.appendChild(overlay);
-
-    document.getElementById('figmaAdminBtn').addEventListener('click', function() {
-      var user = document.getElementById('figmaAdminUser').value;
-      var pass = document.getElementById('figmaAdminPass').value;
-      if (btoa(user) === ADMIN_USER_B64 && btoa(pass) === ADMIN_PASS_B64) {
-        sessionStorage.setItem('figmaAdminAuth', 'true');
-        overlay.remove();
-        callback();
-      } else {
-        document.getElementById('figmaAdminError').style.display = 'block';
-      }
-    });
-
-    document.getElementById('figmaAdminPass').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') document.getElementById('figmaAdminBtn').click();
-    });
-  }
-
-  // ── Inject button + styles (no auth check on page load) ──
+  // ── Inject button + styles ──
   function injectExportButton() {
     // The button's icons are Tabler glyphs — load the webfont on pages that
     // don't already include it (e.g. the Lehulum screens, which use Lucide).
@@ -744,11 +702,11 @@
 
     document.getElementById('figma-export-current').addEventListener('click', function () {
       wrap.classList.remove('open');
-      requireAuth(function() { exportToFigma(); });
+      exportToFigma();
     });
     document.getElementById('figma-export-all').addEventListener('click', function () {
       wrap.classList.remove('open');
-      requireAuth(function() { exportAllScreens(); });
+      exportAllScreens();
     });
 
     document.addEventListener('click', function (e) {
